@@ -915,32 +915,34 @@ function renderTable() {
     }
 
     // 💡 新增：專門處理合併欄位點擊刪除時的「批量刪除」函數
-    async function deleteMergedGroup(idsArray) {
-        if (!idsArray || idsArray.length === 0) return;
-        
-        if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
-            try {
-                // 利用原本寫好的 deleteBooking 邏輯，一筆一筆用迴圈快速發送請求刪除
-                for (const id of idsArray) {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: JSON.stringify({ action: 'delete', id: id })
-                    });
-                    const resData = await response.json();
-                    if (resData.status !== 'success') {
-                        alert('刪除過程中發生部分失敗：' + resData.message);
-                        loadBookingsFromServer();
-                        return;
-                    }
+// 🟢 這是修正後的正確程式碼
+async function deleteMergedGroup(idsArray) {
+    if (!idsArray || idsArray.length === 0) return;
+    
+    if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
+        try {
+            // 一筆一筆用迴圈快速發送請求刪除
+            for (const id of idsArray) {
+                const response = await fetch(GAS_URL, { // 👈 已修正為您網頁定義的 GAS_URL
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'delete', id: id }) // 👈 統一發送格式
+                });
+                const resData = await response.json();
+                if (resData.status !== 'success') {
+                    alert('刪除過程中發生部分失敗：' + resData.message);
+                    loadBookingsFromServer();
+                    return;
                 }
-                // 全部迴圈跑完成功後，重新向伺服器同步最新資料並刷新
-                loadBookingsFromServer();
-            } catch (error) {
-                alert('網路連線異常，無法完整刪除合併的資料！');
             }
+            // 全部迴圈跑完成功後，重新向伺服器同步最新資料並刷新
+            alert('🗑️ 資料已成功從雲端刪除！');
+            loadBookingsFromServer();
+        } catch (error) {
+            console.error(error);
+            alert('網路連線異常，無法完整刪除合併的資料！');
         }
     }
+}
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const borrower = document.getElementById('borrower').value;
