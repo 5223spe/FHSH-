@@ -98,7 +98,38 @@
     background-color: #f1f5f9; 
     color: var(--palette-blue-2);
 }
-    
+/* 📱 手機專用彈窗樣式 */
+.custom-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    background-color: rgba(0,0,0,0.5); 
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 20px;
+    width: 88%;
+    max-width: 400px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.modal-header h3 { margin: 0; color: var(--palette-blue-2); font-size: 20px; font-weight: 700; }
+.close-btn { font-size: 28px; font-weight: bold; cursor: pointer; color: #94a3b8; line-height: 1; }
+.modal-search { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
+.teacher-list-container { overflow-y: auto; flex: 1; max-height: 300px; border-radius: 10px; border: 1px solid #f1f5f9; }
+.teacher-option-item { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text-dark); }
+.teacher-option-item:active { background-color: #f1f5f9; color: var(--palette-blue-2); }    
     <style>
         :root {
              /* Warm Summer Palette 還原最初的經典配色 */
@@ -339,10 +370,13 @@
 <!-- 1. 替換原本的借用人姓名欄位 (移除 list="teacherList" 與 datalist，加上 readonly) -->
 <div class="form-group">
     <label for="borrower">借用人姓名</label>
-    <input type="text" id="borrower" placeholder="請點擊選擇借用人" readonly required style="cursor: pointer; background-color: #fff;">
+    <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或直接打字搜尋" required>
+    <datalist id="teacherList">
+        <!-- 電腦版使用：由 JavaScript 自動動態載入 -->
+    </datalist>
 </div>
 
-<!-- 2. 在頁面最下方 (如 </body> 上方) 加入這個彈窗 HTML -->
+<!-- 📱 手機版專屬搜尋彈窗 Modal -->
 <div id="teacherModal" class="custom-modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -351,7 +385,7 @@
         </div>
         <input type="text" id="teacherSearchInput" placeholder="🔍 輸入關鍵字搜尋..." class="modal-search" autocomplete="off">
         <div class="teacher-list-container" id="teacherListContainer">
-            <!-- 老師選項會由 JavaScript 自動生成 -->
+            <!-- 手機版選項動態產生 -->
         </div>
     </div>
 </div>
@@ -739,15 +773,24 @@ if (teacherSearchInput) {
             updateDashboard();
             handleClassroomOrDateChange();
 
-// 載入全域老師名單並觸發 Modal 清單渲染
+// 載入與渲染名單 (電腦與手機同時支援)
 if (rawData.teachers && rawData.teachers.length > 0) {
-    window.allTeachersList = rawData.teachers;
+    window.allTeachersList = rawData.teachers; // 儲存至全域變數
+    
+    // 1. 渲染電腦版 datalist
+    const teacherList = document.getElementById('teacherList');
+    if (teacherList) {
+        teacherList.innerHTML = '';
+        rawData.teachers.forEach(teacherName => {
+            const option = document.createElement('option');
+            option.value = teacherName;
+            teacherList.appendChild(option);
+        });
+    }
+    
+    // 2. 渲染手機版 Modal
     renderTeacherList(window.allTeachersList);
 }
-        } catch (error) {
-            console.error("無法從雲端載入資料:", error);
-        }
-    }
 
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
