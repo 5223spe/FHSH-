@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v10">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v11">
 <!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -127,7 +127,7 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
-        /* 圖示說明欄 */
+        /* 💡 圖示說明欄（已更新說明項目） */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -262,15 +262,15 @@
             cursor: pointer;
         }
 
-        /* 🎯 依據滑鼠點擊位置動態跳出的獨立選單 (擴高 max-height 以一次顯示至少 9 位) */
+        /* 🎯 獨立選單（一次顯示至少 9 位，且包含防超出畫面設定） */
         .custom-dropdown-list {
             position: fixed;
             min-width: 220px;
-            max-width: 340px;
+            max-width: 320px;
             background: white;
             border: 2px solid var(--palette-blue-1);
             border-radius: 12px;
-            max-height: 390px; /* 💡 修改：加大高度，確保一次可容納至少 9 位教師選項 */
+            max-height: 390px;
             overflow-y: auto;
             z-index: 99999;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -295,7 +295,6 @@
             font-weight: bold;
         }
 
-        /* 手動輸入特定選項樣式 */
         .custom-dropdown-item.manual-option {
             color: var(--palette-blue-1);
             font-weight: bold;
@@ -418,10 +417,10 @@
             </div>
         </div>
         
+       <!-- 💡 圖示說明欄 (依據需求 1 修改) -->
        <div class="legend-bar">
             <span>🟢 空堂</span>
-            <span>🔴 交接中 (燈號閃爍)</span>
-            <span>🔴 準備中 / 使用中 / 連堂中</span>
+            <span>🔴 準備中 / 使用中 / 連堂中 / 交接中 (燈號閃爍)</span>
             <span>🟠 收拾中</span>
             <span>⚡ 點擊教室極速借用</span>
         </div>
@@ -496,7 +495,8 @@
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
                 <div class="borrower-wrapper">
-                    <input type="text" id="borrower" placeholder="請點擊選擇或直接打字搜尋" required readonly onfocus="this.removeAttribute('readonly');">
+                    <!-- 💡 預設 readonly 避開手機鍵盤自動跳出 -->
+                    <input type="text" id="borrower" placeholder="請點擊選擇教師姓名" required readonly>
                 </div>
             </div>
 
@@ -645,7 +645,7 @@
         }
     }
 
-    /* 🎯 精準在滑鼠點擊位置展開選單（最後一個選項固定為 ✏️ 手動輸入其他姓名） */
+    /* 🎯 依據點擊智慧計算選單顯示位置（含防右側破圖） */
     function showTeacherDropdownAtClick(clientX, clientY, filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
@@ -655,25 +655,36 @@
 
         let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
         
-        // 💡 新增：最後一個選項 - 手動輸入其他姓名
+        // ✏️ 手動輸入選項
         itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
         dropdown.innerHTML = itemsHtml;
-        
-        // 設定點擊位置
-        const rect = borrowerIn.getBoundingClientRect();
-        dropdown.style.width = `${rect.width}px`;
-        dropdown.style.left = `${clientX || rect.left}px`;
-        dropdown.style.top = `${(clientY ? clientY + 12 : rect.bottom + 4)}px`;
         dropdown.style.display = 'block';
 
+        const rect = borrowerIn.getBoundingClientRect();
+        const dropWidth = Math.min(260, window.innerWidth - 20); // 選單適應寬度
+        dropdown.style.width = `${dropWidth}px`;
+
+        // 💡 計算邊界防止選單破圖被切掉
+        let targetLeft = clientX || rect.left;
+        if (targetLeft + dropWidth > window.innerWidth - 10) {
+            targetLeft = window.innerWidth - dropWidth - 10;
+        }
+        if (targetLeft < 10) targetLeft = 10;
+
+        dropdown.style.left = `${targetLeft}px`;
+        dropdown.style.top = `${(clientY ? clientY + 12 : rect.bottom + 4)}px`;
+
         dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-            item.onclick = function() {
+            item.onclick = function(e) {
+                e.stopPropagation();
                 const action = this.getAttribute('data-action');
                 if (action === 'manual') {
+                    borrowerIn.removeAttribute('readonly'); // 💡 點擊手動輸入後才啟動鍵盤
                     borrowerIn.value = '';
                     borrowerIn.focus();
                 } else {
+                    borrowerIn.setAttribute('readonly', 'true'); // 保持唯讀防止軟體鍵盤跳出
                     borrowerIn.value = this.getAttribute('data-value');
                 }
                 dropdown.style.display = 'none';
@@ -681,12 +692,11 @@
         });
     }
 
-    // 點擊滑鼠時彈出選單
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
         borrowerInput.addEventListener('click', function(e) {
             e.stopPropagation();
-            showTeacherDropdownAtClick(e.clientX, e.clientY, this.value.trim());
+            showTeacherDropdownAtClick(e.clientX, e.clientY, this.getAttribute('readonly') ? '' : this.value.trim());
         });
 
         borrowerInput.addEventListener('input', function(e) {
@@ -695,7 +705,7 @@
         });
     }
 
-    // 點擊非選單區域自動隱藏
+    // 點擊非選單區域自動隱藏選單
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('teacherDropdown');
         if (dropdown && !e.target.closest('#borrower') && !e.target.closest('#teacherDropdown')) {
@@ -753,9 +763,8 @@
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
         
         if (borrowerInput) {
-            borrowerInput.focus();
             const rect = borrowerInput.getBoundingClientRect();
-            showTeacherDropdownAtClick(rect.left, rect.bottom, borrowerInput.value.trim());
+            showTeacherDropdownAtClick(rect.left, rect.bottom, borrowerInput.getAttribute('readonly') ? '' : borrowerInput.value.trim());
         }
     }
 
@@ -1165,6 +1174,7 @@
         if (originalFormReset) originalFormReset.call(this);
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
+        if (borrowerInput) borrowerInput.setAttribute('readonly', 'true');
     };
     
     setInterval(() => {
