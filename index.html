@@ -756,100 +756,83 @@
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function getCurrentPeriod(time) {
-        const found = periodsConfig.find(p => time >= p.start && time <= p.end);
-        if (found) return found.name;
+// 💡 更新：讓下課時間也能精準對應到「前一節」與「下一節」
+function getCurrentPeriod(time) {
+    const found = periodsConfig.find(p => time >= p.start && time <= p.end);
+    if (found) return found.name;
+    return "";
+}
 
-        const nextPeriod = periodsConfig.find(p => time < p.start);
-        if (nextPeriod) {
-            return nextPeriod.name; 
-        }
-        return "";
+function updateDashboard() {
+    const date = document.getElementById('mapDate').value;
+    const time = document.getElementById('mapTime').value;
+    
+    let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
+    let isBreakTime = false;
+
+    // 如果不在上課時間內，代表是下課時間
+    if (currentPeriodIdx === -1) {
+        isBreakTime = true;
+        // 尋找「下一個」將要開始的節次 index
+        currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
+        if (currentPeriodIdx === -1) currentPeriodIdx = periodsConfig.length; // 晚於第八節
     }
 
-    function updateDashboard() {
-        const date = document.getElementById('mapDate').value;
-        const time = document.getElementById('mapTime').value;
+    const currentP = getCurrentPeriod(time);
+    const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
+
+    rooms.forEach(room => {
+        const elementId = room === '6F Z空間' ? '6F_Z空間' : room;
+        const card = document.getElementById(`map-${elementId}`);
+        if (!card) return;
+        const info = document.getElementById(`info-${elementId}`);
+        const badge = card.querySelector('.status-badge');
         
-        let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
-        let isBreakTime = false;
+        const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
+        const isVertical = (room === '向圓' || room === '團輔室');
 
-        if (currentPeriodIdx === -1) {
-            isBreakTime = true;
-            currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
-            if (currentPeriodIdx === -1) currentPeriodIdx = 10;
-        }
+        const allReservedPeriods = [];
+        roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
 
-        const currentP = getCurrentPeriod(time);
-        const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
+        // 計算後續預約
+        const upcomingList = periodsConfig.filter((p, idx) => {
+            const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
+            return isAfterCurrent && allReservedPeriods.includes(p.name);
+        }).map(p => p.name);
 
-        rooms.forEach(room => {
-            const elementId = room === '6F Z空間' ? '6F_Z空間' : room;
-            const card = document.getElementById(`map-${elementId}`);
-            if (!card) return;
-            const info = document.getElementById(`info-${elementId}`);
-            const badge = card.querySelector('.status-badge');
+        function generateUpcomingGridHtml(prefixText) {
+            if (upcomingList.length === 0) return '';
+            const periodSpans = upcomingList.map((p, idx) => {
+                const separator = (idx === upcomingList.length - 1) ? '' : '、';
+                return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+            }).join('');
             
-            const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
-            const isVertical = (room === '向圓' || room === '團輔室');
-
-            const allReservedPeriods = [];
-            roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
-
-            const upcomingList = periodsConfig.filter((p, idx) => {
-                const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
-                return isAfterCurrent && allReservedPeriods.includes(p.name);
-            }).map(p => p.name);
-
-            function generateUpcomingGridHtml(prefixText) {
-                if (upcomingList.length === 0) return '';
-                
-                const periodSpans = upcomingList.map((p, idx) => {
-                    const separator = (idx === upcomingList.length - 1) ? '' : '、';
-                    return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
-                }).join('');
-                
-                return `
-                    <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
-                        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
-                            <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
-                            <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
-                                ${periodSpans}
-                            </div>
+            return `
+                <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
+                    <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
+                        <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
+                        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
+                            ${periodSpans}
                         </div>
                     </div>
-                `;
-            }
+                </div>
+            `;
+        }
 
-            card.style.position = "";
-            card.style.paddingTop = "";
-            card.style.display = "";
-            card.style.flexDirection = "";
-            card.style.justifyContent = "";
-            if (badge) badge.style.marginTop = "";
+        card.style.position = "";
+        card.style.paddingTop = "";
+        card.style.display = "";
+        card.style.flexDirection = "";
+        card.style.justifyContent = "";
+        if (badge) badge.style.marginTop = "";
 
-            const oldAlert = card.querySelector('.dynamic-alert');
-            if (oldAlert) oldAlert.remove();
+        const oldAlert = card.querySelector('.dynamic-alert');
+        if (oldAlert) oldAlert.remove();
 
-            if (time >= "17:15" && time < "17:25") {
-                const isEighthPeriodOccupied = roomBookings.some(b => b.periods.includes("第八節"));
-                if (isEighthPeriodOccupied) {
-                    const b = roomBookings.find(b => b.periods.includes("第八節"));
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    badge.textContent = "使用中";
-                    badge.style.backgroundColor = ""; 
-                    
-                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower} (第八節)</div>`;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                    }
-                    info.innerHTML = htmlContent;
-                    return; 
-                }
-            }
-
+        // 🟢 情境 A：正在上課時間內
+        if (!isBreakTime && currentP) {
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
-            if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
+            if (isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
                 card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                 badge.textContent = "使用中";
@@ -862,83 +845,90 @@
                 info.innerHTML = htmlContent;
                 return;
             }
+        }
 
-            if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
-                const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
-                const nextPeriodObj = periodsConfig[currentPeriodIdx];     
-                
-                const prevP = prevPeriodObj ? prevPeriodObj.name : null;
-                const nextP = nextPeriodObj ? nextPeriodObj.name : null;
+        // 🟠 情境 B：在下課時間內 (包含 15:05-15:25, 16:15-16:25 等所有下課)
+        if (isBreakTime && currentPeriodIdx > 0 && currentPeriodIdx <= periodsConfig.length) {
+            const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
+            const nextPeriodObj = periodsConfig[currentPeriodIdx];     
+            
+            const prevP = prevPeriodObj ? prevPeriodObj.name : null;
+            const nextP = nextPeriodObj ? nextPeriodObj.name : null;
 
-                const prevBooking = roomBookings.find(b => b.periods.includes(prevP));
-                const nextBooking = roomBookings.find(b => b.periods.includes(nextP));
+            const prevBooking = prevP ? roomBookings.find(b => b.periods.includes(prevP)) : null;
+            const nextBooking = nextP ? roomBookings.find(b => b.periods.includes(nextP)) : null;
 
-                if (prevBooking) {
-                    if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
-                        card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                        badge.textContent = "連堂中";
-                        badge.style.backgroundColor = ""; 
-
-                        let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
-                        if (upcomingList.length > 0) {
-                            htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                        }
-                        info.innerHTML = htmlContent;
-                        return;
-                    }
-
-                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
-                    badge.textContent = "交接中";
-                    badge.style.backgroundColor = "#f97316"; 
-
-                    if (!isVertical) {
-                        card.style.display = "flex";
-                        card.style.flexDirection = "column";
-                        card.style.justifyContent = "center";
-                        badge.style.marginTop = "4px"; 
-                    }
-
-                    badge.insertAdjacentHTML('beforebegin', `
-                        <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
-                            ⚠️ (${prevP}:${prevBooking.borrower}借)
-                        </div>
-                    `);
-
-                    let htmlContent = ``;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top: 2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
-                    } else {
-                        htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
-                    }
-                    info.innerHTML = htmlContent;
-                    return;
-                }
-                
-                if (!prevBooking && nextBooking) {
+            // 1. 剛剛上一節有人使用
+            if (prevBooking) {
+                // 如果下一節也是同一人 -> 連堂中
+                if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
                     card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    badge.textContent = "準備中"; 
+                    badge.textContent = "連堂中";
                     badge.style.backgroundColor = ""; 
-                    
-                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${nextBooking.borrower} (${nextP})</div>`;
+
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
                     if (upcomingList.length > 0) {
                         htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
                     }
                     info.innerHTML = htmlContent;
                     return;
                 }
-            }
 
-            card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
-            badge.textContent = "空堂";
-            badge.style.backgroundColor = ""; 
-            
-            if (upcomingList.length > 0) {
-                info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-            } else {
-                info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
+                // 上一節有人，下一節不同人或無人 -> 交接中
+                card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                badge.textContent = "交接中";
+                badge.style.backgroundColor = "#f97316"; 
+
+                if (!isVertical) {
+                    card.style.display = "flex";
+                    card.style.flexDirection = "column";
+                    card.style.justifyContent = "center";
+                    badge.style.marginTop = "4px"; 
+                }
+
+                badge.insertAdjacentHTML('beforebegin', `
+                    <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
+                        ⚠️ (${prevP}:${prevBooking.borrower}借)
+                    </div>
+                `);
+
+                let htmlContent = ``;
+                if (upcomingList.length > 0) {
+                    htmlContent += `<div style="margin-top: 2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
+                } else {
+                    htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
+                }
+                info.innerHTML = htmlContent;
+                return;
             }
-        });
-    }
+            
+            // 2. 剛剛上一節無人，但下一節有人 -> 準備中
+            if (!prevBooking && nextBooking) {
+                card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                badge.textContent = "準備中"; 
+                badge.style.backgroundColor = ""; 
+                
+                let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${nextBooking.borrower} (${nextP})</div>`;
+                if (upcomingList.length > 0) {
+                    htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                }
+                info.innerHTML = htmlContent;
+                return;
+            }
+        }
+
+        // ⚪ 情境 C：完全空堂
+        card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
+        badge.textContent = "空堂";
+        badge.style.backgroundColor = ""; 
+        
+        if (upcomingList.length > 0) {
+            info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+        } else {
+            info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
+        }
+    });
+}
 
     function renderTable() {
         const tbody = document.getElementById('recordTable');
@@ -1041,62 +1031,84 @@
         }
     }
 
-    document.getElementById('bookingForm').onsubmit = async function(e) {
-        e.preventDefault();
+document.getElementById('bookingForm').onsubmit = async function(e) {
+    e.preventDefault();
+    
+    const inputElem = document.getElementById('borrowerInput');
+    let borrower = selectedBorrowerValue;
+    
+    if (borrower === '__CUSTOM__') {
+        borrower = inputElem.value.trim();
+    }
+
+    // 💡 提示後自動跳轉並 focus 到該欄位
+    if (!borrower) { 
+        alert('請選擇或輸入借用人姓名！'); 
         
-        const inputElem = document.getElementById('borrowerInput');
-        let borrower = selectedBorrowerValue;
-        
-        if (borrower === '__CUSTOM__') {
-            borrower = inputElem.value.trim();
-        }
-
-        if (!borrower) { alert('請選擇或輸入借用人姓名！'); return; }
-
-        const classroom = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
-        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-
-        if(selectedPeriods.length === 0) { alert('請至少選擇一個借用時段節次！'); return; }
-
-        const hasConflict = bookings.some(b => 
-            b.classroom === classroom && b.date === date && 
-            b.periods.some(p => selectedPeriods.includes(p))
-        );
-
-        if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
-
-        const newBooking = {
-            action: 'create',
-            id: Date.now(),
-            borrower,
-            classroom,
-            date: date, 
-            periods: selectedPeriods
-        };
-
-        try {
-            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(newBooking) });
-            const resData = await response.json();
-            if(resData.status === 'success') {
-                document.getElementById('bookingForm').reset();
-                document.getElementById('borrowerInput').style.display = 'none';
-                
-                const textElem = document.getElementById('customDropdownText');
-                textElem.textContent = '請選擇借用人姓名';
-                textElem.style.color = '#94a3b8';
-                selectedBorrowerValue = "";
-
-                document.getElementById('date').value = document.getElementById('mapDate').value;
-                alert('🎉 恭喜您，教室登記成功！');
-                loadBookingsFromServer(); 
-            } else {
-                alert('登記失敗：' + resData.message);
+        // 判斷當前是電腦版還是手機版
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            const selectElem = document.getElementById('borrowerSelect');
+            selectElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            selectElem.focus();
+        } else {
+            const btnElem = document.getElementById('customDropdownBtn');
+            btnElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            btnElem.focus();
+            
+            // 電腦版自動模擬點擊打開選單，方便老師直接選
+            const menu = document.getElementById('customDropdownMenu');
+            if (menu && !menu.classList.contains('show')) {
+                btnElem.click();
             }
-        } catch(error) {
-            alert('網路連線異常，登記失敗！');
         }
+        return; 
+    }
+
+    const classroom = document.getElementById('classroom').value;
+    const date = document.getElementById('date').value;
+    const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+
+    if(selectedPeriods.length === 0) { alert('請至少選擇一個借用時段節次！'); return; }
+
+    const hasConflict = bookings.some(b => 
+        b.classroom === classroom && b.date === date && 
+        b.periods.some(p => selectedPeriods.includes(p))
+    );
+
+    if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+
+    const newBooking = {
+        action: 'create',
+        id: Date.now(),
+        borrower,
+        classroom,
+        date: date, 
+        periods: selectedPeriods
     };
+
+    try {
+        const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(newBooking) });
+        const resData = await response.json();
+        if(resData.status === 'success') {
+            document.getElementById('bookingForm').reset();
+            document.getElementById('borrowerInput').style.display = 'none';
+            
+            const textElem = document.getElementById('customDropdownText');
+            textElem.textContent = '請選擇借用人姓名';
+            textElem.style.color = '#94a3b8';
+            selectedBorrowerValue = "";
+
+            document.getElementById('date').value = document.getElementById('mapDate').value;
+            alert('🎉 恭喜您，教室登記成功！');
+            loadBookingsFromServer(); 
+        } else {
+            alert('登記失敗：' + resData.message);
+        }
+    } catch(error) {
+        alert('網路連線異常，登記失敗！');
+    }
+};
 
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
