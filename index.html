@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 電腦版快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v5">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v6">
 <!-- 💡 強制讓所有瀏覽器與 Chrome 下載最新版透明圓角 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -14,7 +14,6 @@
     
     <style>
         :root {
-             /* Warm Summer Palette 還原最初的經典配色 */
             --palette-yellow: #F3A953; 
             --palette-pink: #d65a6d;   
             --palette-teal: #0891b2;   
@@ -42,7 +41,6 @@
             line-height: 1.6;
         }
 
-        /* 🏆 頂部標題區 */
         header {
             background-color: var(--palette-blue-2);
             padding: 40px 20px;
@@ -85,7 +83,6 @@
             padding: 0 20px;
         }
 
-        /* 卡片設計 */
         .card {
             background: var(--white);
             border-radius: 20px;
@@ -113,7 +110,6 @@
             border-radius: 10px;
         }
 
-        /* 日期與時間控制列 */
         .map-controls {
             display: flex;
             gap: 20px;
@@ -127,7 +123,6 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
-        /* 🟢🔴⚡ 提示文字欄 */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -142,7 +137,6 @@
             flex-wrap: wrap;
         }
 
-        /* 🗺️ 平面圖外框 */
         .floor-grid-wrapper {
             background-color: #2c3e50; 
             padding: 5px;
@@ -207,7 +201,6 @@
 
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
-        /* 表單與欄位樣式 */
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 16px; color: var(--palette-blue-2); }
 
@@ -226,6 +219,92 @@
             outline: none;
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
+        }
+
+        /* 🎨 電腦版精緻選單樣式 (Custom Dropdown) */
+        .custom-dropdown-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-dropdown-btn {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: var(--white);
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .custom-dropdown-btn:hover { border-color: var(--palette-yellow); }
+
+        .custom-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            max-width: 320px; /* 💡 設定精緻適中的寬度，不再滿版！ */
+            width: 100%;
+            max-height: 280px;
+            overflow-y: auto;
+            background: var(--white);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            display: none;
+            padding: 6px 0;
+        }
+
+        .custom-dropdown-menu.show { display: block; }
+
+        .custom-dropdown-item {
+            padding: 10px 18px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-dark);
+        }
+
+        .custom-dropdown-item:hover {
+            background: #f1f5f9;
+            color: var(--palette-blue-2);
+            font-weight: 600;
+        }
+
+        .custom-dropdown-item.custom-option {
+            border-top: 1px solid #f1f5f9;
+            color: var(--palette-teal);
+            font-weight: bold;
+        }
+
+        /* 📱 手機版 RWD 自動切換：隱藏電腦選單，顯示原生 Select */
+        .mobile-native-select { display: none; }
+
+        @media (max-width: 768px) {
+            .custom-dropdown-container { display: none !important; }
+            .mobile-native-select { display: block !important; }
+
+            header h1 { font-size: 24px; }
+            header p { font-size: 14px; letter-spacing: 2px; }
+            .card { padding: 15px; border-radius: 14px; margin-bottom: 20px; }
+            .map-controls { flex-direction: column; gap: 12px; padding: 12px; }
+            .control-item { min-width: 100%; }
+            .floor-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-rows: auto !important;
+                gap: 8px;
+            }
+            .room-card.span-vertical { grid-row: span 1 !important; }
+            .room-card { min-height: 120px; border-radius: 8px; }
+            .room-name { font-size: 18px; }
+            .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
+            .checkbox-item { font-size: 13px; }
         }
 
         .checkbox-grid {
@@ -280,31 +359,11 @@
             box-shadow: 0 6px 20px rgba(15, 76, 92, 0.3);
         }
 
-        /* 紀錄表格 */
         .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; min-width: 750px; background-color: var(--white); }
         th { background: #f8fafc; padding: 15px; text-align: left; font-size: 15px; color: var(--palette-blue-2); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
-
-        @media (max-width: 768px) {
-            header h1 { font-size: 24px; }
-            header p { font-size: 14px; letter-spacing: 2px; }
-            .card { padding: 15px; border-radius: 14px; margin-bottom: 20px; }
-            .map-controls { flex-direction: column; gap: 12px; padding: 12px; }
-            .control-item { min-width: 100%; }
-            .floor-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                grid-template-rows: auto !important;
-                gap: 8px;
-            }
-            .room-card.span-vertical { grid-row: span 1 !important; }
-            .room-card { min-height: 120px; border-radius: 8px; }
-            .room-name { font-size: 18px; }
-            .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
-            .checkbox-item { font-size: 13px; }
-        }
-
     </style>
 </head>
 <body>
@@ -317,10 +376,8 @@
 </header>
 
 <div class="container">
-    
     <div class="card">
         <h2>教室借用即時動態</h2>
-        
         <div class="map-controls">
             <div class="control-item">
                 <label>選擇查看日期：</label>
@@ -408,13 +465,22 @@
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
                 <label for="borrowerSelect">借用人姓名</label>
-                <!-- 📱 改為原生下拉選單，手機點擊 100% 彈出選單 -->
-                <select id="borrowerSelect" required onchange="handleTeacherSelectChange(this)">
+                
+                <!-- 🖥️ 電腦版顯示：精緻自訂選單（固定寬度，美觀高級） -->
+                <div class="custom-dropdown-container">
+                    <button type="button" class="custom-dropdown-btn" id="customDropdownBtn" onclick="toggleCustomDropdown(event)">
+                        <span id="customDropdownText" style="color: #94a3b8;">請選擇借用人姓名</span>
+                        <span style="font-size: 12px; color: #64748b;">▼</span>
+                    </button>
+                    <div class="custom-dropdown-menu" id="customDropdownMenu"></div>
+                </div>
+
+                <!-- 📱 手機版顯示：原生 Select（點擊 100% 敏捷跳出滾輪選單） -->
+                <select id="borrowerSelect" class="mobile-native-select" onchange="handleTeacherSelectChange(this)">
                     <option value="" disabled selected>請選擇借用人姓名</option>
-                    <!-- 由 JavaScript 動態動態載入老師清單 -->
                 </select>
                 
-                <!-- 手動輸入框（預設隱藏，選擇「手動輸入」時顯示） -->
+                <!-- 手動輸入框 -->
                 <input type="text" id="borrowerInput" placeholder="請輸入借用人姓名..." style="display: none; margin-top: 10px;">
             </div>
 
@@ -510,6 +576,7 @@
     document.getElementById('mapTime').value = timeStr;
 
     let bookings = [];
+    let selectedBorrowerValue = ""; // 紀錄目前選擇的值
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
@@ -528,10 +595,33 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // 選擇「手動輸入」時切換輸入框
-    function handleTeacherSelectChange(selectElem) {
+    // 切換電腦版選單顯示
+    function toggleCustomDropdown(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('customDropdownMenu');
+        menu.classList.toggle('show');
+    }
+
+    // 點擊外部自動關閉電腦版選單
+    document.addEventListener('click', () => {
+        const menu = document.getElementById('customDropdownMenu');
+        if (menu) menu.classList.remove('show');
+    });
+
+    // 選擇姓名後的統一處理邏輯
+    function selectTeacherName(value, label) {
+        selectedBorrowerValue = value;
+        
+        // 更新電腦版按鈕文字
+        const textElem = document.getElementById('customDropdownText');
+        textElem.textContent = label;
+        textElem.style.color = '#1e293b';
+
+        // 同步更新手機版原生 Select 的值
+        document.getElementById('borrowerSelect').value = value;
+
         const inputElem = document.getElementById('borrowerInput');
-        if (selectElem.value === '__CUSTOM__') {
+        if (value === '__CUSTOM__') {
             inputElem.style.display = 'block';
             inputElem.required = true;
             inputElem.focus();
@@ -540,6 +630,11 @@
             inputElem.required = false;
             inputElem.value = '';
         }
+    }
+
+    function handleTeacherSelectChange(selectElem) {
+        const selectedOpt = selectElem.options[selectElem.selectedIndex];
+        selectTeacherName(selectElem.value, selectedOpt.textContent);
     }
 
     async function loadBookingsFromServer() {
@@ -558,29 +653,40 @@
             updateDashboard();
             handleClassroomOrDateChange();
 
-            // 載入與渲染 select 名單
             if (rawData.teachers && rawData.teachers.length > 0) {
                 const selectElem = document.getElementById('borrowerSelect');
-                if (selectElem) {
-                    const currentVal = selectElem.value;
+                const customMenu = document.getElementById('customDropdownMenu');
+                
+                if (selectElem && customMenu) {
                     selectElem.innerHTML = '<option value="" disabled selected>請選擇借用人姓名</option>';
-                    
+                    customMenu.innerHTML = '';
+
                     rawData.teachers.forEach(teacherName => {
+                        // 1. 填入手機原生 Select
                         const option = document.createElement('option');
                         option.value = teacherName;
                         option.textContent = teacherName;
                         selectElem.appendChild(option);
+
+                        // 2. 填入電腦版精緻選單
+                        const item = document.createElement('div');
+                        item.className = 'custom-dropdown-item';
+                        item.textContent = teacherName;
+                        item.onclick = () => selectTeacherName(teacherName, teacherName);
+                        customMenu.appendChild(item);
                     });
 
-                    // 補上自訂手動輸入選項
+                    // 補上手動輸入選項
                     const customOpt = document.createElement('option');
                     customOpt.value = '__CUSTOM__';
                     customOpt.textContent = '✏️ 手動輸入其他姓名...';
                     selectElem.appendChild(customOpt);
 
-                    if (currentVal && currentVal !== '__CUSTOM__') {
-                        selectElem.value = currentVal;
-                    }
+                    const customItem = document.createElement('div');
+                    customItem.className = 'custom-dropdown-item custom-option';
+                    customItem.textContent = '✏️ 手動輸入其他姓名...';
+                    customItem.onclick = () => selectTeacherName('__CUSTOM__', '✏️ 手動輸入其他姓名...');
+                    customMenu.appendChild(customItem);
                 }
             }
         } catch (error) {
@@ -829,11 +935,9 @@
 
         const nowTs = new Date();
         const todayStr = `${nowTs.getFullYear()}-${String(nowTs.getMonth() + 1).padStart(2, '0')}-${String(nowTs.getDate()).padStart(2, '0')}`;
-
         const filterDateStr = document.getElementById('tableFilterDate').value; 
 
         let displayBookings = [];
-
         if (filterDateStr) {
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
@@ -848,7 +952,6 @@
         const mergedMap = {};
         displayBookings.forEach(b => {
             const key = `${b.date}_${b.classroom}_${b.borrower}`;
-            
             if (!mergedMap[key]) {
                 mergedMap[key] = {
                     date: b.date,
@@ -868,11 +971,8 @@
         });
 
         let mergedList = Object.values(mergedMap);
-
         mergedList.sort((a, b) => {
-            if (a.date !== b.date) {
-                return new Date(a.date) - new Date(b.date);
-            }
+            if (a.date !== b.date) return new Date(a.date) - new Date(b.date);
             
             const getMinPeriodIdx = (periods) => {
                 if (!periods || periods.length === 0) return 999;
@@ -883,18 +983,13 @@
             
             const aMinIdx = getMinPeriodIdx(a.periods);
             const bMinIdx = getMinPeriodIdx(b.periods);
-            
-            if (aMinIdx !== bMinIdx) {
-                return aMinIdx - bMinIdx;
-            }
+            if (aMinIdx !== bMinIdx) return aMinIdx - bMinIdx;
             
             return a.classroom.localeCompare(b.classroom);
         });
 
         mergedList.forEach(b => {
-            b.periods.sort((x, y) => {
-                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
-            });
+            b.periods.sort((x, y) => periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y));
 
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
@@ -912,7 +1007,6 @@
 
     async function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
-        
         if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
             try {
                 for (const id of idsArray) {
@@ -930,7 +1024,6 @@
                 alert('🗑️ 資料已成功從雲端刪除！');
                 loadBookingsFromServer();
             } catch (error) {
-                console.error(error);
                 alert('網路連線異常，無法完整刪除合併的資料！');
             }
         }
@@ -939,10 +1032,9 @@
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         
-        const selectElem = document.getElementById('borrowerSelect');
         const inputElem = document.getElementById('borrowerInput');
+        let borrower = selectedBorrowerValue;
         
-        let borrower = selectElem.value;
         if (borrower === '__CUSTOM__') {
             borrower = inputElem.value.trim();
         }
@@ -977,6 +1069,13 @@
             if(resData.status === 'success') {
                 document.getElementById('bookingForm').reset();
                 document.getElementById('borrowerInput').style.display = 'none';
+                
+                // 重置自訂選單按鈕顯示
+                const textElem = document.getElementById('customDropdownText');
+                textElem.textContent = '請選擇借用人姓名';
+                textElem.style.color = '#94a3b8';
+                selectedBorrowerValue = "";
+
                 document.getElementById('date').value = document.getElementById('mapDate').value;
                 alert('🎉 恭喜您，教室登記成功！');
                 loadBookingsFromServer(); 
@@ -988,32 +1087,9 @@
         }
     };
 
-    window.deleteBooking = async function(id) {
-        if(confirm('確認要移除這筆教室借用紀錄嗎？')) {
-            try {
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
-                const resData = await response.json();
-                if(resData.status === 'success') {
-                    loadBookingsFromServer();
-                } else {
-                    alert('刪除失敗：' + resData.message);
-                }
-            } catch (error) {
-                alert('網路連線異常，無法刪除資料！');
-            }
-        }
-    }
-
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
 
-    const originalFormReset = document.getElementById('bookingForm').reset;
-    document.getElementById('bookingForm').reset = function() {
-        if (originalFormReset) originalFormReset.call(this);
-        const filterInput = document.getElementById('tableFilterDate');
-        if (filterInput) filterInput.value = '';
-    };
-    
     setInterval(() => {
         const t = new Date().toTimeString().substring(0, 5);
         document.getElementById('mapTime').value = t;
