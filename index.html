@@ -221,24 +221,19 @@
             transition: all 0.3s;
         }
 
-        /* 🔽 輸入框的大箭頭背景樣式 */
+        /* ⌨️ 右側加上鍵盤 SVG 圖示提示（點右側打字） */
         #borrower {
-            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 7h-2v-2h2v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2z'/></svg>");
             background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 28px;
-            padding-right: 45px;
+            background-position: right 12px center;
+            background-size: 24px;
+            padding-right: 48px;
+            cursor: pointer;
         }
 
-        /* 📱 讓原生觸發區域精確覆蓋右側箭頭，實現點箭頭開選單、點左側直升鍵盤輸入 */
+        /* 隱藏原生 picker indicator 避免干擾自訂邏輯 */
         #borrower::-webkit-calendar-picker-indicator {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 45px;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
+            display: none !important;
         }
 
         input:focus, select:focus {
@@ -426,8 +421,8 @@
         <h2>新増借用登記</h2>
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
-                <label for="borrower">借用人姓名</label>
-                <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或直接打字搜尋" required>
+                <label for="borrower">借用人姓名 <span style="font-size: 13px; font-weight: normal; color: var(--palette-teal);">(點欄位跳選單，點右側⌨️打字)</span></label>
+                <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或按右側⌨️打字" required>
                 <datalist id="teacherList">
                     <!-- 由 JavaScript 自動動態載入老師清單 -->
                 </datalist>
@@ -625,10 +620,10 @@
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
         
-        // 點擊地圖時智慧聚焦輸入框
+        // 點擊地圖時智慧喚起選單
         const borrowerIn = document.getElementById('borrower');
-        if (borrowerIn) {
-            borrowerIn.focus();
+        if (borrowerIn && typeof borrowerIn.showPicker === 'function') {
+            try { borrowerIn.showPicker(); } catch (e) {}
         }
     }
 
@@ -1005,13 +1000,16 @@
 
     setInterval(loadBookingsFromServer, 20000);
 
-    // 📱 精準分區觸發：點右側大箭頭立刻彈出選單，點文字區域喚醒鍵盤打字
+    // 📱 點擊欄位主要區域預設彈出下拉選單，只有點擊最右側 45px (⌨️圖示) 才切換為打字鍵盤
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
         borrowerInput.addEventListener('click', (e) => {
             const rect = borrowerInput.getBoundingClientRect();
-            // 判斷是否點擊在右側 45px 區域內（即箭頭位置）
+            // 如果點擊的是最右側 45px 區域（鍵盤圖示）
             if (e.clientX >= rect.right - 45) {
+                borrowerInput.focus();
+            } else {
+                // 點擊其他大面積區域，極速呼叫原生的選單彈窗
                 if (typeof borrowerInput.showPicker === 'function') {
                     try {
                         borrowerInput.showPicker();
