@@ -14,6 +14,7 @@
     
     <style>
         :root {
+            /* Warm Summer Palette 經典配色 */
             --palette-yellow: #F3A953; 
             --palette-pink: #d65a6d;   
             --palette-teal: #0891b2;   
@@ -41,6 +42,7 @@
             line-height: 1.6;
         }
 
+        /* 🏆 頂部標題區 */
         header {
             background-color: var(--palette-blue-2);
             padding: 40px 20px;
@@ -83,6 +85,7 @@
             padding: 0 20px;
         }
 
+        /* 卡片設計 */
         .card {
             background: var(--white);
             border-radius: 20px;
@@ -110,6 +113,7 @@
             border-radius: 10px;
         }
 
+        /* 日期與時間控制列 */
         .map-controls {
             display: flex;
             gap: 20px;
@@ -123,6 +127,7 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
+        /* 圖示說明欄 */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -137,6 +142,7 @@
             flex-wrap: wrap;
         }
 
+        /* 🗺️ 平面圖外框 */
         .floor-grid-wrapper {
             background-color: #2c3e50; 
             padding: 5px;
@@ -161,7 +167,7 @@
             justify-content: center;
             padding: 15px;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.25s, box-shadow 0.25s;
             position: relative;
         }
 
@@ -174,7 +180,18 @@
         .room-card.span-vertical { grid-row: span 2; }
 
         .room-card.available { background-color: #f2fdf7; border: 1px solid #d1fae5; }
-        .room-card.occupied { background-color: #fff5f5; border: 1px solid #ffe3e3; }
+        
+        /* 🔴 紅燈放慢呼吸燈 (1.8s)，僅背景與邊框閃爍，文字保持恆亮 */
+        .room-card.occupied { 
+            animation: slowPulseBackground 1.8s infinite ease-in-out;
+        }
+
+        @keyframes slowPulseBackground {
+            0% { background-color: #fff5f5; border-color: #ffe3e3; }
+            50% { background-color: #ffe0e0; border-color: #fca5a5; }
+            100% { background-color: #fff5f5; border-color: #ffe3e3; }
+        }
+
         .room-card.clearing { background-color: #fffbfa; border: 1px solid #ffedd5; }
         .clearing .room-name { color: var(--palette-blue-2); }
         .clearing .status-badge { background-color: var(--warning); }
@@ -184,6 +201,7 @@
             font-size: 20px;
             margin-bottom: 6px;
             letter-spacing: 1px;
+            color: var(--text-dark);
         }
         .available .room-name { color: var(--palette-blue-2); }
         .occupied .room-name { color: var(--palette-pink); }
@@ -199,33 +217,9 @@
         .available .status-badge { background-color: var(--success); }
         .occupied .status-badge { background-color: var(--danger); }
 
-        /* 💡 紅燈閃爍（呼吸燈）動畫效果 */
-        @keyframes badgePulse {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            50% {
-                opacity: 0.5;
-                transform: scale(1.05);
-                box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0.4);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-        }
-
-        .status-badge.badge-flashing {
-            animation: badgePulse 1.2s infinite ease-in-out !important;
-            background-color: #ef4444 !important;
-            color: white !important;
-        }
-
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
+        /* 表單與欄位樣式 */
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 16px; color: var(--palette-blue-2); }
 
@@ -237,97 +231,33 @@
             font-size: 15px;
             font-family: inherit;
             transition: all 0.3s;
-            background-color: var(--white);
+        }
+
+        /* 下拉箭頭背景樣式 */
+        #borrower {
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 28px;
+            padding-right: 42px;
+            cursor: pointer;
+        }
+
+        /* 手機大面積極速點擊熱區 */
+        #borrower::-webkit-calendar-picker-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
-        }
-
-        /* 🎨 電腦版動態定位自訂選單 */
-        .custom-dropdown-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .custom-dropdown-btn {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            background: var(--white);
-            font-size: 15px;
-            text-align: left;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .custom-dropdown-btn:hover, .custom-dropdown-btn:focus { border-color: var(--palette-yellow); outline: none; }
-
-        .custom-dropdown-menu {
-            position: fixed;
-            width: 280px;
-            max-height: 300px;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            background: var(--white);
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            z-index: 9999;
-            display: none;
-            padding: 6px 0;
-        }
-
-        .custom-dropdown-menu.show { display: block; }
-
-        .custom-dropdown-item {
-            padding: 10px 18px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: var(--text-dark);
-        }
-
-        .custom-dropdown-item:hover {
-            background: #f1f5f9;
-            color: var(--palette-blue-2);
-            font-weight: 600;
-        }
-
-        .custom-dropdown-item.custom-option {
-            border-top: 1px solid #f1f5f9;
-            color: var(--palette-teal);
-            font-weight: bold;
-        }
-
-        /* 📱 手機版 RWD 自動切換 */
-        .mobile-native-select { display: none; }
-
-        @media (max-width: 768px) {
-            .custom-dropdown-container { display: none !important; }
-            .mobile-native-select { display: block !important; }
-
-            header h1 { font-size: 24px; }
-            header p { font-size: 14px; letter-spacing: 2px; }
-            .card { padding: 15px; border-radius: 14px; margin-bottom: 20px; }
-            .map-controls { flex-direction: column; gap: 12px; padding: 12px; }
-            .control-item { min-width: 100%; }
-            .floor-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                grid-template-rows: auto !important;
-                gap: 8px;
-            }
-            .room-card.span-vertical { grid-row: span 1 !important; }
-            .room-card { min-height: 120px; border-radius: 8px; }
-            .room-name { font-size: 18px; }
-            .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
-            .checkbox-item { font-size: 13px; }
         }
 
         .checkbox-grid {
@@ -382,11 +312,31 @@
             box-shadow: 0 6px 20px rgba(15, 76, 92, 0.3);
         }
 
+        /* 紀錄表格 */
         .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; min-width: 750px; background-color: var(--white); }
         th { background: #f8fafc; padding: 15px; text-align: left; font-size: 15px; color: var(--palette-blue-2); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 24px; }
+            header p { font-size: 14px; letter-spacing: 2px; }
+            .card { padding: 15px; border-radius: 14px; margin-bottom: 20px; }
+            .map-controls { flex-direction: column; gap: 12px; padding: 12px; }
+            .control-item { min-width: 100%; }
+            .floor-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-rows: auto !important;
+                gap: 8px;
+            }
+            .room-card.span-vertical { grid-row: span 1 !important; }
+            .room-card { min-height: 120px; border-radius: 8px; }
+            .room-name { font-size: 18px; }
+            .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
+            .checkbox-item { font-size: 13px; }
+        }
+
     </style>
 </head>
 <body>
@@ -399,23 +349,25 @@
 </header>
 
 <div class="container">
+    
     <div class="card">
         <h2>教室借用即時動態</h2>
+        
         <div class="map-controls">
             <div class="control-item">
                 <label>選擇查看日期：</label>
                 <input type="date" id="mapDate">
             </div>
             <div class="control-item">
-                <label>目前系統時間：</label>
-                <input type="time" id="mapTime">
+                <label>目前系統時間 (24小時制)：</label>
+                <input type="time" id="mapTime" step="60">
             </div>
         </div>
         
        <div class="legend-bar">
-            <span>🟢 當節空堂</span>
-            <span>🟠 下課交接中</span>
-            <span>🔴 當節有預約 (使用中)</span>
+            <span>🟢 空堂</span>
+            <span>🟠 下節課有人 / 交接中</span>
+            <span>🔴 當節使用中 / 準備中</span>
             <span>⚡ 點擊教室一秒極速借用</span>
         </div>
 
@@ -487,24 +439,11 @@
         <h2>新増借用登記</h2>
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
-                <label for="borrowerSelect">借用人姓名</label>
-                
-                <!-- 🖥️ 電腦版顯示：精緻動態定位選單 -->
-                <div class="custom-dropdown-container">
-                    <button type="button" class="custom-dropdown-btn" id="customDropdownBtn" onclick="toggleCustomDropdown(event)">
-                        <span id="customDropdownText" style="color: #94a3b8;">請選擇借用人姓名</span>
-                        <span style="font-size: 12px; color: #64748b;">▼</span>
-                    </button>
-                    <div class="custom-dropdown-menu" id="customDropdownMenu"></div>
-                </div>
-
-                <!-- 📱 手機版顯示：原生 Select -->
-                <select id="borrowerSelect" class="mobile-native-select" onchange="handleTeacherSelectChange(this)">
-                    <option value="" disabled selected>請選擇借用人姓名</option>
-                </select>
-                
-                <!-- 手動輸入框 -->
-                <input type="text" id="borrowerInput" placeholder="請輸入借用人姓名..." style="display: none; margin-top: 10px;">
+                <label for="borrower">借用人姓名</label>
+                <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或直接打字搜尋" required>
+                <datalist id="teacherList">
+                    <!-- 由 JavaScript 自動動態載入老師清單 -->
+                </datalist>
             </div>
 
             <div class="form-group">
@@ -528,6 +467,7 @@
                 <input type="date" id="date" required onchange="handleClassroomOrDateChange()">
             </div>
 
+            <!-- 💡 2. 節次時段標示均為標準 24 小時制 -->
             <div class="form-group">
                 <label>借用節次</label>
                 <div class="checkbox-grid">
@@ -577,6 +517,7 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
+    /* 💡 2. 24 小時制時間設定 (00:00~23:59) */
     const periodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
         { name: "第二節", start: "09:10", end: "10:00" },
@@ -590,16 +531,22 @@
         { name: "第八節", start: "16:25", end: "17:15" }
     ];
 
+    // 取得 24 小時制的 HH:mm 字串
+    function get24HourTimeString(d = new Date()) {
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const timeStr = now.toTimeString().substring(0, 5);
+    const timeStr = get24HourTimeString(now);
     
     document.getElementById('date').value = todayStr;
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
 
     let bookings = [];
-    let selectedBorrowerValue = "";
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
@@ -616,60 +563,6 @@
             return `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
         }
         return dateStr.replace(/\//g, '-').trim();
-    }
-
-    function toggleCustomDropdown(e) {
-        e.stopPropagation();
-        const menu = document.getElementById('customDropdownMenu');
-        const isShowing = menu.classList.contains('show');
-
-        if (isShowing) {
-            menu.classList.remove('show');
-        } else {
-            menu.classList.add('show');
-            
-            const btnRect = e.currentTarget.getBoundingClientRect();
-            let clickX = e.clientX;
-            let menuWidth = 280;
-
-            if (clickX + menuWidth > window.innerWidth) {
-                clickX = window.innerWidth - menuWidth - 20;
-            }
-
-            menu.style.left = `${clickX}px`;
-            menu.style.top = `${btnRect.bottom + 6}px`;
-        }
-    }
-
-    document.addEventListener('click', () => {
-        const menu = document.getElementById('customDropdownMenu');
-        if (menu) menu.classList.remove('show');
-    });
-
-    function selectTeacherName(value, label) {
-        selectedBorrowerValue = value;
-        
-        const textElem = document.getElementById('customDropdownText');
-        textElem.textContent = label;
-        textElem.style.color = '#1e293b';
-
-        document.getElementById('borrowerSelect').value = value;
-
-        const inputElem = document.getElementById('borrowerInput');
-        if (value === '__CUSTOM__') {
-            inputElem.style.display = 'block';
-            inputElem.required = true;
-            inputElem.focus();
-        } else {
-            inputElem.style.display = 'none';
-            inputElem.required = false;
-            inputElem.value = '';
-        }
-    }
-
-    function handleTeacherSelectChange(selectElem) {
-        const selectedOpt = selectElem.options[selectElem.selectedIndex];
-        selectTeacherName(selectElem.value, selectedOpt.textContent);
     }
 
     async function loadBookingsFromServer() {
@@ -689,36 +582,14 @@
             handleClassroomOrDateChange();
 
             if (rawData.teachers && rawData.teachers.length > 0) {
-                const selectElem = document.getElementById('borrowerSelect');
-                const customMenu = document.getElementById('customDropdownMenu');
-                
-                if (selectElem && customMenu) {
-                    selectElem.innerHTML = '<option value="" disabled selected>請選擇借用人姓名</option>';
-                    customMenu.innerHTML = '';
-
+                const teacherList = document.getElementById('teacherList');
+                if (teacherList) {
+                    teacherList.innerHTML = '';
                     rawData.teachers.forEach(teacherName => {
                         const option = document.createElement('option');
                         option.value = teacherName;
-                        option.textContent = teacherName;
-                        selectElem.appendChild(option);
-
-                        const item = document.createElement('div');
-                        item.className = 'custom-dropdown-item';
-                        item.textContent = teacherName;
-                        item.onclick = () => selectTeacherName(teacherName, teacherName);
-                        customMenu.appendChild(item);
+                        teacherList.appendChild(option);
                     });
-
-                    const customOpt = document.createElement('option');
-                    customOpt.value = '__CUSTOM__';
-                    customOpt.textContent = '✏️ 手動輸入其他姓名...';
-                    selectElem.appendChild(customOpt);
-
-                    const customItem = document.createElement('div');
-                    customItem.className = 'custom-dropdown-item custom-option';
-                    customItem.textContent = '✏️ 手動輸入其他姓名...';
-                    customItem.onclick = () => selectTeacherName('__CUSTOM__', '✏️ 手動輸入其他姓名...');
-                    customMenu.appendChild(customItem);
                 }
             }
         } catch (error) {
@@ -774,140 +645,232 @@
         }
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
-    }
-
-function getCurrentPeriod(time) {
-    const found = periodsConfig.find(p => time >= p.start && time <= p.end);
-    if (found) return found.name;
-    return "";
-}
-
-function updateDashboard() {
-    const date = document.getElementById('mapDate').value;
-    const time = document.getElementById('mapTime').value;
-    
-    let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
-    let isBreakTime = false;
-
-    if (currentPeriodIdx === -1) {
-        isBreakTime = true;
-        currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
-        if (currentPeriodIdx === -1) currentPeriodIdx = periodsConfig.length;
-    }
-
-    const currentP = getCurrentPeriod(time);
-    const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
-
-    rooms.forEach(room => {
-        const elementId = room === '6F Z空間' ? '6F_Z空間' : room;
-        const card = document.getElementById(`map-${elementId}`);
-        if (!card) return;
-        const info = document.getElementById(`info-${elementId}`);
-        const badge = card.querySelector('.status-badge');
         
-        const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
-        const isVertical = (room === '向圓' || room === '團輔室');
+        const borrowerIn = document.getElementById('borrower');
+        if (borrowerIn) {
+            borrowerIn.focus();
+            if (typeof borrowerIn.showPicker === 'function') {
+                try { borrowerIn.showPicker(); } catch (e) {}
+            }
+        }
+    }
 
-        if (badge) {
-            badge.className = "status-badge";
-            badge.style.backgroundColor = "";
-            badge.style.marginTop = "";
+    function getCurrentPeriod(time) {
+        const found = periodsConfig.find(p => time >= p.start && time <= p.end);
+        if (found) return found.name;
+
+        const nextPeriod = periodsConfig.find(p => time < p.start);
+        if (nextPeriod) {
+            return nextPeriod.name; 
+        }
+        return "";
+    }
+
+    function updateDashboard() {
+        const date = document.getElementById('mapDate').value;
+        const time = document.getElementById('mapTime').value; // 24小時制 "HH:mm"
+        
+        let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
+        let isBreakTime = false;
+
+        if (currentPeriodIdx === -1) {
+            isBreakTime = true;
+            currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
+            if (currentPeriodIdx === -1) currentPeriodIdx = 10;
         }
 
-        card.style.position = "";
-        card.style.paddingTop = "";
-        card.style.display = "";
-        card.style.flexDirection = "";
-        card.style.justifyContent = "";
+        const currentP = getCurrentPeriod(time);
+        const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
 
-        const oldAlert = card.querySelector('.dynamic-alert');
-        if (oldAlert) oldAlert.remove();
+        rooms.forEach(room => {
+            const elementId = room === '6F Z空間' ? '6F_Z空間' : room;
+            const card = document.getElementById(`map-${elementId}`);
+            if (!card) return;
+            const info = document.getElementById(`info-${elementId}`);
+            const badge = card.querySelector('.status-badge');
+            
+            const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
+            const isVertical = (room === '向圓' || room === '團輔室');
 
-        // 💡 關鍵 1：時間到達 17:25 之後正式放學，恢復為綠色空堂
-        if (time >= "17:25") {
-            card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
-            if (badge) badge.textContent = "空堂";
-            info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日課程已結束 🟢</div>`;
-            return;
-        }
+            const allReservedPeriods = [];
+            roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
 
-        // 🟢 情境 A：正在上課時間內
-        if (!isBreakTime && currentP) {
+            const upcomingList = periodsConfig.filter((p, idx) => {
+                const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
+                return isAfterCurrent && allReservedPeriods.includes(p.name);
+            }).map(p => p.name);
+
+            function generateUpcomingGridHtml(prefixText) {
+                if (upcomingList.length === 0) return '';
+                
+                const periodSpans = upcomingList.map((p, idx) => {
+                    const separator = (idx === upcomingList.length - 1) ? '' : '、';
+                    return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                }).join('');
+                
+                return `
+                    <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
+                        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
+                            <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
+                            <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
+                                ${periodSpans}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            card.style.position = "";
+            card.style.paddingTop = "";
+            card.style.display = "";
+            card.style.flexDirection = "";
+            card.style.justifyContent = "";
+            if (badge) badge.style.marginTop = "";
+
+            const oldAlert = card.querySelector('.dynamic-alert');
+            if (oldAlert) oldAlert.remove();
+
+            // 💡 1. 第一節若有人借，08:00-08:10 顯示紅燈「準備中」
+            if (time >= "08:00" && time < "08:10") {
+                const firstBooking = roomBookings.find(b => b.periods.includes("第一節"));
+                if (firstBooking) {
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    badge.textContent = "準備中";
+                    badge.style.backgroundColor = ""; 
+
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${firstBooking.borrower}</div>`;
+                    
+                    // 排除第一節後的後續時段
+                    const remainingUpcoming = upcomingList.filter(p => p !== "第一節");
+                    if (remainingUpcoming.length > 0) {
+                        const remainingSpans = remainingUpcoming.map((p, idx) => {
+                            const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
+                            return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                        }).join('');
+                        htmlContent += `
+                            <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
+                                <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
+                                    <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
+                                        <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
+                                        ${remainingSpans}
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                    info.innerHTML = htmlContent;
+                    return;
+                }
+            }
+
+            // 第八節結束後的清理緩衝時間 17:15 - 17:25 (24小時制)
+            if (time >= "17:15" && time < "17:25") {
+                const isEighthPeriodOccupied = roomBookings.some(b => b.periods.includes("第八節"));
+                if (isEighthPeriodOccupied) {
+                    const b = roomBookings.find(b => b.periods.includes("第八節"));
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    badge.textContent = "使用中";
+                    badge.style.backgroundColor = ""; 
+                    
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
+                    if (upcomingList.length > 0) {
+                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                    }
+                    info.innerHTML = htmlContent;
+                    return; 
+                }
+            }
+
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
-            if (isOccupiedNow) {
+            if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
                 card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                if (badge) badge.textContent = "使用中";
-                info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
+                badge.textContent = "使用中";
+                badge.style.backgroundColor = ""; 
+
+                let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
+                if (upcomingList.length > 0) {
+                    htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                }
+                info.innerHTML = htmlContent;
                 return;
             }
-        }
 
-        // 🟠 情境 B：在下課時間內 (包含 15:05-15:25, 16:15-16:25 及 17:15-17:25)
-        if (isBreakTime && currentPeriodIdx > 0 && currentPeriodIdx <= periodsConfig.length) {
-            const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
-            const nextPeriodObj = periodsConfig[currentPeriodIdx];     
-            
-            const prevP = prevPeriodObj ? prevPeriodObj.name : null;
-            const nextP = nextPeriodObj ? nextPeriodObj.name : null;
+            if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
+                const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
+                const nextPeriodObj = periodsConfig[currentPeriodIdx];     
+                
+                const prevP = prevPeriodObj ? prevPeriodObj.name : null;
+                const nextP = nextPeriodObj ? nextPeriodObj.name : null;
 
-            const prevBooking = prevP ? roomBookings.find(b => b.periods.includes(prevP)) : null;
-            const nextBooking = nextP ? roomBookings.find(b => b.periods.includes(nextP)) : null;
+                const prevBooking = roomBookings.find(b => b.periods.includes(prevP));
+                const nextBooking = roomBookings.find(b => b.periods.includes(nextP));
 
-            // 1. 上一節有人使用
-            if (prevBooking) {
-                // (a) 上下一節【同一位老師】 -> 🔴 紅燈：連堂中 (靜態紅)
-                if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    if (badge) badge.textContent = "連堂中";
-                    info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
-                    return;
-                }
+                if (prevBooking) {
+                    if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
+                        card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                        badge.textContent = "連堂中";
+                        badge.style.backgroundColor = ""; 
 
-                // (b) 上下一節【不同老師】 -> 🔴 紅燈閃爍：交接中 (下節有人)
-                if (nextBooking && prevBooking.borrower !== nextBooking.borrower) {
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    if (badge) {
-                        badge.textContent = "交接中 (下節有人)";
-                        badge.classList.add('badge-flashing'); // 💡 加入動態閃爍
+                        let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
+                        if (upcomingList.length > 0) {
+                            htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                        }
+                        info.innerHTML = htmlContent;
+                        return;
                     }
 
-                    info.innerHTML = `
-                        <div style="font-size:11px;color:#e06666;font-weight:700;margin-top:2px;">⚠️ 前課：${prevBooking.borrower}</div>
-                        <div style="font-size:11px;color:var(--palette-teal);font-weight:700;margin-top:1px;">➡️ 下課：${nextBooking.borrower}</div>
-                    `;
+                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                    badge.textContent = "交接中";
+                    badge.style.backgroundColor = "#f97316"; 
+
+                    if (!isVertical) {
+                        card.style.display = "flex";
+                        card.style.flexDirection = "column";
+                        card.style.justifyContent = "center";
+                        badge.style.marginTop = "4px"; 
+                    }
+
+                    badge.insertAdjacentHTML('beforebegin', `
+                        <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
+                            ⚠️ 前節課：${prevBooking.borrower}
+                        </div>
+                    `);
+
+                    let htmlContent = ``;
+                    if (upcomingList.length > 0) {
+                        htmlContent += `<div style="margin-top: 2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
+                    } else {
+                        htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
+                    }
+                    info.innerHTML = htmlContent;
                     return;
                 }
-
-                // (c) 上一節有人，下一節【完全無人】 -> 🟠 橘燈：收拾中 (下節空)
-                card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
-                if (badge) {
-                    badge.textContent = "收拾中 (下節空)";
-                    badge.style.backgroundColor = "#f97316";
+                
+                if (!prevBooking && nextBooking) {
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    badge.textContent = "準備中"; 
+                    badge.style.backgroundColor = ""; 
+                    
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${nextBooking.borrower}</div>`;
+                    if (upcomingList.length > 0) {
+                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                    }
+                    info.innerHTML = htmlContent;
+                    return;
                 }
-
-                info.innerHTML = `
-                    <div style="font-size:11px;color:#e06666;font-weight:700;margin-top:2px;">⚠️ 前課：${prevBooking.borrower} 收拾中</div>
-                    <div style="font-size:11px;color:#166534;font-weight:700;margin-top:1px;">✨ 下一節：🟢 空堂可借</div>
-                `;
-                return;
             }
+
+            card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
+            badge.textContent = "空堂";
+            badge.style.backgroundColor = ""; 
             
-            // 2. 上一節無人，下一節【有人】 -> 🔴 紅燈：準備中 (下節有人)
-            if (!prevBooking && nextBooking) {
-                card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                if (badge) badge.textContent = "準備中 (下節有人)";
-                info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 下節借用：${nextBooking.borrower} (${nextP})</div>`;
-                return;
+            if (upcomingList.length > 0) {
+                info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+            } else {
+                info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
             }
-        }
-
-        // ⚪ 情境 C：完全空堂 -> 🟢 綠燈
-        card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
-        if (badge) badge.textContent = "空堂";
-        info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
-    });
-}
+        });
+    }
 
     function renderTable() {
         const tbody = document.getElementById('recordTable');
@@ -916,9 +879,11 @@ function updateDashboard() {
 
         const nowTs = new Date();
         const todayStr = `${nowTs.getFullYear()}-${String(nowTs.getMonth() + 1).padStart(2, '0')}-${String(nowTs.getDate()).padStart(2, '0')}`;
+
         const filterDateStr = document.getElementById('tableFilterDate').value; 
 
         let displayBookings = [];
+
         if (filterDateStr) {
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
@@ -933,6 +898,7 @@ function updateDashboard() {
         const mergedMap = {};
         displayBookings.forEach(b => {
             const key = `${b.date}_${b.classroom}_${b.borrower}`;
+            
             if (!mergedMap[key]) {
                 mergedMap[key] = {
                     date: b.date,
@@ -952,8 +918,11 @@ function updateDashboard() {
         });
 
         let mergedList = Object.values(mergedMap);
+
         mergedList.sort((a, b) => {
-            if (a.date !== b.date) return new Date(a.date) - new Date(b.date);
+            if (a.date !== b.date) {
+                return new Date(a.date) - new Date(b.date);
+            }
             
             const getMinPeriodIdx = (periods) => {
                 if (!periods || periods.length === 0) return 999;
@@ -964,13 +933,18 @@ function updateDashboard() {
             
             const aMinIdx = getMinPeriodIdx(a.periods);
             const bMinIdx = getMinPeriodIdx(b.periods);
-            if (aMinIdx !== bMinIdx) return aMinIdx - bMinIdx;
+            
+            if (aMinIdx !== bMinIdx) {
+                return aMinIdx - bMinIdx;
+            }
             
             return a.classroom.localeCompare(b.classroom);
         });
 
         mergedList.forEach(b => {
-            b.periods.sort((x, y) => periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y));
+            b.periods.sort((x, y) => {
+                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
+            });
 
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
@@ -988,6 +962,7 @@ function updateDashboard() {
 
     async function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
+        
         if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
             try {
                 for (const id of idsArray) {
@@ -1005,97 +980,108 @@ function updateDashboard() {
                 alert('🗑️ 資料已成功從雲端刪除！');
                 loadBookingsFromServer();
             } catch (error) {
+                console.error(error);
                 alert('網路連線異常，無法完整刪除合併的資料！');
             }
         }
     }
 
-document.getElementById('bookingForm').onsubmit = async function(e) {
-    e.preventDefault();
-    
-    const inputElem = document.getElementById('borrowerInput');
-    let borrower = selectedBorrowerValue;
-    
-    if (borrower === '__CUSTOM__') {
-        borrower = inputElem.value.trim();
-    }
+    document.getElementById('bookingForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const borrower = document.getElementById('borrower').value.trim();
+        const classroom = document.getElementById('classroom').value;
+        const date = document.getElementById('date').value;
 
-    // 💡 修正：未選擇借用人時，僅自動對焦 (Focus) 與平滑捲動，不自動展開下拉選單
-    if (!borrower) { 
-        alert('請選擇或輸入借用人姓名！'); 
-        
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-            const selectElem = document.getElementById('borrowerSelect');
-            if (selectElem) {
-                selectElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                selectElem.focus();
-            }
-        } else {
-            const btnElem = document.getElementById('customDropdownBtn');
-            if (btnElem) {
-                btnElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                btnElem.focus();
-            }
+        if (!borrower) {
+            alert('⚠️ 請選擇或輸入「借用人姓名」！');
+            document.getElementById('borrower').focus();
+            return;
         }
-        return; 
-    }
 
-    const classroom = document.getElementById('classroom').value;
-    const date = document.getElementById('date').value;
-    const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
-    if(selectedPeriods.length === 0) { alert('請至少選擇一個借用時段節次！'); return; }
+        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-    const hasConflict = bookings.some(b => 
-        b.classroom === classroom && b.date === date && 
-        b.periods.some(p => selectedPeriods.includes(p))
-    );
+        const hasConflict = bookings.some(b => 
+            b.classroom === classroom && b.date === date && 
+            b.periods.some(p => selectedPeriods.includes(p))
+        );
 
-    if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+        if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
 
-    const newBooking = {
-        action: 'create',
-        id: Date.now(),
-        borrower,
-        classroom,
-        date: date, 
-        periods: selectedPeriods
+        const newBooking = {
+            action: 'create',
+            id: Date.now(),
+            borrower,
+            classroom,
+            date: date, 
+            periods: selectedPeriods
+        };
+
+        try {
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(newBooking) });
+            const resData = await response.json();
+            if(resData.status === 'success') {
+                document.getElementById('bookingForm').reset();
+                document.getElementById('date').value = document.getElementById('mapDate').value;
+                alert('🎉 恭喜您，教室登記成功！');
+                loadBookingsFromServer(); 
+            } else {
+                alert('登記失敗：' + resData.message);
+            }
+        } catch(error) {
+            alert('網路連線異常，登記失敗！');
+        }
     };
 
-    try {
-        const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(newBooking) });
-        const resData = await response.json();
-        if(resData.status === 'success') {
-            document.getElementById('bookingForm').reset();
-            document.getElementById('borrowerInput').style.display = 'none';
-            
-            const textElem = document.getElementById('customDropdownText');
-            textElem.textContent = '請選擇借用人姓名';
-            textElem.style.color = '#94a3b8';
-            selectedBorrowerValue = "";
-
-            document.getElementById('date').value = document.getElementById('mapDate').value;
-            alert('🎉 恭喜您，教室登記成功！');
-            loadBookingsFromServer(); 
-        } else {
-            alert('登記失敗：' + resData.message);
+    window.deleteBooking = async function(id) {
+        if(confirm('確認要移除這筆教室借用紀錄嗎？')) {
+            try {
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
+                const resData = await response.json();
+                if(resData.status === 'success') {
+                    loadBookingsFromServer();
+                } else {
+                    alert('刪除失敗：' + resData.message);
+                }
+            } catch (error) {
+                alert('網路連線異常，無法刪除資料！');
+            }
         }
-    } catch(error) {
-        alert('網路連線異常，登記失敗！');
     }
-};
 
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
 
+    const originalFormReset = document.getElementById('bookingForm').reset;
+    document.getElementById('bookingForm').reset = function() {
+        if (originalFormReset) originalFormReset.call(this);
+        const filterInput = document.getElementById('tableFilterDate');
+        if (filterInput) filterInput.value = '';
+    };
+    
+    /* 💡 每 60 秒自動更新當前時間 (24 小時制) */
     setInterval(() => {
-        const t = new Date().toTimeString().substring(0, 5);
-        document.getElementById('mapTime').value = t;
+        document.getElementById('mapTime').value = get24HourTimeString();
         updateDashboard();
     }, 60000);
 
     setInterval(loadBookingsFromServer, 20000);
+
+    // 📱 手機純原生喚醒選單機制
+    const borrowerInput = document.getElementById('borrower');
+    if (borrowerInput) {
+        const triggerPicker = function() {
+            if (typeof borrowerInput.showPicker === 'function') {
+                try {
+                    borrowerInput.showPicker();
+                } catch (e) {}
+            }
+        };
+
+        borrowerInput.addEventListener('click', triggerPicker);
+        borrowerInput.addEventListener('focus', triggerPicker);
+    }
 
     loadBookingsFromServer();
     renderTable();
