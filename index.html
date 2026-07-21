@@ -199,6 +199,31 @@
         .available .status-badge { background-color: var(--success); }
         .occupied .status-badge { background-color: var(--danger); }
 
+        /* 💡 紅燈閃爍（呼吸燈）動畫效果 */
+        @keyframes badgePulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+                box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0.4);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+        }
+
+        .status-badge.badge-flashing {
+            animation: badgePulse 1.2s infinite ease-in-out !important;
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
+
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
         .form-group { margin-bottom: 20px; position: relative; }
@@ -242,25 +267,22 @@
             transition: all 0.3s;
         }
 
-        .custom-dropdown-btn:hover { border-color: var(--palette-yellow); }
+        .custom-dropdown-btn:hover, .custom-dropdown-btn:focus { border-color: var(--palette-yellow); outline: none; }
 
-.custom-dropdown-menu {
-    position: fixed;
-    width: 280px;
-    max-height: 300px; /* 或是您設定的高度 */
-    overflow-y: auto;
-    
-    /* 💡 關鍵修復：阻斷滾動事件傳遞給背景網頁 */
-    overscroll-behavior: contain;
-
-    background: var(--white);
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    z-index: 9999;
-    display: none;
-    padding: 6px 0;
-}
+        .custom-dropdown-menu {
+            position: fixed;
+            width: 280px;
+            max-height: 300px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            background: var(--white);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: none;
+            padding: 6px 0;
+        }
 
         .custom-dropdown-menu.show { display: block; }
 
@@ -596,7 +618,6 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // 💡 切換電腦版選單顯示，並讓選單跟隨滑鼠點擊位置/按鈕位置
     function toggleCustomDropdown(e) {
         e.stopPropagation();
         const menu = document.getElementById('customDropdownMenu');
@@ -620,7 +641,6 @@
         }
     }
 
-    // 點擊外部自動關閉選單
     document.addEventListener('click', () => {
         const menu = document.getElementById('customDropdownMenu');
         if (menu) menu.classList.remove('show');
@@ -756,7 +776,6 @@
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
     }
 
-// 💡 更新：讓下課時間也能精準對應到「前一節」與「下一節」
 function getCurrentPeriod(time) {
     const found = periodsConfig.find(p => time >= p.start && time <= p.end);
     if (found) return found.name;
@@ -770,12 +789,10 @@ function updateDashboard() {
     let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
     let isBreakTime = false;
 
-    // 如果不在上課時間內，代表是下課時間
     if (currentPeriodIdx === -1) {
         isBreakTime = true;
-        // 尋找「下一個」將要開始的節次 index
         currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
-        if (currentPeriodIdx === -1) currentPeriodIdx = periodsConfig.length; // 晚於第八節
+        if (currentPeriodIdx === -1) currentPeriodIdx = periodsConfig.length;
     }
 
     const currentP = getCurrentPeriod(time);
@@ -791,32 +808,10 @@ function updateDashboard() {
         const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
         const isVertical = (room === '向圓' || room === '團輔室');
 
-        const allReservedPeriods = [];
-        roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
-
-        // 計算後續預約
-        const upcomingList = periodsConfig.filter((p, idx) => {
-            const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
-            return isAfterCurrent && allReservedPeriods.includes(p.name);
-        }).map(p => p.name);
-
-        function generateUpcomingGridHtml(prefixText) {
-            if (upcomingList.length === 0) return '';
-            const periodSpans = upcomingList.map((p, idx) => {
-                const separator = (idx === upcomingList.length - 1) ? '' : '、';
-                return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
-            }).join('');
-            
-            return `
-                <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
-                    <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
-                        <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
-                        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
-                            ${periodSpans}
-                        </div>
-                    </div>
-                </div>
-            `;
+        if (badge) {
+            badge.className = "status-badge";
+            badge.style.backgroundColor = "";
+            badge.style.marginTop = "";
         }
 
         card.style.position = "";
@@ -824,10 +819,17 @@ function updateDashboard() {
         card.style.display = "";
         card.style.flexDirection = "";
         card.style.justifyContent = "";
-        if (badge) badge.style.marginTop = "";
 
         const oldAlert = card.querySelector('.dynamic-alert');
         if (oldAlert) oldAlert.remove();
+
+        // 💡 關鍵 1：時間到達 17:25 之後正式放學，恢復為綠色空堂
+        if (time >= "17:25") {
+            card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
+            if (badge) badge.textContent = "空堂";
+            info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日課程已結束 🟢</div>`;
+            return;
+        }
 
         // 🟢 情境 A：正在上課時間內
         if (!isBreakTime && currentP) {
@@ -835,19 +837,13 @@ function updateDashboard() {
             if (isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
                 card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                badge.textContent = "使用中";
-                badge.style.backgroundColor = ""; 
-
-                let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
-                if (upcomingList.length > 0) {
-                    htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                }
-                info.innerHTML = htmlContent;
+                if (badge) badge.textContent = "使用中";
+                info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
                 return;
             }
         }
 
-        // 🟠 情境 B：在下課時間內 (包含 15:05-15:25, 16:15-16:25 等所有下課)
+        // 🟠 情境 B：在下課時間內 (包含 15:05-15:25, 16:15-16:25 及 17:15-17:25)
         if (isBreakTime && currentPeriodIdx > 0 && currentPeriodIdx <= periodsConfig.length) {
             const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
             const nextPeriodObj = periodsConfig[currentPeriodIdx];     
@@ -858,75 +854,58 @@ function updateDashboard() {
             const prevBooking = prevP ? roomBookings.find(b => b.periods.includes(prevP)) : null;
             const nextBooking = nextP ? roomBookings.find(b => b.periods.includes(nextP)) : null;
 
-            // 1. 剛剛上一節有人使用
+            // 1. 上一節有人使用
             if (prevBooking) {
-                // 如果下一節也是同一人 -> 連堂中
+                // (a) 上下一節【同一位老師】 -> 🔴 紅燈：連堂中 (靜態紅)
                 if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
                     card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    badge.textContent = "連堂中";
-                    badge.style.backgroundColor = ""; 
-
-                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                    }
-                    info.innerHTML = htmlContent;
+                    if (badge) badge.textContent = "連堂中";
+                    info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
                     return;
                 }
 
-                // 上一節有人，下一節不同人或無人 -> 交接中
+                // (b) 上下一節【不同老師】 -> 🔴 紅燈閃爍：交接中 (下節有人)
+                if (nextBooking && prevBooking.borrower !== nextBooking.borrower) {
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    if (badge) {
+                        badge.textContent = "交接中 (下節有人)";
+                        badge.classList.add('badge-flashing'); // 💡 加入動態閃爍
+                    }
+
+                    info.innerHTML = `
+                        <div style="font-size:11px;color:#e06666;font-weight:700;margin-top:2px;">⚠️ 前課：${prevBooking.borrower}</div>
+                        <div style="font-size:11px;color:var(--palette-teal);font-weight:700;margin-top:1px;">➡️ 下課：${nextBooking.borrower}</div>
+                    `;
+                    return;
+                }
+
+                // (c) 上一節有人，下一節【完全無人】 -> 🟠 橘燈：收拾中 (下節空)
                 card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
-                badge.textContent = "交接中";
-                badge.style.backgroundColor = "#f97316"; 
-
-                if (!isVertical) {
-                    card.style.display = "flex";
-                    card.style.flexDirection = "column";
-                    card.style.justifyContent = "center";
-                    badge.style.marginTop = "4px"; 
+                if (badge) {
+                    badge.textContent = "收拾中 (下節空)";
+                    badge.style.backgroundColor = "#f97316";
                 }
 
-                badge.insertAdjacentHTML('beforebegin', `
-                    <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
-                        ⚠️ (${prevP}:${prevBooking.borrower}借)
-                    </div>
-                `);
-
-                let htmlContent = ``;
-                if (upcomingList.length > 0) {
-                    htmlContent += `<div style="margin-top: 2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
-                } else {
-                    htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
-                }
-                info.innerHTML = htmlContent;
+                info.innerHTML = `
+                    <div style="font-size:11px;color:#e06666;font-weight:700;margin-top:2px;">⚠️ 前課：${prevBooking.borrower} 收拾中</div>
+                    <div style="font-size:11px;color:#166534;font-weight:700;margin-top:1px;">✨ 下一節：🟢 空堂可借</div>
+                `;
                 return;
             }
             
-            // 2. 剛剛上一節無人，但下一節有人 -> 準備中
+            // 2. 上一節無人，下一節【有人】 -> 🔴 紅燈：準備中 (下節有人)
             if (!prevBooking && nextBooking) {
                 card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                badge.textContent = "準備中"; 
-                badge.style.backgroundColor = ""; 
-                
-                let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${nextBooking.borrower} (${nextP})</div>`;
-                if (upcomingList.length > 0) {
-                    htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                }
-                info.innerHTML = htmlContent;
+                if (badge) badge.textContent = "準備中 (下節有人)";
+                info.innerHTML = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 下節借用：${nextBooking.borrower} (${nextP})</div>`;
                 return;
             }
         }
 
-        // ⚪ 情境 C：完全空堂
+        // ⚪ 情境 C：完全空堂 -> 🟢 綠燈
         card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
-        badge.textContent = "空堂";
-        badge.style.backgroundColor = ""; 
-        
-        if (upcomingList.length > 0) {
-            info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-        } else {
-            info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
-        }
+        if (badge) badge.textContent = "空堂";
+        info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
     });
 }
 
@@ -1041,25 +1020,22 @@ document.getElementById('bookingForm').onsubmit = async function(e) {
         borrower = inputElem.value.trim();
     }
 
-    // 💡 提示後自動跳轉並 focus 到該欄位
+    // 💡 修正：未選擇借用人時，僅自動對焦 (Focus) 與平滑捲動，不自動展開下拉選單
     if (!borrower) { 
         alert('請選擇或輸入借用人姓名！'); 
         
-        // 判斷當前是電腦版還是手機版
         const isMobile = window.innerWidth <= 768;
         if (isMobile) {
             const selectElem = document.getElementById('borrowerSelect');
-            selectElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            selectElem.focus();
+            if (selectElem) {
+                selectElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                selectElem.focus();
+            }
         } else {
             const btnElem = document.getElementById('customDropdownBtn');
-            btnElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            btnElem.focus();
-            
-            // 電腦版自動模擬點擊打開選單，方便老師直接選
-            const menu = document.getElementById('customDropdownMenu');
-            if (menu && !menu.classList.contains('show')) {
-                btnElem.click();
+            if (btnElem) {
+                btnElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                btnElem.focus();
             }
         }
         return; 
