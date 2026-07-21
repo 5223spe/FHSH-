@@ -221,6 +221,20 @@
             transition: all 0.3s;
         }
 
+        /* 🔽 為借用人輸入框加上右側下拉箭頭圖示 */
+        #borrower {
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 35px;
+        }
+
+        #borrower::-webkit-calendar-picker-indicator {
+            opacity: 0.5;
+            cursor: pointer;
+        }
+        
         input:focus, select:focus {
             outline: none;
             border-color: var(--palette-yellow);
