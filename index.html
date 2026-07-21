@@ -248,7 +248,15 @@
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
         }
-
+        
+<div class="form-group">
+    <label for="borrower">借用人姓名 <span style="font-size:12px; color:var(--text-muted); font-weight:normal;">(單擊開選單 / 雙擊開啟打字)</span></label>
+    <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或雙擊搜尋" readonly required>
+    <datalist id="teacherList">
+        <!-- 由 JavaScript 自動載入 -->
+    </datalist>
+</div>
+        
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1010,20 +1018,45 @@
 
     setInterval(loadBookingsFromServer, 20000);
 
-    // 📱 手機純原生喚醒選單機制：點擊該格子即刻喚起原生下拉選單
-    const borrowerInput = document.getElementById('borrower');
-    if (borrowerInput) {
-        const triggerPicker = function() {
-            if (typeof borrowerInput.showPicker === 'function') {
-                try {
-                    borrowerInput.showPicker();
-                } catch (e) {}
-            }
-        };
+// 📱 手機智慧模式切換：點一下跳下拉選單，點兩下開啟打字輸入
+const borrowerIn = document.getElementById('borrower');
+if (borrowerIn) {
+    let clickCount = 0;
+    let clickTimer = null;
 
-        borrowerInput.addEventListener('click', triggerPicker);
-        borrowerInput.addEventListener('focus', triggerPicker);
-    }
+    borrowerIn.addEventListener('click', function (e) {
+        clickCount++;
+
+        if (clickCount === 1) {
+            // ⏰ 觸發單擊（延遲 250ms 等待確認是否有第二次點擊）
+            clickTimer = setTimeout(() => {
+                clickCount = 0; // 重置點擊次數
+                
+                // 設為唯讀，防止手機彈出鍵盤
+                borrowerIn.setAttribute('readonly', 'true');
+                
+                // 強制喚醒選單
+                if (typeof borrowerIn.showPicker === 'function') {
+                    try { borrowerIn.showPicker(); } catch (err) {}
+                }
+            }, 250);
+
+        } else if (clickCount === 2) {
+            // ⚡ 觸發雙擊：取消單擊定時器，轉換成輸入模式
+            clearTimeout(clickTimer);
+            clickCount = 0;
+
+            // 解除唯讀並開啟鍵盤 focus
+            borrowerIn.removeAttribute('readonly');
+            borrowerIn.focus();
+        }
+    });
+
+    // 當使用者輸入完畢離開輸入框時，自動重置回唯讀選單模式
+    borrowerIn.addEventListener('blur', function () {
+        borrowerIn.setAttribute('readonly', 'true');
+    });
+}
 
     loadBookingsFromServer();
     renderTable();
