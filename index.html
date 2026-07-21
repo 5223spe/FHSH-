@@ -221,7 +221,7 @@
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
         }
 
-        /* 🎨 電腦版精緻選單樣式 (Custom Dropdown) */
+        /* 🎨 電腦版動態定位自訂選單 */
         .custom-dropdown-container {
             position: relative;
             width: 100%;
@@ -245,18 +245,15 @@
         .custom-dropdown-btn:hover { border-color: var(--palette-yellow); }
 
         .custom-dropdown-menu {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            max-width: 320px; /* 💡 設定精緻適中的寬度，不再滿版！ */
-            width: 100%;
+            position: fixed; /* 💡 改為 fixed 才能根據點擊位置動態跳出 */
+            width: 280px;     /* 固定為好看的適中寬度 */
             max-height: 280px;
             overflow-y: auto;
             background: var(--white);
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 9999;
             display: none;
             padding: 6px 0;
         }
@@ -283,7 +280,7 @@
             font-weight: bold;
         }
 
-        /* 📱 手機版 RWD 自動切換：隱藏電腦選單，顯示原生 Select */
+        /* 📱 手機版 RWD 自動切換 */
         .mobile-native-select { display: none; }
 
         @media (max-width: 768px) {
@@ -466,7 +463,7 @@
             <div class="form-group">
                 <label for="borrowerSelect">借用人姓名</label>
                 
-                <!-- 🖥️ 電腦版顯示：精緻自訂選單（固定寬度，美觀高級） -->
+                <!-- 🖥️ 電腦版顯示：精緻動態定位選單 -->
                 <div class="custom-dropdown-container">
                     <button type="button" class="custom-dropdown-btn" id="customDropdownBtn" onclick="toggleCustomDropdown(event)">
                         <span id="customDropdownText" style="color: #94a3b8;">請選擇借用人姓名</span>
@@ -475,7 +472,7 @@
                     <div class="custom-dropdown-menu" id="customDropdownMenu"></div>
                 </div>
 
-                <!-- 📱 手機版顯示：原生 Select（點擊 100% 敏捷跳出滾輪選單） -->
+                <!-- 📱 手機版顯示：原生 Select -->
                 <select id="borrowerSelect" class="mobile-native-select" onchange="handleTeacherSelectChange(this)">
                     <option value="" disabled selected>請選擇借用人姓名</option>
                 </select>
@@ -576,7 +573,7 @@
     document.getElementById('mapTime').value = timeStr;
 
     let bookings = [];
-    let selectedBorrowerValue = ""; // 紀錄目前選擇的值
+    let selectedBorrowerValue = "";
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
@@ -595,29 +592,43 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // 切換電腦版選單顯示
+    // 💡 切換電腦版選單顯示，並讓選單跟隨滑鼠點擊位置/按鈕位置
     function toggleCustomDropdown(e) {
         e.stopPropagation();
         const menu = document.getElementById('customDropdownMenu');
-        menu.classList.toggle('show');
+        const isShowing = menu.classList.contains('show');
+
+        if (isShowing) {
+            menu.classList.remove('show');
+        } else {
+            menu.classList.add('show');
+            
+            const btnRect = e.currentTarget.getBoundingClientRect();
+            let clickX = e.clientX;
+            let menuWidth = 280;
+
+            if (clickX + menuWidth > window.innerWidth) {
+                clickX = window.innerWidth - menuWidth - 20;
+            }
+
+            menu.style.left = `${clickX}px`;
+            menu.style.top = `${btnRect.bottom + 6}px`;
+        }
     }
 
-    // 點擊外部自動關閉電腦版選單
+    // 點擊外部自動關閉選單
     document.addEventListener('click', () => {
         const menu = document.getElementById('customDropdownMenu');
         if (menu) menu.classList.remove('show');
     });
 
-    // 選擇姓名後的統一處理邏輯
     function selectTeacherName(value, label) {
         selectedBorrowerValue = value;
         
-        // 更新電腦版按鈕文字
         const textElem = document.getElementById('customDropdownText');
         textElem.textContent = label;
         textElem.style.color = '#1e293b';
 
-        // 同步更新手機版原生 Select 的值
         document.getElementById('borrowerSelect').value = value;
 
         const inputElem = document.getElementById('borrowerInput');
@@ -662,13 +673,11 @@
                     customMenu.innerHTML = '';
 
                     rawData.teachers.forEach(teacherName => {
-                        // 1. 填入手機原生 Select
                         const option = document.createElement('option');
                         option.value = teacherName;
                         option.textContent = teacherName;
                         selectElem.appendChild(option);
 
-                        // 2. 填入電腦版精緻選單
                         const item = document.createElement('div');
                         item.className = 'custom-dropdown-item';
                         item.textContent = teacherName;
@@ -676,7 +685,6 @@
                         customMenu.appendChild(item);
                     });
 
-                    // 補上手動輸入選項
                     const customOpt = document.createElement('option');
                     customOpt.value = '__CUSTOM__';
                     customOpt.textContent = '✏️ 手動輸入其他姓名...';
@@ -1070,7 +1078,6 @@
                 document.getElementById('bookingForm').reset();
                 document.getElementById('borrowerInput').style.display = 'none';
                 
-                // 重置自訂選單按鈕顯示
                 const textElem = document.getElementById('customDropdownText');
                 textElem.textContent = '請選擇借用人姓名';
                 textElem.style.color = '#94a3b8';
