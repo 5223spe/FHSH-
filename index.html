@@ -28,8 +28,7 @@
             
             --success: #059669; 
             --danger: #be123c;  
---danger: #be123c;  
---warning: #f97316; /* 🟠 新增：交接中使用的暖橘色 */
+            --warning: #f97316; /* 🟠 新增：交接中使用的暖橘色 */
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -182,10 +181,10 @@
 
         .room-card.available { background-color: #f2fdf7; border: 1px solid #d1fae5; }
         .room-card.occupied { background-color: #fff5f5; border: 1px solid #ffe3e3; }
-/* 🟠 新增：交接中卡片與標籤的樣式 */
-.room-card.clearing { background-color: #fffbfa; border: 1px solid #ffedd5; }
-.clearing .room-name { color: var(--palette-blue-2); }
-.clearing .status-badge { background-color: var(--warning); }
+        /* 🟠 新增：交接中卡片與標籤的樣式 */
+        .room-card.clearing { background-color: #fffbfa; border: 1px solid #ffedd5; }
+        .clearing .room-name { color: var(--palette-blue-2); }
+        .clearing .status-badge { background-color: var(--warning); }
 
         .room-name {
             font-weight: 700;
@@ -227,6 +226,21 @@
             outline: none;
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
+        }
+
+        /* 💡 針對借用人姓名 datalist 輸入框增加右側下拉小箭頭 */
+        #borrower {
+            padding-right: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%230f4c5c" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+        }
+
+        /* 💡 移除部分原生 Chrome / Safari 上 datalist 的預設重複小箭頭 */
+        #borrower::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            cursor: pointer;
         }
 
         .checkbox-grid {
@@ -624,14 +638,12 @@ function updateDashboard() {
         const time = document.getElementById('mapTime').value;
         
         let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
-        let isBreakTime = false; // 是否為下課時間
+        let isBreakTime = false;
 
-        // 如果找不到完全符合的，代表目前在「下課/放學時間」
         if (currentPeriodIdx === -1) {
             isBreakTime = true;
-            // 尋找「即將開始」的是哪一節
             currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
-            if (currentPeriodIdx === -1) currentPeriodIdx = 10; // 放學後
+            if (currentPeriodIdx === -1) currentPeriodIdx = 10;
         }
 
         const currentP = getCurrentPeriod(time);
@@ -647,17 +659,14 @@ function updateDashboard() {
             const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
             const isVertical = (room === '向圓' || room === '團輔室');
 
-            // 抓出今天所有被預約的節次
             const allReservedPeriods = [];
             roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
 
-            // 💡 只抓出後續被借走的「節次名稱」，不抓老師名字
             const upcomingList = periodsConfig.filter((p, idx) => {
                 const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
                 return isAfterCurrent && allReservedPeriods.includes(p.name);
             }).map(p => p.name);
 
-            // 💡 終極絕對置中與自動換行防溢出技術
             function generateUpcomingGridHtml(prefixText) {
                 if (upcomingList.length === 0) return '';
                 
@@ -678,7 +687,6 @@ function updateDashboard() {
                 `;
             }
 
-            // 先重設卡片外觀狀態，清除可能殘留的設定
             card.style.position = "";
             card.style.paddingTop = "";
             card.style.display = "";
@@ -689,29 +697,23 @@ function updateDashboard() {
             const oldAlert = card.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
 
-            // ==========================================
-            // 💡 【特例防呆】第八節放學交接時間（17:15 - 17:24） -> 若第八節有人借，強制維持紅燈 🔴
-            // ==========================================
             if (time >= "17:15" && time < "17:25") {
                 const isEighthPeriodOccupied = roomBookings.some(b => b.periods.includes("第八節"));
                 if (isEighthPeriodOccupied) {
                     const b = roomBookings.find(b => b.periods.includes("第八節"));
                     card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                     badge.textContent = "使用中";
-                    badge.style.backgroundColor = ""; // 紅燈
+                    badge.style.backgroundColor = ""; 
                     
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower} (第八節)</div>`;
                     if (upcomingList.length > 0) {
                         htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
                     }
                     info.innerHTML = htmlContent;
-                    return; // 判定結束，跳往下一個教室
+                    return; 
                 }
             }
 
-            // ==========================================
-            // A. 【正式上課時間內】且【目前有人預約】 -> 顯示紅燈 🔴
-            // ==========================================
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
             if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
@@ -727,10 +729,6 @@ function updateDashboard() {
                 return;
             }
 
-            // ==========================================
-            // B. 【中間下課時間 / 準備時間】的進階精準燈號判定
-            // ==========================================
-            // 💡 修正關鍵：限制只有在第八節之前的下課（currentPeriodIdx < 8）才允許判定交接中橘燈，放學 17:25 後（currentPeriodIdx 為 8 或 10）不進此區塊
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
                 const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
                 const nextPeriodObj = periodsConfig[currentPeriodIdx];     
@@ -741,9 +739,7 @@ function updateDashboard() {
                 const prevBooking = roomBookings.find(b => b.periods.includes(prevP));
                 const nextBooking = roomBookings.find(b => b.periods.includes(nextP));
 
-                // 💡 情況 1：前一節有人借
                 if (prevBooking) {
-                    // 若上下節是「同一個人」借 -> 中間下課維持紅燈 🔴
                     if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
                         card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                         badge.textContent = "連堂中";
@@ -757,12 +753,10 @@ function updateDashboard() {
                         return;
                     }
 
-                    // 前一節有人借，但後面無人借 OR 後面是另一個人借 -> 顯示橘燈 🟠 (交接中)
                     card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
                     badge.textContent = "交接中";
                     badge.style.backgroundColor = "#f97316"; 
 
-                    // 💡 驚嘆號排版美化：橫型卡片利用 flex 垂直分配，不貼齊頂框
                     if (!isVertical) {
                         card.style.display = "flex";
                         card.style.flexDirection = "column";
@@ -786,7 +780,6 @@ function updateDashboard() {
                     return;
                 }
                 
-                // 💡 情況 2：前一節「沒有人」借，但下一節「有人」借 -> 提早亮紅燈 🔴
                 if (!prevBooking && nextBooking) {
                     card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                     badge.textContent = "準備中"; 
@@ -801,9 +794,6 @@ function updateDashboard() {
                 }
             }
 
-            // ==========================================
-            // C. 【完全空堂】或【放學後、下課前後都沒人借】 -> 顯示綠燈 🟢 (空堂)
-            // ==========================================
             card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
             badge.textContent = "空堂";
             badge.style.backgroundColor = ""; 
@@ -815,25 +805,22 @@ function updateDashboard() {
             }
         });
     }
+
 function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        // 取得今天的純日期字串 (YYYY-MM-DD)，用來過濾歷史紀錄
         const nowTs = new Date();
         const todayStr = `${nowTs.getFullYear()}-${String(nowTs.getMonth() + 1).padStart(2, '0')}-${String(nowTs.getDate()).padStart(2, '0')}`;
 
-        // 取得紀錄清單專屬的篩選日期
         const filterDateStr = document.getElementById('tableFilterDate').value; 
 
         let displayBookings = [];
 
         if (filterDateStr) {
-            // 💡 狀況 A：如果老師有特別選日期 -> 篩選該日期的紀錄
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
-            // 💡 狀況 B：如果沒有選擇日期 -> 自動隱藏昨日以前，顯示今天與未來的所有預約紀錄
             displayBookings = bookings.filter(b => b.date >= todayStr);
         }
 
@@ -842,45 +829,35 @@ function renderTable() {
             return;
         }
 
-        // 💡 核心黑科技：將「同日期 + 同教室 + 同借用人」的紀錄進行歸納合併
         const mergedMap = {};
         displayBookings.forEach(b => {
-            // 用「日期_教室_借用人」當作唯一的群組組合鑰匙
             const key = `${b.date}_${b.classroom}_${b.borrower}`;
             
             if (!mergedMap[key]) {
-                // 如果這個組合第一次出現，複製一份資料，並初始化一個紀錄原始 ID 的陣列（方便後面個別刪除）
                 mergedMap[key] = {
                     date: b.date,
                     classroom: b.classroom,
                     borrower: b.borrower,
                     periods: [...b.periods],
-                    ids: [b.id] // 把這筆紀錄的 ID 存起來
+                    ids: [b.id]
                 };
             } else {
-                // 如果已經存在，就把新出現的節次合併進去
                 b.periods.forEach(p => {
                     if (!mergedMap[key].periods.includes(p)) {
                         mergedMap[key].periods.push(p);
                     }
                 });
-                // 同時把這筆預約的 ID 也記下來，這樣等一下按刪除時可以整批一起刪
                 mergedMap[key].ids.push(b.id);
             }
         });
 
-        // 將合併完的物件地圖，重新轉回陣列以便排序與渲染
         let mergedList = Object.values(mergedMap);
 
-        // 💡 智能排序：先比日期 -> 再比節次先後 -> 最後比教室
         mergedList.sort((a, b) => {
-            // 1. 先依照日期由近到遠排序
             if (a.date !== b.date) {
                 return new Date(a.date) - new Date(b.date);
             }
             
-            // 2. 日期相同時，依據他們合併後的第一個節次在 periodsConfig 中的順序排
-            // 把老師借的節次（例如：['第二節', '第三節']）稍微排序，確保拿最前面的那一節來比
             const getMinPeriodIdx = (periods) => {
                 if (!periods || periods.length === 0) return 999;
                 const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
@@ -895,20 +872,15 @@ function renderTable() {
                 return aMinIdx - bMinIdx;
             }
             
-            // 3. 節次也相同，則按教室名稱排序
             return a.classroom.localeCompare(b.classroom);
         });
 
-        // 渲染表格畫面
         mergedList.forEach(b => {
-            // 將合併後的節次，重新按照學校的配置順序（第一節到第八節）排好，再用逗號串起來，畫面才會整齊
             b.periods.sort((x, y) => {
                 return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
             });
 
             const tr = document.createElement('tr');
-            
-            // 💡 刪除按鈕小巧思：因為是合併欄位，按「刪除」時，我們會把這個欄位包進去的所有預約 ID 陣列轉成字串，打包丟給特殊的批量刪除邏輯
             const idsString = JSON.stringify(b.ids);
 
             tr.innerHTML = `
@@ -922,18 +894,15 @@ function renderTable() {
         });
     }
 
-    // 💡 新增：專門處理合併欄位點擊刪除時的「批量刪除」函數
-// 🟢 這是修正後的正確程式碼
 async function deleteMergedGroup(idsArray) {
     if (!idsArray || idsArray.length === 0) return;
     
     if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
         try {
-            // 一筆一筆用迴圈快速發送請求刪除
             for (const id of idsArray) {
-                const response = await fetch(GAS_URL, { // 👈 已修正為您網頁定義的 GAS_URL
+                const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'delete', id: id }) // 👈 統一發送格式
+                    body: JSON.stringify({ action: 'delete', id: id })
                 });
                 const resData = await response.json();
                 if (resData.status !== 'success') {
@@ -942,7 +911,6 @@ async function deleteMergedGroup(idsArray) {
                     return;
                 }
             }
-            // 全部迴圈跑完成功後，重新向伺服器同步最新資料並刷新
             alert('🗑️ 資料已成功從雲端刪除！');
             loadBookingsFromServer();
         } catch (error) {
@@ -1008,16 +976,14 @@ async function deleteMergedGroup(idsArray) {
         }
     }
 
-    // 💡 看板日期切換時，只更新看板動態，不影響下面的獨立表格紀錄
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
 
-    // 💡 當表單重設（例如：老師成功提交新預約）後，將下方篩選日期的輸入框也一併清除，回復預設狀態
     const originalFormReset = document.getElementById('bookingForm').reset;
     document.getElementById('bookingForm').reset = function() {
         if (originalFormReset) originalFormReset.call(this);
         const filterInput = document.getElementById('tableFilterDate');
-        if (filterInput) filterInput.value = ''; // 清空篩選日期，讓表格重新列出全部
+        if (filterInput) filterInput.value = '';
     };
     
     setInterval(() => {
