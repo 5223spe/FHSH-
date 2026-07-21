@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 電腦版快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v4">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v5">
 <!-- 💡 強制讓所有瀏覽器與 Chrome 下載最新版透明圓角 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -219,21 +219,7 @@
             font-size: 15px;
             font-family: inherit;
             transition: all 0.3s;
-        }
-
-        /* ⌨️ 右側加上鍵盤 SVG 圖示提示（點右側打字） */
-        #borrower {
-            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 7h-2v-2h2v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 24px;
-            padding-right: 48px;
-            cursor: pointer;
-        }
-
-        /* 隱藏原生 picker indicator 避免干擾自訂邏輯 */
-        #borrower::-webkit-calendar-picker-indicator {
-            display: none !important;
+            background-color: var(--white);
         }
 
         input:focus, select:focus {
@@ -421,11 +407,15 @@
         <h2>新増借用登記</h2>
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
-                <label for="borrower">借用人姓名 <span style="font-size: 13px; font-weight: normal; color: var(--palette-teal);">(點欄位跳選單，點右側⌨️打字)</span></label>
-                <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或按右側⌨️打字" required>
-                <datalist id="teacherList">
-                    <!-- 由 JavaScript 自動動態載入老師清單 -->
-                </datalist>
+                <label for="borrowerSelect">借用人姓名</label>
+                <!-- 📱 改為原生下拉選單，手機點擊 100% 彈出選單 -->
+                <select id="borrowerSelect" required onchange="handleTeacherSelectChange(this)">
+                    <option value="" disabled selected>請選擇借用人姓名</option>
+                    <!-- 由 JavaScript 動態動態載入老師清單 -->
+                </select>
+                
+                <!-- 手動輸入框（預設隱藏，選擇「手動輸入」時顯示） -->
+                <input type="text" id="borrowerInput" placeholder="請輸入借用人姓名..." style="display: none; margin-top: 10px;">
             </div>
 
             <div class="form-group">
@@ -538,6 +528,20 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
+    // 選擇「手動輸入」時切換輸入框
+    function handleTeacherSelectChange(selectElem) {
+        const inputElem = document.getElementById('borrowerInput');
+        if (selectElem.value === '__CUSTOM__') {
+            inputElem.style.display = 'block';
+            inputElem.required = true;
+            inputElem.focus();
+        } else {
+            inputElem.style.display = 'none';
+            inputElem.required = false;
+            inputElem.value = '';
+        }
+    }
+
     async function loadBookingsFromServer() {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
         try {
@@ -554,16 +558,29 @@
             updateDashboard();
             handleClassroomOrDateChange();
 
-            // 載入與渲染 datalist 名單
+            // 載入與渲染 select 名單
             if (rawData.teachers && rawData.teachers.length > 0) {
-                const teacherList = document.getElementById('teacherList');
-                if (teacherList) {
-                    teacherList.innerHTML = '';
+                const selectElem = document.getElementById('borrowerSelect');
+                if (selectElem) {
+                    const currentVal = selectElem.value;
+                    selectElem.innerHTML = '<option value="" disabled selected>請選擇借用人姓名</option>';
+                    
                     rawData.teachers.forEach(teacherName => {
                         const option = document.createElement('option');
                         option.value = teacherName;
-                        teacherList.appendChild(option);
+                        option.textContent = teacherName;
+                        selectElem.appendChild(option);
                     });
+
+                    // 補上自訂手動輸入選項
+                    const customOpt = document.createElement('option');
+                    customOpt.value = '__CUSTOM__';
+                    customOpt.textContent = '➕ 手動輸入其他姓名...';
+                    selectElem.appendChild(customOpt);
+
+                    if (currentVal && currentVal !== '__CUSTOM__') {
+                        selectElem.value = currentVal;
+                    }
                 }
             }
         } catch (error) {
@@ -619,12 +636,6 @@
         }
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
-        
-        // 點擊地圖時智慧喚起選單
-        const borrowerIn = document.getElementById('borrower');
-        if (borrowerIn && typeof borrowerIn.showPicker === 'function') {
-            try { borrowerIn.showPicker(); } catch (e) {}
-        }
     }
 
     function getCurrentPeriod(time) {
@@ -927,7 +938,17 @@
 
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
-        const borrower = document.getElementById('borrower').value;
+        
+        const selectElem = document.getElementById('borrowerSelect');
+        const inputElem = document.getElementById('borrowerInput');
+        
+        let borrower = selectElem.value;
+        if (borrower === '__CUSTOM__') {
+            borrower = inputElem.value.trim();
+        }
+
+        if (!borrower) { alert('請選擇或輸入借用人姓名！'); return; }
+
         const classroom = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
@@ -955,6 +976,7 @@
             const resData = await response.json();
             if(resData.status === 'success') {
                 document.getElementById('bookingForm').reset();
+                document.getElementById('borrowerInput').style.display = 'none';
                 document.getElementById('date').value = document.getElementById('mapDate').value;
                 alert('🎉 恭喜您，教室登記成功！');
                 loadBookingsFromServer(); 
@@ -999,25 +1021,6 @@
     }, 60000);
 
     setInterval(loadBookingsFromServer, 20000);
-
-    // 📱 點擊欄位主要區域預設彈出下拉選單，只有點擊最右側 45px (⌨️圖示) 才切換為打字鍵盤
-    const borrowerInput = document.getElementById('borrower');
-    if (borrowerInput) {
-        borrowerInput.addEventListener('click', (e) => {
-            const rect = borrowerInput.getBoundingClientRect();
-            // 如果點擊的是最右側 45px 區域（鍵盤圖示）
-            if (e.clientX >= rect.right - 45) {
-                borrowerInput.focus();
-            } else {
-                // 點擊其他大面積區域，極速呼叫原生的選單彈窗
-                if (typeof borrowerInput.showPicker === 'function') {
-                    try {
-                        borrowerInput.showPicker();
-                    } catch (err) {}
-                }
-            }
-        });
-    }
 
     loadBookingsFromServer();
     renderTable();
