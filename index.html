@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
-<!-- 💡 強制升級版號，突破 Chrome 電腦版快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v6">
-<!-- 💡 強制讓所有瀏覽器與 Chrome 下載最新版透明圓角 Favicon -->
+<!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
+    <link rel="manifest" href="manifest-v2.json?v=2026_v7">
+<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
@@ -28,7 +28,7 @@
             
             --success: #059669; 
             --danger: #be123c;  
-            --warning: #f97316; 
+            --warning: #ea580c; 
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -179,10 +179,11 @@
 
         .room-card.span-vertical { grid-row: span 2; }
 
+        /* 🟢 空堂樣式 */
         .room-card.available { background-color: #f2fdf7; border: 1px solid #d1fae5; }
         
-        /* 🔴 紅燈放慢呼吸燈 (1.8s)，僅背景與邊框閃爍，文字保持恆亮 */
-        .room-card.occupied { 
+        /* 🔴 當節使用中 & 🔴 交接中（背景閃爍呼吸燈，文字保持恆亮） */
+        .room-card.occupied, .room-card.handover-flashing { 
             animation: slowPulseBackground 1.8s infinite ease-in-out;
         }
 
@@ -192,9 +193,17 @@
             100% { background-color: #fff5f5; border-color: #ffe3e3; }
         }
 
-        .room-card.clearing { background-color: #fffbfa; border: 1px solid #ffedd5; }
-        .clearing .room-name { color: var(--palette-blue-2); }
-        .clearing .status-badge { background-color: var(--warning); }
+        /* 🔴 靜態準備中 (不閃爍) */
+        .room-card.preparing {
+            background-color: #fff5f5; 
+            border: 1px solid #fca5a5;
+        }
+
+        /* 🟠 靜態收拾中 (不閃爍) */
+        .room-card.clearing { 
+            background-color: #fff8f0; 
+            border: 1px solid #ffedd5; 
+        }
 
         .room-name {
             font-weight: 700;
@@ -204,7 +213,8 @@
             color: var(--text-dark);
         }
         .available .room-name { color: var(--palette-blue-2); }
-        .occupied .room-name { color: var(--palette-pink); }
+        .occupied .room-name, .handover-flashing .room-name, .preparing .room-name { color: var(--palette-pink); }
+        .clearing .room-name { color: var(--warning); }
 
         .status-badge {
             font-size: 12px;
@@ -215,7 +225,8 @@
             margin-bottom: 6px;
         }
         .available .status-badge { background-color: var(--success); }
-        .occupied .status-badge { background-color: var(--danger); }
+        .occupied .status-badge, .handover-flashing .status-badge, .preparing .status-badge { background-color: var(--danger); }
+        .clearing .status-badge { background-color: var(--warning); }
 
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
@@ -243,7 +254,7 @@
             cursor: pointer;
         }
 
-        /* 手機大面積極速點擊熱區 */
+        /* 💡 5. 確保滑鼠/觸控點選位置精準展開選單 */
         #borrower::-webkit-calendar-picker-indicator {
             position: absolute;
             top: 0;
@@ -366,44 +377,45 @@
         
        <div class="legend-bar">
             <span>🟢 空堂</span>
-            <span>🟠 下節課有人 / 交接中</span>
-            <span>🔴 當節使用中 / 準備中</span>
-            <span>⚡ 點擊教室一秒極速借用</span>
+            <span>🔴 交接中 (閃爍)</span>
+            <span>🔴 準備中 / 使用中</span>
+            <span>🟠 收拾中</span>
+            <span>⚡ 點擊教室極速借用</span>
         </div>
 
         <div class="floor-grid-wrapper">
             <div class="floor-grid">
-                <div class="room-card" id="map-前小向" onclick="executeSmartBooking('前小向')">
+                <div class="room-card" id="map-前小向" onclick="executeSmartBooking('前小向', event)">
                     <div class="top-notice" id="top-前小向" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">前小向</div>
                     <div class="room-info" id="info-前小向"></div>
                 </div>
-                <div class="room-card span-vertical" id="map-向圓" onclick="executeSmartBooking('向圓')">
+                <div class="room-card span-vertical" id="map-向圓" onclick="executeSmartBooking('向圓', event)">
                     <div class="top-notice" id="top-向圓" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">向圓</div>
                     <div class="room-info" id="info-向圓"></div>
                 </div>
-                <div class="room-card span-vertical" id="map-團輔室" onclick="executeSmartBooking('團輔室')">
+                <div class="room-card span-vertical" id="map-團輔室" onclick="executeSmartBooking('團輔室', event)">
                     <div class="top-notice" id="top-團輔室" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">團輔室</div>
                     <div class="room-info" id="info-團輔室"></div>
                 </div>
-                <div class="room-card" id="map-前個諮" onclick="executeSmartBooking('前個諮')">
+                <div class="room-card" id="map-前個諮" onclick="executeSmartBooking('前個諮', event)">
                     <div class="top-notice" id="top-前個諮" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">前個諮</div>
                     <div class="room-info" id="info-前個諮"></div>
                 </div>
-                <div class="room-card" id="map-後小向" onclick="executeSmartBooking('後小向')">
+                <div class="room-card" id="map-後小向" onclick="executeSmartBooking('後小向', event)">
                     <div class="top-notice" id="top-後小向" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">後小向</div>
                     <div class="room-info" id="info-後小向"></div>
                 </div>
-                <div class="room-card" id="map-後個諮" onclick="executeSmartBooking('後個諮')">
+                <div class="room-card" id="map-後個諮" onclick="executeSmartBooking('後個諮', event)">
                     <div class="top-notice" id="top-後個諮" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">後個諮</div>
@@ -412,20 +424,20 @@
 
                 <div style="grid-column: 1 / -1; height: 18px; background: transparent; cursor: default;"></div>
 
-                <div class="room-card" id="map-6F潛能教室" onclick="executeSmartBooking('6F潛能教室')">
+                <div class="room-card" id="map-6F潛能教室" onclick="executeSmartBooking('6F潛能教室', event)">
                     <div class="top-notice" id="top-6F潛能教室" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">6F潛能教室</div>
                     <div class="room-info" id="info-6F潛能教室"></div>
                 </div>
-                <div class="room-card" id="map-6F資藝教室" onclick="executeSmartBooking('6F資藝教室')">
+                <div class="room-card" id="map-6F資藝教室" onclick="executeSmartBooking('6F資藝教室', event)">
                     <div class="top-notice" id="top-6F資藝教室" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">6F資藝教室</div>
                     <div class="room-info" id="info-6F資藝教室"></div>
                 </div>
                 <div style="background: transparent; cursor: default;"></div>
-                <div class="room-card" id="map-6F_Z空間" onclick="executeSmartBooking('6F Z空間')">
+                <div class="room-card" id="map-6F_Z空間" onclick="executeSmartBooking('6F Z空間', event)">
                     <div class="top-notice" id="top-6F_Z空間" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">6F Z空間</div>
@@ -467,7 +479,6 @@
                 <input type="date" id="date" required onchange="handleClassroomOrDateChange()">
             </div>
 
-            <!-- 💡 2. 節次時段標示均為標準 24 小時制 -->
             <div class="form-group">
                 <label>借用節次</label>
                 <div class="checkbox-grid">
@@ -517,7 +528,6 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
-    /* 💡 2. 24 小時制時間設定 (00:00~23:59) */
     const periodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
         { name: "第二節", start: "09:10", end: "10:00" },
@@ -531,7 +541,6 @@
         { name: "第八節", start: "16:25", end: "17:15" }
     ];
 
-    // 取得 24 小時制的 HH:mm 字串
     function get24HourTimeString(d = new Date()) {
         const hours = String(d.getHours()).padStart(2, '0');
         const minutes = String(d.getMinutes()).padStart(2, '0');
@@ -627,7 +636,8 @@
         }
     }
 
-    function executeSmartBooking(room) {
+    // 💡 5. 滑鼠/觸控點選位置觸發選單精準展開
+    function executeSmartBooking(room, evt) {
         const chosenDate = document.getElementById('mapDate').value; 
         const chosenTime = document.getElementById('mapTime').value;
         const currentP = getCurrentPeriod(chosenTime);
@@ -668,7 +678,7 @@
 
     function updateDashboard() {
         const date = document.getElementById('mapDate').value;
-        const time = document.getElementById('mapTime').value; // 24小時制 "HH:mm"
+        const time = document.getElementById('mapTime').value; 
         
         let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
         let isBreakTime = false;
@@ -730,17 +740,16 @@
             const oldAlert = card.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
 
-            // 💡 1. 第一節若有人借，08:00-08:10 顯示紅燈「準備中」
+            // 💡 1. 第一節若有人借，08:00-08:10 靜態紅燈「準備中」(不閃爍)
             if (time >= "08:00" && time < "08:10") {
                 const firstBooking = roomBookings.find(b => b.periods.includes("第一節"));
                 if (firstBooking) {
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
                     badge.textContent = "準備中";
                     badge.style.backgroundColor = ""; 
 
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${firstBooking.borrower}</div>`;
                     
-                    // 排除第一節後的後續時段
                     const remainingUpcoming = upcomingList.filter(p => p !== "第一節");
                     if (remainingUpcoming.length > 0) {
                         const remainingSpans = remainingUpcoming.map((p, idx) => {
@@ -762,24 +771,21 @@
                 }
             }
 
-            // 第八節結束後的清理緩衝時間 17:15 - 17:25 (24小時制)
+            // 💡 4. 若第八節有人借，17:15-17:25 顯示橘色「收拾中」
             if (time >= "17:15" && time < "17:25") {
-                const isEighthPeriodOccupied = roomBookings.some(b => b.periods.includes("第八節"));
-                if (isEighthPeriodOccupied) {
-                    const b = roomBookings.find(b => b.periods.includes("第八節"));
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
-                    badge.textContent = "使用中";
-                    badge.style.backgroundColor = ""; 
+                const eighthBooking = roomBookings.find(b => b.periods.includes("第八節"));
+                if (eighthBooking) {
+                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                    badge.textContent = "收拾中";
+                    badge.style.backgroundColor = "#ea580c"; 
                     
-                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                    }
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前節：${eighthBooking.borrower}</div>`;
                     info.innerHTML = htmlContent;
                     return; 
                 }
             }
 
+            // 🔴 當節使用中
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
             if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
@@ -795,6 +801,7 @@
                 return;
             }
 
+            // 下課 / 課間狀態判斷
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
                 const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
                 const nextPeriodObj = periodsConfig[currentPeriodIdx];     
@@ -805,7 +812,9 @@
                 const prevBooking = roomBookings.find(b => b.periods.includes(prevP));
                 const nextBooking = roomBookings.find(b => b.periods.includes(nextP));
 
+                // 情況 A：上一節有人借
                 if (prevBooking) {
+                    // 同一人連堂
                     if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
                         card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                         badge.textContent = "連堂中";
@@ -819,35 +828,60 @@
                         return;
                     }
 
-                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
-                    badge.textContent = "交接中";
-                    badge.style.backgroundColor = "#f97316"; 
+                    // 💡 2. 上一節與下一節不同人：🔴 閃爍紅色交接中，並顯示下一節借用人
+                    if (nextBooking && prevBooking.borrower !== nextBooking.borrower) {
+                        card.className = isVertical ? 'room-card span-vertical handover-flashing' : 'room-card handover-flashing';
+                        badge.textContent = "交接中";
+                        badge.style.backgroundColor = "#be123c"; 
 
-                    if (!isVertical) {
-                        card.style.display = "flex";
-                        card.style.flexDirection = "column";
-                        card.style.justifyContent = "center";
-                        badge.style.marginTop = "4px"; 
+                        badge.insertAdjacentHTML('beforebegin', `
+                            <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
+                                ⚠️ 前節課：${prevBooking.borrower}
+                            </div>
+                        `);
+
+                        let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👉 下節課：${nextBooking.borrower}</div>`;
+                        
+                        const remainingUpcoming = upcomingList.filter(p => p !== nextP);
+                        if (remainingUpcoming.length > 0) {
+                            const remainingSpans = remainingUpcoming.map((p, idx) => {
+                                const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
+                                return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                            }).join('');
+                            htmlContent += `
+                                <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
+                                    <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
+                                        <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
+                                            <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
+                                            ${remainingSpans}
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }
+                        info.innerHTML = htmlContent;
+                        return;
                     }
 
-                    badge.insertAdjacentHTML('beforebegin', `
-                        <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
-                            ⚠️ 前節課：${prevBooking.borrower}
-                        </div>
-                    `);
+                    // 💡 3. 只有上一節有人借、下一節無人借：🟠 橘色收拾中 (靜態)
+                    if (!nextBooking) {
+                        card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                        badge.textContent = "收拾中";
+                        badge.style.backgroundColor = "#ea580c"; 
 
-                    let htmlContent = ``;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top: 2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
-                    } else {
-                        htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
+                        let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前節：${prevBooking.borrower}</div>`;
+                        if (upcomingList.length > 0) {
+                            htmlContent += `<div style="margin-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
+                        } else {
+                            htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
+                        }
+                        info.innerHTML = htmlContent;
+                        return;
                     }
-                    info.innerHTML = htmlContent;
-                    return;
                 }
                 
+                // 💡 1. 情況 B：上一節無人借，下一節有人借：🔴 靜態準備中 (不閃爍)
                 if (!prevBooking && nextBooking) {
-                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
                     badge.textContent = "準備中"; 
                     badge.style.backgroundColor = ""; 
                     
@@ -860,6 +894,7 @@
                 }
             }
 
+            // 🟢 空堂狀態
             card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
             badge.textContent = "空堂";
             badge.style.backgroundColor = ""; 
@@ -1060,7 +1095,6 @@
         if (filterInput) filterInput.value = '';
     };
     
-    /* 💡 每 60 秒自動更新當前時間 (24 小時制) */
     setInterval(() => {
         document.getElementById('mapTime').value = get24HourTimeString();
         updateDashboard();
@@ -1068,14 +1102,14 @@
 
     setInterval(loadBookingsFromServer, 20000);
 
-    // 📱 手機純原生喚醒選單機制
+    // 💡 5. 滑鼠點擊/觸控跟隨展開
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
-        const triggerPicker = function() {
+        const triggerPicker = function(e) {
             if (typeof borrowerInput.showPicker === 'function') {
                 try {
                     borrowerInput.showPicker();
-                } catch (e) {}
+                } catch (err) {}
             }
         };
 
