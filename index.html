@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v11">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v12">
 <!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -127,7 +127,7 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
-        /* 💡 圖示說明欄（已更新說明項目） */
+        /* 💡 圖示說明欄 */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -248,6 +248,7 @@
             transition: all 0.3s;
         }
 
+        /* 🎯 關鍵改動 1：將容器改為 relative，為下拉選單提供相對定位依據 */
         .borrower-wrapper {
             position: relative;
             width: 100%;
@@ -262,23 +263,25 @@
             cursor: pointer;
         }
 
-        /* 🎯 獨立選單（一次顯示至少 9 位，且包含防超出畫面設定） */
+        /* 🎯 關鍵改動 2：改為 absolute 相對跟隨定位，徹底解決滑動漂移問題 */
         .custom-dropdown-list {
-            position: fixed;
-            min-width: 220px;
-            max-width: 320px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            margin-top: 6px;
             background: white;
             border: 2px solid var(--palette-blue-1);
             border-radius: 12px;
-            max-height: 390px;
+            max-height: 320px;
             overflow-y: auto;
             z-index: 99999;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             display: none;
         }
 
         .custom-dropdown-item {
-            padding: 10px 16px;
+            padding: 12px 16px;
             cursor: pointer;
             font-size: 15px;
             border-bottom: 1px solid #f1f5f9;
@@ -417,7 +420,6 @@
             </div>
         </div>
         
-       <!-- 💡 圖示說明欄 (依據需求 1 修改) -->
        <div class="legend-bar">
             <span>🟢 空堂</span>
             <span>🔴 準備中 / 使用中 / 連堂中 / 交接中 (燈號閃爍)</span>
@@ -497,6 +499,8 @@
                 <div class="borrower-wrapper">
                     <!-- 💡 預設 readonly 避開手機鍵盤自動跳出 -->
                     <input type="text" id="borrower" placeholder="請點擊選擇教師姓名" required readonly>
+                    <!-- 🎯 獨立彈出選單依附於 wrapper 內部 -->
+                    <div id="teacherDropdown" class="custom-dropdown-list"></div>
                 </div>
             </div>
 
@@ -566,9 +570,6 @@
         </div>
     </div>
 </div>
-
-<!-- 獨立全域彈出選單容器 -->
-<div id="teacherDropdown" class="custom-dropdown-list"></div>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
@@ -645,8 +646,8 @@
         }
     }
 
-    /* 🎯 依據點擊智慧計算選單顯示位置（含防右側破圖） */
-    function showTeacherDropdownAtClick(clientX, clientY, filterText = '') {
+    /* 🎯 依附相對欄位渲染下拉選單（滑動頁面永遠隨欄位移動） */
+    function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
         if (!dropdown || !borrowerIn) return;
@@ -660,20 +661,6 @@
 
         dropdown.innerHTML = itemsHtml;
         dropdown.style.display = 'block';
-
-        const rect = borrowerIn.getBoundingClientRect();
-        const dropWidth = Math.min(260, window.innerWidth - 20); // 選單適應寬度
-        dropdown.style.width = `${dropWidth}px`;
-
-        // 💡 計算邊界防止選單破圖被切掉
-        let targetLeft = clientX || rect.left;
-        if (targetLeft + dropWidth > window.innerWidth - 10) {
-            targetLeft = window.innerWidth - dropWidth - 10;
-        }
-        if (targetLeft < 10) targetLeft = 10;
-
-        dropdown.style.left = `${targetLeft}px`;
-        dropdown.style.top = `${(clientY ? clientY + 12 : rect.bottom + 4)}px`;
 
         dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
             item.onclick = function(e) {
@@ -696,19 +683,18 @@
     if (borrowerInput) {
         borrowerInput.addEventListener('click', function(e) {
             e.stopPropagation();
-            showTeacherDropdownAtClick(e.clientX, e.clientY, this.getAttribute('readonly') ? '' : this.value.trim());
+            showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
         });
 
         borrowerInput.addEventListener('input', function(e) {
-            const rect = this.getBoundingClientRect();
-            showTeacherDropdownAtClick(rect.left, rect.bottom, this.value.trim());
+            showTeacherDropdown(this.value.trim());
         });
     }
 
     // 點擊非選單區域自動隱藏選單
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('teacherDropdown');
-        if (dropdown && !e.target.closest('#borrower') && !e.target.closest('#teacherDropdown')) {
+        if (dropdown && !e.target.closest('.borrower-wrapper')) {
             dropdown.style.display = 'none';
         }
     });
@@ -763,8 +749,7 @@
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
         
         if (borrowerInput) {
-            const rect = borrowerInput.getBoundingClientRect();
-            showTeacherDropdownAtClick(rect.left, rect.bottom, borrowerInput.getAttribute('readonly') ? '' : borrowerInput.value.trim());
+            showTeacherDropdown(borrowerInput.getAttribute('readonly') ? '' : borrowerInput.value.trim());
         }
     }
 
