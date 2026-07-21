@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 電腦版快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v3">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v4">
 <!-- 💡 強制讓所有瀏覽器與 Chrome 下載最新版透明圓角 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -227,18 +227,6 @@
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
         }
 
-        /* 💡 借用人雙欄組合樣式 */
-        .borrower-group {
-            display: flex;
-            gap: 10px;
-        }
-        .borrower-group select {
-            flex: 1;
-        }
-        .borrower-group input {
-            flex: 1;
-        }
-
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -316,7 +304,6 @@
             .room-name { font-size: 18px; }
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
-            .borrower-group { flex-direction: column; gap: 8px; }
         }
 
     </style>
@@ -422,14 +409,11 @@
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
-                <div class="borrower-group">
-                    <!-- 下拉清單（肯定有箭頭） -->
-                    <select id="teacherSelect" onchange="syncTeacherName(this.value)">
-                        <option value="">▼ 選取常用姓名</option>
-                    </select>
-                    <!-- 手動輸入框 -->
-                    <input type="text" id="borrower" placeholder="或在此手動輸入姓名" required>
-                </div>
+                <!-- 單一欄位：支援下拉點選與直接輸入 -->
+                <input type="text" id="borrower" list="teacherList" placeholder="請輸入或點擊選擇姓名" required>
+                <datalist id="teacherList">
+                    <!-- 由 JavaScript 自動動態載入老師清單 -->
+                </datalist>
             </div>
 
             <div class="form-group">
@@ -525,13 +509,6 @@
 
     let bookings = [];
 
-    // 下拉選單選擇姓名時自動同步填入輸入框
-    function syncTeacherName(val) {
-        if (val) {
-            document.getElementById('borrower').value = val;
-        }
-    }
-
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
         let dateStr = String(dateInput);
@@ -565,15 +542,15 @@
             updateDashboard();
             handleClassroomOrDateChange();
 
+            // 載入與渲染 datalist 名單
             if (rawData.teachers && rawData.teachers.length > 0) {
-                const teacherSelect = document.getElementById('teacherSelect');
-                if (teacherSelect) {
-                    teacherSelect.innerHTML = '<option value="">▼ 選取常用姓名</option>'; 
+                const teacherList = document.getElementById('teacherList');
+                if (teacherList) {
+                    teacherList.innerHTML = '';
                     rawData.teachers.forEach(teacherName => {
                         const option = document.createElement('option');
                         option.value = teacherName;
-                        option.textContent = teacherName;
-                        teacherSelect.appendChild(option);
+                        teacherList.appendChild(option);
                     });
                 }
             }
@@ -644,7 +621,7 @@
         return "";
     }
 
-function updateDashboard() {
+    function updateDashboard() {
         const date = document.getElementById('mapDate').value;
         const time = document.getElementById('mapTime').value;
         
@@ -817,7 +794,7 @@ function updateDashboard() {
         });
     }
 
-function renderTable() {
+    function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
         tbody.innerHTML = '';
@@ -905,31 +882,32 @@ function renderTable() {
         });
     }
 
-async function deleteMergedGroup(idsArray) {
-    if (!idsArray || idsArray.length === 0) return;
-    
-    if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
-        try {
-            for (const id of idsArray) {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'delete', id: id })
-                });
-                const resData = await response.json();
-                if (resData.status !== 'success') {
-                    alert('刪除過程中發生部分失敗：' + resData.message);
-                    loadBookingsFromServer();
-                    return;
+    async function deleteMergedGroup(idsArray) {
+        if (!idsArray || idsArray.length === 0) return;
+        
+        if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
+            try {
+                for (const id of idsArray) {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'delete', id: id })
+                    });
+                    const resData = await response.json();
+                    if (resData.status !== 'success') {
+                        alert('刪除過程中發生部分失敗：' + resData.message);
+                        loadBookingsFromServer();
+                        return;
+                    }
                 }
+                alert('🗑️ 資料已成功從雲端刪除！');
+                loadBookingsFromServer();
+            } catch (error) {
+                console.error(error);
+                alert('網路連線異常，無法完整刪除合併的資料！');
             }
-            alert('🗑️ 資料已成功從雲端刪除！');
-            loadBookingsFromServer();
-        } catch (error) {
-            console.error(error);
-            alert('網路連線異常，無法完整刪除合併的資料！');
         }
     }
-}
+
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const borrower = document.getElementById('borrower').value;
@@ -961,7 +939,6 @@ async function deleteMergedGroup(idsArray) {
             if(resData.status === 'success') {
                 document.getElementById('bookingForm').reset();
                 document.getElementById('date').value = document.getElementById('mapDate').value;
-                document.getElementById('teacherSelect').value = '';
                 alert('🎉 恭喜您，教室登記成功！');
                 loadBookingsFromServer(); 
             } else {
@@ -996,8 +973,6 @@ async function deleteMergedGroup(idsArray) {
         if (originalFormReset) originalFormReset.call(this);
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
-        const teacherSelect = document.getElementById('teacherSelect');
-        if (teacherSelect) teacherSelect.value = '';
     };
     
     setInterval(() => {
