@@ -244,19 +244,23 @@
 
         .custom-dropdown-btn:hover { border-color: var(--palette-yellow); }
 
-        .custom-dropdown-menu {
-            position: fixed; /* 💡 改為 fixed 才能根據點擊位置動態跳出 */
-            width: 280px;     /* 固定為好看的適中寬度 */
-            max-height: 300px;
-            overflow-y: auto;
-            background: var(--white);
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            z-index: 9999;
-            display: none;
-            padding: 6px 0;
-        }
+.custom-dropdown-menu {
+    position: fixed;
+    width: 280px;
+    max-height: 300px; /* 或是您設定的高度 */
+    overflow-y: auto;
+    
+    /* 💡 關鍵修復：阻斷滾動事件傳遞給背景網頁 */
+    overscroll-behavior: contain;
+
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 9999;
+    display: none;
+    padding: 6px 0;
+}
 
         .custom-dropdown-menu.show { display: block; }
 
