@@ -609,6 +609,77 @@
     </div>
 </div>
 
+    // 📱 方案一：智慧彈窗 (Modal) 控制邏輯
+window.allTeachersList = []; // 儲存從雲端載入的完整名單
+
+// 1. 渲染 Modal 裡面的老師列表
+function renderTeacherList(list) {
+    const container = document.getElementById('teacherListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (list.length === 0) {
+        container.innerHTML = '<div style="padding:15px; text-align:center; color:#94a3b8;">找不到相關項目</div>';
+        return;
+    }
+
+    list.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'teacher-option-item';
+        item.textContent = name;
+        item.onclick = function() {
+            document.getElementById('borrower').value = name;
+            closeTeacherModalFunc();
+        };
+        container.appendChild(item);
+    });
+}
+
+// 2. 開關彈窗邏輯
+const teacherModal = document.getElementById('teacherModal');
+const borrowerInput = document.getElementById('borrower');
+const closeTeacherModalBtn = document.getElementById('closeTeacherModal');
+const teacherSearchInput = document.getElementById('teacherSearchInput');
+
+function openTeacherModalFunc() {
+    if (teacherModal) {
+        teacherModal.style.display = 'block';
+        if (teacherSearchInput) {
+            teacherSearchInput.value = '';
+            // 自動點擊搜尋框跳出鍵盤 (若有需要打字的話)
+        }
+        renderTeacherList(window.allTeachersList);
+    }
+}
+
+function closeTeacherModalFunc() {
+    if (teacherModal) {
+        teacherModal.style.display = 'none';
+    }
+}
+
+// 綁定點擊事件
+if (borrowerInput) borrowerInput.onclick = openTeacherModalFunc;
+if (closeTeacherModalBtn) closeTeacherModalBtn.onclick = closeTeacherModalFunc;
+
+// 點擊彈窗黑背景也可以關閉
+window.addEventListener('click', function(e) {
+    if (e.target === teacherModal) {
+        closeTeacherModalFunc();
+    }
+});
+
+// 3. 搜尋框即時過濾功能 (輸入關鍵字即時篩選)
+if (teacherSearchInput) {
+    teacherSearchInput.addEventListener('input', function() {
+        const keyword = this.value.trim().toLowerCase();
+        const filtered = window.allTeachersList.filter(name => 
+            name.toLowerCase().includes(keyword)
+        );
+        renderTeacherList(filtered);
+    });
+}
+    
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
