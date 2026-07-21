@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 電腦版快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=5">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v3">
 <!-- 💡 強制讓所有瀏覽器與 Chrome 下載最新版透明圓角 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
-    <link rel="manifest" href="manifest-v2.json?v=2026">
     <style>
         :root {
              /* Warm Summer Palette 還原最初的經典配色 */
@@ -228,19 +227,16 @@
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
         }
 
-        /* 💡 針對借用人姓名 datalist 輸入框增加右側下拉小箭頭 */
-        #borrower {
-            padding-right: 40px;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%230f4c5c" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 20px;
+        /* 💡 借用人雙欄組合樣式 */
+        .borrower-group {
+            display: flex;
+            gap: 10px;
         }
-
-        /* 💡 移除部分原生 Chrome / Safari 上 datalist 的預設重複小箭頭 */
-        #borrower::-webkit-calendar-picker-indicator {
-            opacity: 0;
-            cursor: pointer;
+        .borrower-group select {
+            flex: 1;
+        }
+        .borrower-group input {
+            flex: 1;
         }
 
         .checkbox-grid {
@@ -320,6 +316,7 @@
             .room-name { font-size: 18px; }
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
+            .borrower-group { flex-direction: column; gap: 8px; }
         }
 
     </style>
@@ -425,8 +422,14 @@
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
-                <input type="text" id="borrower" list="teacherNames" placeholder="點擊選取名字或輸入自訂名稱" autocomplete="new-password" required>
-                <datalist id="teacherNames"></datalist>
+                <div class="borrower-group">
+                    <!-- 下拉清單（肯定有箭頭） -->
+                    <select id="teacherSelect" onchange="syncTeacherName(this.value)">
+                        <option value="">▼ 選取常用姓名</option>
+                    </select>
+                    <!-- 手動輸入框 -->
+                    <input type="text" id="borrower" placeholder="或在此手動輸入姓名" required>
+                </div>
             </div>
 
             <div class="form-group">
@@ -522,6 +525,13 @@
 
     let bookings = [];
 
+    // 下拉選單選擇姓名時自動同步填入輸入框
+    function syncTeacherName(val) {
+        if (val) {
+            document.getElementById('borrower').value = val;
+        }
+    }
+
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
         let dateStr = String(dateInput);
@@ -556,13 +566,14 @@
             handleClassroomOrDateChange();
 
             if (rawData.teachers && rawData.teachers.length > 0) {
-                const datalist = document.getElementById('teacherNames');
-                if (datalist) {
-                    datalist.innerHTML = ''; 
+                const teacherSelect = document.getElementById('teacherSelect');
+                if (teacherSelect) {
+                    teacherSelect.innerHTML = '<option value="">▼ 選取常用姓名</option>'; 
                     rawData.teachers.forEach(teacherName => {
                         const option = document.createElement('option');
                         option.value = teacherName;
-                        datalist.appendChild(option);
+                        option.textContent = teacherName;
+                        teacherSelect.appendChild(option);
                     });
                 }
             }
@@ -950,6 +961,7 @@ async function deleteMergedGroup(idsArray) {
             if(resData.status === 'success') {
                 document.getElementById('bookingForm').reset();
                 document.getElementById('date').value = document.getElementById('mapDate').value;
+                document.getElementById('teacherSelect').value = '';
                 alert('🎉 恭喜您，教室登記成功！');
                 loadBookingsFromServer(); 
             } else {
@@ -984,6 +996,8 @@ async function deleteMergedGroup(idsArray) {
         if (originalFormReset) originalFormReset.call(this);
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
+        const teacherSelect = document.getElementById('teacherSelect');
+        if (teacherSelect) teacherSelect.value = '';
     };
     
     setInterval(() => {
