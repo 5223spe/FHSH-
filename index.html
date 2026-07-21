@@ -11,125 +11,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
-
-    /* 📱 借用人搜尋彈窗背景 (Modal Overlay) */
-.custom-modal {
-    display: none; 
-    position: fixed; 
-    z-index: 9999; 
-    left: 0; top: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-/* 彈窗主體 (Modal Body) */
-.modal-content {
-    background-color: #ffffff;
-    margin: 12% auto;
-    padding: 20px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 420px;
-    max-height: 75vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-    animation: modalFadeIn 0.2s ease-out;
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 15px; 
-}
-
-.modal-header h3 { 
-    margin: 0; 
-    color: var(--palette-blue-2); 
-    font-size: 20px; 
-    font-weight: 700;
-}
-
-.close-btn { 
-    font-size: 28px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    color: #94a3b8; 
-    line-height: 1;
-}
-
-.modal-search { 
-    width: 100%; 
-    padding: 12px 15px; 
-    border: 2px solid #e2e8f0; 
-    border-radius: 10px; 
-    font-size: 16px;
-    margin-bottom: 12px; 
-    box-sizing: border-box; 
-}
-
-.teacher-list-container { 
-    overflow-y: auto; 
-    flex: 1; 
-    max-height: 320px; 
-    border-radius: 10px;
-    border: 1px solid #f1f5f9;
-}
-
-.teacher-option-item {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-dark);
-    transition: background-color 0.15s;
-}
-
-.teacher-option-item:active, .teacher-option-item:hover { 
-    background-color: #f1f5f9; 
-    color: var(--palette-blue-2);
-}
-/* 📱 手機專用彈窗樣式 */
-.custom-modal {
-    display: none; 
-    position: fixed; 
-    z-index: 9999; 
-    left: 0; top: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    background-color: #ffffff;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 20px;
-    width: 88%;
-    max-width: 400px;
-    max-height: 70vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-}
-
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.modal-header h3 { margin: 0; color: var(--palette-blue-2); font-size: 20px; font-weight: 700; }
-.close-btn { font-size: 28px; font-weight: bold; cursor: pointer; color: #94a3b8; line-height: 1; }
-.modal-search { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
-.teacher-list-container { overflow-y: auto; flex: 1; max-height: 300px; border-radius: 10px; border: 1px solid #f1f5f9; }
-.teacher-option-item { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text-dark); }
-.teacher-option-item:active { background-color: #f1f5f9; color: var(--palette-blue-2); }    
+    
     <style>
         :root {
              /* Warm Summer Palette 還原最初的經典配色 */
@@ -340,22 +222,20 @@
         }
 
         /* 🔽 輸入框的大箭頭背景樣式 */
-        /* 讓右側箭頭圖示區域加大、更容易被手指按到 */
-#borrower {
-    background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 32px; /* 放大箭頭尺寸 */
-    padding-right: 50px;   /* 留出足夠的右側點擊內邊距 */
-    cursor: pointer;
-}
+        #borrower {
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 28px;
+            padding-right: 45px;
+        }
 
-        /* 📱 讓原生觸發區域覆蓋整個輸入框，極致放大手機點擊靈敏度 */
+        /* 📱 讓原生觸發區域精確覆蓋右側箭頭，實現點箭頭開選單、點左側直升鍵盤輸入 */
         #borrower::-webkit-calendar-picker-indicator {
             position: absolute;
             top: 0;
-            left: 0;
-            width: 100%;
+            right: 0;
+            width: 45px;
             height: 100%;
             opacity: 0;
             cursor: pointer;
@@ -366,30 +246,7 @@
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
         }
-        
-<!-- 1. 替換原本的借用人姓名欄位 (移除 list="teacherList" 與 datalist，加上 readonly) -->
-<div class="form-group">
-    <label for="borrower">借用人姓名</label>
-    <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或直接打字搜尋" required>
-    <datalist id="teacherList">
-        <!-- 電腦版使用：由 JavaScript 自動動態載入 -->
-    </datalist>
-</div>
 
-<!-- 📱 手機版專屬搜尋彈窗 Modal -->
-<div id="teacherModal" class="custom-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>選擇借用人</h3>
-            <span class="close-btn" id="closeTeacherModal">&times;</span>
-        </div>
-        <input type="text" id="teacherSearchInput" placeholder="🔍 輸入關鍵字搜尋..." class="modal-search" autocomplete="off">
-        <div class="teacher-list-container" id="teacherListContainer">
-            <!-- 手機版選項動態產生 -->
-        </div>
-    </div>
-</div>
-        
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -643,77 +500,6 @@
     </div>
 </div>
 
-    // 📱 方案一：智慧彈窗 (Modal) 控制邏輯
-window.allTeachersList = []; // 儲存從雲端載入的完整名單
-
-// 1. 渲染 Modal 裡面的老師列表
-function renderTeacherList(list) {
-    const container = document.getElementById('teacherListContainer');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    if (list.length === 0) {
-        container.innerHTML = '<div style="padding:15px; text-align:center; color:#94a3b8;">找不到相關項目</div>';
-        return;
-    }
-
-    list.forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'teacher-option-item';
-        item.textContent = name;
-        item.onclick = function() {
-            document.getElementById('borrower').value = name;
-            closeTeacherModalFunc();
-        };
-        container.appendChild(item);
-    });
-}
-
-// 2. 開關彈窗邏輯
-const teacherModal = document.getElementById('teacherModal');
-const borrowerInput = document.getElementById('borrower');
-const closeTeacherModalBtn = document.getElementById('closeTeacherModal');
-const teacherSearchInput = document.getElementById('teacherSearchInput');
-
-function openTeacherModalFunc() {
-    if (teacherModal) {
-        teacherModal.style.display = 'block';
-        if (teacherSearchInput) {
-            teacherSearchInput.value = '';
-            // 自動點擊搜尋框跳出鍵盤 (若有需要打字的話)
-        }
-        renderTeacherList(window.allTeachersList);
-    }
-}
-
-function closeTeacherModalFunc() {
-    if (teacherModal) {
-        teacherModal.style.display = 'none';
-    }
-}
-
-// 綁定點擊事件
-if (borrowerInput) borrowerInput.onclick = openTeacherModalFunc;
-if (closeTeacherModalBtn) closeTeacherModalBtn.onclick = closeTeacherModalFunc;
-
-// 點擊彈窗黑背景也可以關閉
-window.addEventListener('click', function(e) {
-    if (e.target === teacherModal) {
-        closeTeacherModalFunc();
-    }
-});
-
-// 3. 搜尋框即時過濾功能 (輸入關鍵字即時篩選)
-if (teacherSearchInput) {
-    teacherSearchInput.addEventListener('input', function() {
-        const keyword = this.value.trim().toLowerCase();
-        const filtered = window.allTeachersList.filter(name => 
-            name.toLowerCase().includes(keyword)
-        );
-        renderTeacherList(filtered);
-    });
-}
-    
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
@@ -773,24 +559,22 @@ if (teacherSearchInput) {
             updateDashboard();
             handleClassroomOrDateChange();
 
-// 載入與渲染名單 (電腦與手機同時支援)
-if (rawData.teachers && rawData.teachers.length > 0) {
-    window.allTeachersList = rawData.teachers; // 儲存至全域變數
-    
-    // 1. 渲染電腦版 datalist
-    const teacherList = document.getElementById('teacherList');
-    if (teacherList) {
-        teacherList.innerHTML = '';
-        rawData.teachers.forEach(teacherName => {
-            const option = document.createElement('option');
-            option.value = teacherName;
-            teacherList.appendChild(option);
-        });
+            // 載入與渲染 datalist 名單
+            if (rawData.teachers && rawData.teachers.length > 0) {
+                const teacherList = document.getElementById('teacherList');
+                if (teacherList) {
+                    teacherList.innerHTML = '';
+                    rawData.teachers.forEach(teacherName => {
+                        const option = document.createElement('option');
+                        option.value = teacherName;
+                        teacherList.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("無法從雲端載入資料:", error);
+        }
     }
-    
-    // 2. 渲染手機版 Modal
-    renderTeacherList(window.allTeachersList);
-}
 
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
@@ -841,13 +625,10 @@ if (rawData.teachers && rawData.teachers.length > 0) {
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
         
-        // 點擊地圖時智慧觸發點擊輸入框
+        // 點擊地圖時智慧聚焦輸入框
         const borrowerIn = document.getElementById('borrower');
         if (borrowerIn) {
             borrowerIn.focus();
-            if (typeof borrowerIn.showPicker === 'function') {
-                try { borrowerIn.showPicker(); } catch (e) {}
-            }
         }
     }
 
@@ -1224,45 +1005,21 @@ if (rawData.teachers && rawData.teachers.length > 0) {
 
     setInterval(loadBookingsFromServer, 20000);
 
-// 📱 手機智慧模式切換：點一下跳下拉選單，點兩下開啟打字輸入
-const borrowerIn = document.getElementById('borrower');
-if (borrowerIn) {
-    let clickCount = 0;
-    let clickTimer = null;
-
-    borrowerIn.addEventListener('click', function (e) {
-        clickCount++;
-
-        if (clickCount === 1) {
-            // ⏰ 觸發單擊（延遲 250ms 等待確認是否有第二次點擊）
-            clickTimer = setTimeout(() => {
-                clickCount = 0; // 重置點擊次數
-                
-                // 設為唯讀，防止手機彈出鍵盤
-                borrowerIn.setAttribute('readonly', 'true');
-                
-                // 強制喚醒選單
-                if (typeof borrowerIn.showPicker === 'function') {
-                    try { borrowerIn.showPicker(); } catch (err) {}
+    // 📱 精準分區觸發：點右側大箭頭立刻彈出選單，點文字區域喚醒鍵盤打字
+    const borrowerInput = document.getElementById('borrower');
+    if (borrowerInput) {
+        borrowerInput.addEventListener('click', (e) => {
+            const rect = borrowerInput.getBoundingClientRect();
+            // 判斷是否點擊在右側 45px 區域內（即箭頭位置）
+            if (e.clientX >= rect.right - 45) {
+                if (typeof borrowerInput.showPicker === 'function') {
+                    try {
+                        borrowerInput.showPicker();
+                    } catch (err) {}
                 }
-            }, 250);
-
-        } else if (clickCount === 2) {
-            // ⚡ 觸發雙擊：取消單擊定時器，轉換成輸入模式
-            clearTimeout(clickTimer);
-            clickCount = 0;
-
-            // 解除唯讀並開啟鍵盤 focus
-            borrowerIn.removeAttribute('readonly');
-            borrowerIn.focus();
-        }
-    });
-
-    // 當使用者輸入完畢離開輸入框時，自動重置回唯讀選單模式
-    borrowerIn.addEventListener('blur', function () {
-        borrowerIn.setAttribute('readonly', 'true');
-    });
-}
+            }
+        });
+    }
 
     loadBookingsFromServer();
     renderTable();
