@@ -12,9 +12,6 @@
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
     
-    <!-- 🚀 引入 datalist 跨平台優化庫（讓手機點擊100%彈出可打字選單） -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datalist-css/dist/datalist-css.min.css">
-    
     <style>
         :root {
              /* Warm Summer Palette 還原最初的經典配色 */
@@ -224,20 +221,24 @@
             transition: all 0.3s;
         }
 
-        /* 🔽 為借用人輸入框加上【放大版】大箭頭圖示 */
+        /* 🔽 輸入框的大箭頭背景樣式 */
         #borrower {
             background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 28px;
             padding-right: 42px;
+            cursor: pointer;
         }
 
-        /* 🚫 隱藏 Chrome / Edge / Safari 電腦版原生的小箭頭 */
+        /* 📱 讓原生觸發區域覆蓋整個輸入框，極致放大手機點擊靈敏度 */
         #borrower::-webkit-calendar-picker-indicator {
-            opacity: 0 !important;
-            width: 40px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
+            opacity: 0;
             cursor: pointer;
         }
 
@@ -245,32 +246,6 @@
             outline: none;
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
-        }
-
-        /* 📱 datalist 手機選單浮層美化與覆蓋層全屏層級優化 */
-        datalist {
-            position: absolute;
-            max-height: 220px;
-            border: 2px solid var(--palette-yellow);
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            overflow-y: auto;
-            z-index: 9999;
-        }
-
-        datalist option {
-            padding: 12px 16px;
-            color: var(--text-dark);
-            font-size: 16px;
-            border-bottom: 1px solid #f1f5f9;
-            cursor: pointer;
-        }
-
-        datalist option:hover, datalist option:focus {
-            background-color: #fef3c7;
-            color: var(--palette-blue-2);
-            font-weight: bold;
         }
 
         .checkbox-grid {
@@ -453,8 +428,7 @@
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
-                <!-- 單一欄位：可直接打字，手機/電腦點擊皆會立刻顯示選單 -->
-                <input type="text" id="borrower" list="teacherList" placeholder="請輸入或點擊選擇姓名" required>
+                <input type="text" id="borrower" list="teacherList" placeholder="請點擊選擇或直接打字搜尋" required>
                 <datalist id="teacherList">
                     <!-- 由 JavaScript 自動動態載入老師清單 -->
                 </datalist>
@@ -526,9 +500,6 @@
         </div>
     </div>
 </div>
-
-<!-- 🚀 載入跨平台相容元件指令庫 -->
-<script src="https://cdn.jsdelivr.net/npm/datalist-css/dist/datalist-css.min.js"></script>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
@@ -654,7 +625,15 @@
         }
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('borrower').focus();
+        
+        // 點擊地圖時智慧觸發點擊輸入框
+        const borrowerIn = document.getElementById('borrower');
+        if (borrowerIn) {
+            borrowerIn.focus();
+            if (typeof borrowerIn.showPicker === 'function') {
+                try { borrowerIn.showPicker(); } catch (e) {}
+            }
+        }
     }
 
     function getCurrentPeriod(time) {
@@ -1030,12 +1009,19 @@
 
     setInterval(loadBookingsFromServer, 20000);
 
-    // 📱 手機極速開展選單：只要點擊欄位，既可開啟打字輸入鍵盤，選單也會立刻飄浮跳出
+    // 📱 手機純原生喚醒選單機制：點擊該格子即刻喚起原生下拉選單
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
-        borrowerInput.addEventListener('focus', function() {
-            this.click();
-        });
+        const triggerPicker = function() {
+            if (typeof borrowerInput.showPicker === 'function') {
+                try {
+                    borrowerInput.showPicker();
+                } catch (e) {}
+            }
+        };
+
+        borrowerInput.addEventListener('click', triggerPicker);
+        borrowerInput.addEventListener('focus', triggerPicker);
     }
 
     loadBookingsFromServer();
