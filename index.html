@@ -222,14 +222,15 @@
         }
 
         /* 🔽 輸入框的大箭頭背景樣式 */
-        #borrower {
-            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 28px;
-            padding-right: 42px;
-            cursor: pointer;
-        }
+        /* 讓右側箭頭圖示區域加大、更容易被手指按到 */
+#borrower {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 32px; /* 放大箭頭尺寸 */
+    padding-right: 50px;   /* 留出足夠的右側點擊內邊距 */
+    cursor: pointer;
+}
 
         /* 📱 讓原生觸發區域覆蓋整個輸入框，極致放大手機點擊靈敏度 */
         #borrower::-webkit-calendar-picker-indicator {
