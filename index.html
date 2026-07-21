@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v12">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v13">
 <!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -220,7 +220,7 @@
         .occupied .status-badge, .preparing .status-badge { background-color: var(--danger); }
         .clearing .status-badge { background-color: var(--warning); }
 
-        /* 🔴 僅紅色橢圓燈號進行呼吸閃爍 */
+        /* 🔴 僅紅色橢圖燈號進行呼吸閃爍 */
         .handover-flash-badge {
             background-color: var(--danger);
             animation: pulseBadgeBg 1.5s infinite ease-in-out;
@@ -248,7 +248,6 @@
             transition: all 0.3s;
         }
 
-        /* 🎯 關鍵改動 1：將容器改為 relative，為下拉選單提供相對定位依據 */
         .borrower-wrapper {
             position: relative;
             width: 100%;
@@ -263,7 +262,6 @@
             cursor: pointer;
         }
 
-        /* 🎯 關鍵改動 2：改為 absolute 相對跟隨定位，徹底解決滑動漂移問題 */
         .custom-dropdown-list {
             position: absolute;
             top: 100%;
@@ -497,9 +495,7 @@
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
                 <div class="borrower-wrapper">
-                    <!-- 💡 預設 readonly 避開手機鍵盤自動跳出 -->
                     <input type="text" id="borrower" placeholder="請點擊選擇教師姓名" required readonly>
-                    <!-- 🎯 獨立彈出選單依附於 wrapper 內部 -->
                     <div id="teacherDropdown" class="custom-dropdown-list"></div>
                 </div>
             </div>
@@ -587,7 +583,7 @@
         { name: "第八節", start: "16:25", end: "17:15" }
     ];
 
-    let teacherListData = []; // 保存載入的教師清單
+    let teacherListData = [];
 
     function get24HourTimeString(d = new Date()) {
         const hours = String(d.getHours()).padStart(2, '0');
@@ -646,17 +642,13 @@
         }
     }
 
-    /* 🎯 依附相對欄位渲染下拉選單（滑動頁面永遠隨欄位移動） */
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
         if (!dropdown || !borrowerIn) return;
 
         const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
-
         let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
-        
-        // ✏️ 手動輸入選項
         itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
         dropdown.innerHTML = itemsHtml;
@@ -667,11 +659,11 @@
                 e.stopPropagation();
                 const action = this.getAttribute('data-action');
                 if (action === 'manual') {
-                    borrowerIn.removeAttribute('readonly'); // 💡 點擊手動輸入後才啟動鍵盤
+                    borrowerIn.removeAttribute('readonly');
                     borrowerIn.value = '';
                     borrowerIn.focus();
                 } else {
-                    borrowerIn.setAttribute('readonly', 'true'); // 保持唯讀防止軟體鍵盤跳出
+                    borrowerIn.setAttribute('readonly', 'true');
                     borrowerIn.value = this.getAttribute('data-value');
                 }
                 dropdown.style.display = 'none';
@@ -691,7 +683,6 @@
         });
     }
 
-    // 點擊非選單區域自動隱藏選單
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('teacherDropdown');
         if (dropdown && !e.target.closest('.borrower-wrapper')) {
@@ -832,6 +823,7 @@
             const oldAlert = card.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
 
+            // 1️⃣ 08:00 ~ 08:10 上課前準備
             if (time >= "08:00" && time < "08:10") {
                 const firstBooking = roomBookings.find(b => b.periods.includes("第一節"));
                 if (firstBooking) {
@@ -862,6 +854,81 @@
                 }
             }
 
+            // 2️⃣ 🎯 下課時間專用邏輯 1：15:05 ~ 15:25 (第6節與第7節之間下課)
+            if (time >= "15:05" && time < "15:25") {
+                const p6Booking = roomBookings.find(b => b.periods.includes("第六節"));
+                const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
+
+                if (p6Booking && p7Booking && p6Booking.borrower === p7Booking.borrower) {
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    badge.textContent = "連堂中";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${p6Booking.borrower}</div>`;
+                    if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (p6Booking && p7Booking && p6Booking.borrower !== p7Booking.borrower) {
+                    card.className = isVertical ? 'room-card span-vertical handover-card' : 'room-card handover-card';
+                    badge.textContent = "交接中";
+                    badge.classList.add('handover-flash-badge');
+                    badge.insertAdjacentHTML('beforebegin', `<div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">⚠️ 前一節：${p6Booking.borrower}</div>`);
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👉 下節課：${p7Booking.borrower}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (p6Booking && !p7Booking) {
+                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                    badge.textContent = "收拾中";
+                    badge.style.backgroundColor = "#ea580c";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${p6Booking.borrower}</div>`;
+                    if (upcomingList.length > 0) { htmlContent += `<div style="margin-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`; }
+                    else { htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`; }
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (!p6Booking && p7Booking) {
+                    card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
+                    badge.textContent = "準備中";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${p7Booking.borrower}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                }
+            }
+
+            // 3️⃣ 🎯 下課時間專用邏輯 2：16:15 ~ 16:25 (第7節與第8節之間下課)
+            if (time >= "16:15" && time < "16:25") {
+                const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
+                const p8Booking = roomBookings.find(b => b.periods.includes("第八節"));
+
+                if (p7Booking && p8Booking && p7Booking.borrower === p8Booking.borrower) {
+                    card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
+                    badge.textContent = "連堂中";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${p7Booking.borrower}</div>`;
+                    if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (p7Booking && p8Booking && p7Booking.borrower !== p8Booking.borrower) {
+                    card.className = isVertical ? 'room-card span-vertical handover-card' : 'room-card handover-card';
+                    badge.textContent = "交接中";
+                    badge.classList.add('handover-flash-badge');
+                    badge.insertAdjacentHTML('beforebegin', `<div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">⚠️ 前一節：${p7Booking.borrower}</div>`);
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👉 下節課：${p8Booking.borrower}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (p7Booking && !p8Booking) {
+                    card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
+                    badge.textContent = "收拾中";
+                    badge.style.backgroundColor = "#ea580c";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${p7Booking.borrower}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                } else if (!p7Booking && p8Booking) {
+                    card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
+                    badge.textContent = "準備中";
+                    let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${p8Booking.borrower}</div>`;
+                    info.innerHTML = htmlContent;
+                    return;
+                }
+            }
+
+            // 4️⃣ 17:15 ~ 17:25 第八節結束後收拾
             if (time >= "17:15" && time < "17:25") {
                 const eighthBooking = roomBookings.find(b => b.periods.includes("第八節"));
                 if (eighthBooking) {
@@ -875,6 +942,7 @@
                 }
             }
 
+            // 5️⃣ 正式上課時間 (時段內)
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
             if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
@@ -890,6 +958,7 @@
                 return;
             }
 
+            // 6️⃣ 通用節次與節次間下課/交接時間判斷
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
                 const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
                 const nextPeriodObj = periodsConfig[currentPeriodIdx];     
@@ -977,6 +1046,7 @@
                 }
             }
 
+            // 7️⃣ 預設空堂
             card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
             badge.textContent = "空堂";
             badge.style.backgroundColor = ""; 
