@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v9">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v10">
 <!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -262,15 +262,15 @@
             cursor: pointer;
         }
 
-        /* 🎯 依據滑鼠點擊位置動態跳出的獨立選單 (擴高 max-height 以一次顯示至少 7 位) */
+        /* 🎯 依據滑鼠點擊位置動態跳出的獨立選單 (擴高 max-height 以一次顯示至少 9 位) */
         .custom-dropdown-list {
             position: fixed;
-            min-width: 200px;
-            max-width: 320px;
+            min-width: 220px;
+            max-width: 340px;
             background: white;
             border: 2px solid var(--palette-blue-1);
             border-radius: 12px;
-            max-height: 310px; /* 💡 修改：加大高度，確保一次可容納至少 7 位教師 */
+            max-height: 390px; /* 💡 修改：加大高度，確保一次可容納至少 9 位教師選項 */
             overflow-y: auto;
             z-index: 99999;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -293,6 +293,19 @@
             background-color: #f0f9ff;
             color: var(--palette-blue-2);
             font-weight: bold;
+        }
+
+        /* 手動輸入特定選項樣式 */
+        .custom-dropdown-item.manual-option {
+            color: var(--palette-blue-1);
+            font-weight: bold;
+            background-color: #f8fafc;
+            border-top: 2px dashed #cbd5e1;
+        }
+
+        .custom-dropdown-item.manual-option:hover {
+            background-color: #e0f2fe;
+            color: var(--palette-blue-2);
         }
 
         input:focus, select:focus {
@@ -632,7 +645,7 @@
         }
     }
 
-    /* 🎯 精準在滑鼠點擊位置展開選單 */
+    /* 🎯 精準在滑鼠點擊位置展開選單（最後一個選項固定為 ✏️ 手動輸入其他姓名） */
     function showTeacherDropdownAtClick(clientX, clientY, filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
@@ -640,12 +653,12 @@
 
         const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
 
-        if (filtered.length === 0) {
-            dropdown.style.display = 'none';
-            return;
-        }
+        let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
+        
+        // 💡 新增：最後一個選項 - 手動輸入其他姓名
+        itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
-        dropdown.innerHTML = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
+        dropdown.innerHTML = itemsHtml;
         
         // 設定點擊位置
         const rect = borrowerIn.getBoundingClientRect();
@@ -656,7 +669,13 @@
 
         dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
             item.onclick = function() {
-                borrowerIn.value = this.getAttribute('data-value');
+                const action = this.getAttribute('data-action');
+                if (action === 'manual') {
+                    borrowerIn.value = '';
+                    borrowerIn.focus();
+                } else {
+                    borrowerIn.value = this.getAttribute('data-value');
+                }
                 dropdown.style.display = 'none';
             };
         });
@@ -906,7 +925,6 @@
                         badge.textContent = "交接中";
                         badge.classList.add('handover-flash-badge');
 
-                        /* 💡 1. 修改：統一為 前一節 */
                         badge.insertAdjacentHTML('beforebegin', `
                             <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
                                 ⚠️ 前一節：${prevBooking.borrower}
