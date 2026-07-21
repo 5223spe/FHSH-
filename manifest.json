@@ -1,0 +1,22 @@
+{
+  "name": "國立鳳新高級中學 輔導室 教室借用",
+  "short_name": "教室借用",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f4c5c",
+  "theme_color": "#0f4c5c",
+  "icons": [
+    {
+      "src": "app-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "app-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
