@@ -230,10 +230,14 @@
             padding-right: 42px;    /* 👈 加大右側留白，避免文字擠到箭頭 */
         }
 
-        /* 🚫 隱藏 Chrome / Edge / Safari 電腦版原生的下拉箭頭 */
+     /* 🔽 加大手機與電腦上的點擊觸發範圍 */
         #borrower::-webkit-calendar-picker-indicator {
             opacity: 0;
-            width: 32px; /* 👈 稍微加大隱藏點擊區，點擊更順手 */
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50px; /* 加大右側熱區，點右側任何地方都能觸發 */
+            height: 100%;
             cursor: pointer;
         }
         
@@ -542,6 +546,29 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
+    // 📱 手機優化：點擊輸入框任何地方直接喚起選單
+    const borrowerInput = document.getElementById('borrower');
+    if (borrowerInput) {
+        borrowerInput.addEventListener('focus', function() {
+            // 自動開啟選單（支援現代手機瀏覽器）
+            if (typeof this.showPicker === 'function') {
+                try {
+                    this.showPicker();
+                } catch (e) {
+                    console.log("瀏覽器暫不支援自動 showPicker");
+                }
+            }
+        });
+
+        borrowerInput.addEventListener('click', function() {
+            if (typeof this.showPicker === 'function') {
+                try {
+                    this.showPicker();
+                } catch (e) {}
+            }
+        });
+    }
+    
     async function loadBookingsFromServer() {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
         try {
