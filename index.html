@@ -11,10 +11,14 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
+    
+    <!-- 🚀 引入 datalist 跨平台優化庫（讓手機點擊100%彈出可打字選單） -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datalist-css/dist/datalist-css.min.css">
+    
     <style>
         :root {
              /* Warm Summer Palette 還原最初的經典配色 */
-            --palette-yellow: #F3A953; /* ☀️ 完美還原最初的向日葵黃 */
+            --palette-yellow: #F3A953; 
             --palette-pink: #d65a6d;   
             --palette-teal: #0891b2;   
             --palette-blue-1: #3b7197; 
@@ -27,7 +31,7 @@
             
             --success: #059669; 
             --danger: #be123c;  
-            --warning: #f97316; /* 🟠 新增：交接中使用的暖橘色 */
+            --warning: #f97316; 
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -180,7 +184,6 @@
 
         .room-card.available { background-color: #f2fdf7; border: 1px solid #d1fae5; }
         .room-card.occupied { background-color: #fff5f5; border: 1px solid #ffe3e3; }
-        /* 🟠 新增：交接中卡片與標籤的樣式 */
         .room-card.clearing { background-color: #fffbfa; border: 1px solid #ffedd5; }
         .clearing .room-name { color: var(--palette-blue-2); }
         .clearing .status-badge { background-color: var(--warning); }
@@ -208,7 +211,7 @@
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
         /* 表單與欄位樣式 */
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 16px; color: var(--palette-blue-2); }
 
         input, select {
@@ -221,30 +224,53 @@
             transition: all 0.3s;
         }
 
-      /* 🔽 為借用人輸入框加上【放大版】箭頭，並隱藏電腦版預設箭頭 */
+        /* 🔽 為借用人輸入框加上【放大版】大箭頭圖示 */
         #borrower {
             background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
             background-repeat: no-repeat;
             background-position: right 10px center;
-            background-size: 28px; /* 👈 箭頭尺寸放大 (原本是 20px) */
-            padding-right: 42px;    /* 👈 加大右側留白，避免文字擠到箭頭 */
+            background-size: 28px;
+            padding-right: 42px;
         }
 
-     /* 🔽 加大手機與電腦上的點擊觸發範圍 */
+        /* 🚫 隱藏 Chrome / Edge / Safari 電腦版原生的小箭頭 */
         #borrower::-webkit-calendar-picker-indicator {
-            opacity: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 50px; /* 加大右側熱區，點右側任何地方都能觸發 */
+            opacity: 0 !important;
+            width: 40px;
             height: 100%;
             cursor: pointer;
         }
-        
+
         input:focus, select:focus {
             outline: none;
             border-color: var(--palette-yellow);
             box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
+        }
+
+        /* 📱 datalist 手機選單浮層美化與覆蓋層全屏層級優化 */
+        datalist {
+            position: absolute;
+            max-height: 220px;
+            border: 2px solid var(--palette-yellow);
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            z-index: 9999;
+        }
+
+        datalist option {
+            padding: 12px 16px;
+            color: var(--text-dark);
+            font-size: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        datalist option:hover, datalist option:focus {
+            background-color: #fef3c7;
+            color: var(--palette-blue-2);
+            font-weight: bold;
         }
 
         .checkbox-grid {
@@ -268,7 +294,6 @@
         }
         .checkbox-item input { width: auto; margin: 0; transform: scale(1.1); }
         
-        /* 🔒 已佔用變灰且禁用的防呆樣式 */
         .checkbox-item.disabled-period {
             color: #94a3b8 !important;
             cursor: not-allowed;
@@ -307,7 +332,6 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
-        /* 📱 手機板防跑邊優化（RWD） */
         @media (max-width: 768px) {
             header h1 { font-size: 24px; }
             header p { font-size: 14px; letter-spacing: 2px; }
@@ -429,7 +453,7 @@
         <form id="bookingForm" autocomplete="off">
             <div class="form-group">
                 <label for="borrower">借用人姓名</label>
-                <!-- 單一欄位：支援下拉點選與直接輸入 -->
+                <!-- 單一欄位：可直接打字，手機/電腦點擊皆會立刻顯示選單 -->
                 <input type="text" id="borrower" list="teacherList" placeholder="請輸入或點擊選擇姓名" required>
                 <datalist id="teacherList">
                     <!-- 由 JavaScript 自動動態載入老師清單 -->
@@ -503,6 +527,9 @@
     </div>
 </div>
 
+<!-- 🚀 載入跨平台相容元件指令庫 -->
+<script src="https://cdn.jsdelivr.net/npm/datalist-css/dist/datalist-css.min.js"></script>
+
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
@@ -546,29 +573,6 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // 📱 手機優化：點擊輸入框任何地方直接喚起選單
-    const borrowerInput = document.getElementById('borrower');
-    if (borrowerInput) {
-        borrowerInput.addEventListener('focus', function() {
-            // 自動開啟選單（支援現代手機瀏覽器）
-            if (typeof this.showPicker === 'function') {
-                try {
-                    this.showPicker();
-                } catch (e) {
-                    console.log("瀏覽器暫不支援自動 showPicker");
-                }
-            }
-        });
-
-        borrowerInput.addEventListener('click', function() {
-            if (typeof this.showPicker === 'function') {
-                try {
-                    this.showPicker();
-                } catch (e) {}
-            }
-        });
-    }
-    
     async function loadBookingsFromServer() {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
         try {
@@ -1025,26 +1029,14 @@
     }, 60000);
 
     setInterval(loadBookingsFromServer, 20000);
-    
-    document.querySelectorAll('input[type="date"]').forEach(dateInput => {
-        let clickTimer = null;
-        dateInput.addEventListener('click', function(e) {
-            clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => {
-                try {
-                    this.showPicker(); 
-                } catch (err) {
-                    console.log("不支援 showPicker");
-                }
-            }, 150); 
-        });
 
-        dateInput.addEventListener('dblclick', function(e) {
-            clearTimeout(clickTimer); 
-            this.focus();
-            this.select(); 
+    // 📱 手機極速開展選單：只要點擊欄位，既可開啟打字輸入鍵盤，選單也會立刻飄浮跳出
+    const borrowerInput = document.getElementById('borrower');
+    if (borrowerInput) {
+        borrowerInput.addEventListener('focus', function() {
+            this.click();
         });
-    });
+    }
 
     loadBookingsFromServer();
     renderTable();
