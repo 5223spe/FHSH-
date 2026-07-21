@@ -221,17 +221,19 @@
             transition: all 0.3s;
         }
 
-        /* 🔽 為借用人輸入框加上右側下拉箭頭圖示 */
+      /* 🔽 為借用人輸入框加上【放大版】箭頭，並隱藏電腦版預設箭頭 */
         #borrower {
             background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
             background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 20px;
-            padding-right: 35px;
+            background-position: right 10px center;
+            background-size: 28px; /* 👈 箭頭尺寸放大 (原本是 20px) */
+            padding-right: 42px;    /* 👈 加大右側留白，避免文字擠到箭頭 */
         }
 
+        /* 🚫 隱藏 Chrome / Edge / Safari 電腦版原生的下拉箭頭 */
         #borrower::-webkit-calendar-picker-indicator {
-            opacity: 0.5;
+            opacity: 0;
+            width: 32px; /* 👈 稍微加大隱藏點擊區，點擊更順手 */
             cursor: pointer;
         }
         
