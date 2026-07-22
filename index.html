@@ -11,11 +11,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
-
-    /* 讓所有日期與時間欄位呈現可點擊的手勢 */
-input[type="date"], input[type="time"] {
-    cursor: pointer;
-}
     
     <style>
         :root {
@@ -45,6 +40,11 @@ input[type="date"], input[type="time"] {
             margin: 0;
             padding: 0;
             line-height: 1.6;
+        }
+
+        /* 讓所有日期與時間欄位呈現可點擊的手勢 */
+        input[type="date"], input[type="time"] {
+            cursor: pointer;
         }
 
         /* 🏆 頂部標題區 */
@@ -258,7 +258,7 @@ input[type="date"], input[type="time"] {
             width: 100%;
         }
 
-        #borrower {
+        #borrower, #classroom {
             background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
             background-repeat: no-repeat;
             background-position: right 10px center;
@@ -507,18 +507,10 @@ input[type="date"], input[type="time"] {
 
             <div class="form-group">
                 <label for="classroom">借用教室</label>
-                <select id="classroom" required onchange="handleClassroomOrDateChange()">
-                    <option value="" disabled selected>請選擇欲借用的空間</option>
-                    <option value="前個諮">前個諮</option>
-                    <option value="後個諮">後個諮</option>
-                    <option value="團輔室">團輔室</option>
-                    <option value="向圓">向圓</option>
-                    <option value="前小向">前小向</option>
-                    <option value="後小向">後小向</option>
-                    <option value="6F潛能教室">6F潛能教室</option>
-                    <option value="6F資藝教室">6F資藝教室</option>
-                    <option value="6F Z空間">6F Z空間</option>
-                </select>
+                <div class="borrower-wrapper">
+                    <input type="text" id="classroom" placeholder="請點擊選擇欲借用的空間" required readonly>
+                    <div id="classroomDropdown" class="custom-dropdown-list"></div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -586,6 +578,18 @@ input[type="date"], input[type="time"] {
         { name: "第六節", start: "14:15", end: "15:05" },
         { name: "第七節", start: "15:25", end: "16:15" },
         { name: "第八節", start: "16:25", end: "17:15" }
+    ];
+
+    const classroomListData = [
+        "前個諮",
+        "後個諮",
+        "團輔室",
+        "向圓",
+        "前小向",
+        "後小向",
+        "6F潛能教室",
+        "6F資藝教室",
+        "6F Z空間"
     ];
 
     let teacherListData = [];
@@ -680,6 +684,9 @@ input[type="date"], input[type="time"] {
     if (borrowerInput) {
         borrowerInput.addEventListener('click', function(e) {
             e.stopPropagation();
+            const classroomDropdown = document.getElementById('classroomDropdown');
+            if (classroomDropdown) classroomDropdown.style.display = 'none';
+            
             showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
         });
 
@@ -688,27 +695,61 @@ input[type="date"], input[type="time"] {
         });
     }
 
+    function showClassroomDropdown() {
+        const dropdown = document.getElementById('classroomDropdown');
+        const input = document.getElementById('classroom');
+        if (!dropdown || !input) return;
+
+        let itemsHtml = classroomListData.map(room => `<div class="custom-dropdown-item" data-value="${room}">${room}</div>`).join('');
+        dropdown.innerHTML = itemsHtml;
+        dropdown.style.display = 'block';
+
+        dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+            item.onclick = function(e) {
+                e.stopPropagation();
+                const val = this.getAttribute('data-value');
+                input.value = val;
+                dropdown.style.display = 'none';
+                handleClassroomOrDateChange();
+            };
+        });
+    }
+
+    const classroomInput = document.getElementById('classroom');
+    if (classroomInput) {
+        classroomInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const teacherDropdown = document.getElementById('teacherDropdown');
+            if (teacherDropdown) teacherDropdown.style.display = 'none';
+            
+            showClassroomDropdown();
+        });
+    }
+
     document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('teacherDropdown');
-        if (dropdown && !e.target.closest('.borrower-wrapper')) {
-            dropdown.style.display = 'none';
+        const teacherDropdown = document.getElementById('teacherDropdown');
+        const classroomDropdown = document.getElementById('classroomDropdown');
+        
+        if (teacherDropdown && !e.target.closest('.borrower-wrapper')) {
+            teacherDropdown.style.display = 'none';
+        }
+        if (classroomDropdown && !e.target.closest('#classroomDropdown') && e.target !== classroomInput) {
+            classroomDropdown.style.display = 'none';
         }
     });
 
     // 💡 自動為所有日期 (date) 與時間 (time) 欄位綁定點擊事件
-document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
-    input.addEventListener('click', function() {
-        try {
-            // 呼叫瀏覽器內建的開啟選擇器 API (Chrome/Edge/Safari 皆支援)
-            if (typeof this.showPicker === 'function') {
-                this.showPicker();
+    document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
+        input.addEventListener('click', function() {
+            try {
+                if (typeof this.showPicker === 'function') {
+                    this.showPicker();
+                }
+            } catch (error) {
+                console.log("瀏覽器不支援 showPicker API");
             }
-        } catch (error) {
-            // 防止部分舊版瀏覽器跳出警告
-            console.log("瀏覽器不支援 showPicker API");
-        }
+        });
     });
-});
     
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
@@ -1202,6 +1243,11 @@ document.querySelectorAll('input[type="date"], input[type="time"]').forEach(inpu
         if (!borrower) {
             alert('⚠️ 請選擇或輸入「借用人姓名」！');
             document.getElementById('borrower').focus();
+            return;
+        }
+
+        if (!classroom) {
+            alert('⚠️ 請選擇「借用教室」！');
             return;
         }
 
