@@ -765,10 +765,12 @@
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
 
-        // 💡 取得當前時間判斷過去節次
+        // 💡 取得當前時間判斷過去日期與節次
         const nowTime = new Date();
         const curDateStr = `${nowTime.getFullYear()}-${String(nowTime.getMonth() + 1).padStart(2, '0')}-${String(nowTime.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(nowTime);
+        
+        const isPastDate = selectedDate && (selectedDate < curDateStr); // 判斷是否為今天以前的日期
         const isTodaySelected = (selectedDate === curDateStr);
 
         checkboxes.forEach(cb => {
@@ -783,12 +785,15 @@
                 isPastTime = true;
             }
 
-            if (isOccupied || isPastTime) {
+            // 💡 若為過去日期、過去時間、或已預約，一律禁用劃掉
+            if (isPastDate || isOccupied || isPastTime) {
                 cb.checked = false;
                 cb.disabled = true;
                 if (label) {
                     label.classList.add('disabled-period');
-                    if (isPastTime && !isOccupied) {
+                    if (isPastDate) {
+                        label.title = "過去日期無法借用";
+                    } else if (isPastTime && !isOccupied) {
                         label.title = "此節次時間已過，無法借用";
                     } else if (isOccupied) {
                         label.title = "此節次已被預約";
@@ -810,7 +815,7 @@
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
-        // 💡 即使沒選教室（room為空），只要有選擇日期，也會自動鎖定當天已過的節次！
+        // 💡 即使沒選教室（room為空），只要有選擇日期，也會自動鎖定過去的日期或當天已過的節次！
         if (date) {
             refreshCheckboxStates(room, date);
         }
@@ -1360,7 +1365,7 @@
     loadBookingsFromServer();
     renderTable();
     updateDashboard();
-    handleClassroomOrDateChange(); // 💡 網頁初次載入時自動處理當天過去節次
+    handleClassroomOrDateChange(); // 💡 網頁初次載入時自動處理當天或過去日期的節次
 </script>
 
 </body>
