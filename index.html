@@ -683,12 +683,15 @@
 
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
-        borrowerInput.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const classroomDropdown = document.getElementById('classroomDropdown');
-            if (classroomDropdown) classroomDropdown.style.display = 'none';
-            
-            showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
+        // 💡 點擊或 Focus 對焦時自動開選單
+        ['click', 'focus'].forEach(eventType => {
+            borrowerInput.addEventListener(eventType, function(e) {
+                e.stopPropagation();
+                const classroomDropdown = document.getElementById('classroomDropdown');
+                if (classroomDropdown) classroomDropdown.style.display = 'none';
+                
+                showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
+            });
         });
 
         borrowerInput.addEventListener('input', function(e) {
@@ -718,12 +721,14 @@
 
     const classroomInput = document.getElementById('classroom');
     if (classroomInput) {
-        classroomInput.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const teacherDropdown = document.getElementById('teacherDropdown');
-            if (teacherDropdown) teacherDropdown.style.display = 'none';
-            
-            showClassroomDropdown();
+        ['click', 'focus'].forEach(eventType => {
+            classroomInput.addEventListener(eventType, function(e) {
+                e.stopPropagation();
+                const teacherDropdown = document.getElementById('teacherDropdown');
+                if (teacherDropdown) teacherDropdown.style.display = 'none';
+                
+                showClassroomDropdown();
+            });
         });
     }
 
@@ -754,7 +759,9 @@
     
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
-        const activeBookings = bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate);
+        
+        // 取得特定教室在該日期的預約
+        const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
 
@@ -783,6 +790,8 @@
                     label.classList.add('disabled-period');
                     if (isPastTime && !isOccupied) {
                         label.title = "此節次時間已過，無法借用";
+                    } else if (isOccupied) {
+                        label.title = "此節次已被預約";
                     }
                 }
             } else {
@@ -801,7 +810,8 @@
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
-        if (room && date) {
+        // 💡 即使沒選教室（room為空），只要有選擇日期，也會自動鎖定當天已過的節次！
+        if (date) {
             refreshCheckboxStates(room, date);
         }
     }
@@ -1337,6 +1347,7 @@
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
         if (borrowerInput) borrowerInput.setAttribute('readonly', 'true');
+        handleClassroomOrDateChange();
     };
     
     setInterval(() => {
@@ -1349,6 +1360,7 @@
     loadBookingsFromServer();
     renderTable();
     updateDashboard();
+    handleClassroomOrDateChange(); // 💡 網頁初次載入時自動處理當天過去節次
 </script>
 
 </body>
