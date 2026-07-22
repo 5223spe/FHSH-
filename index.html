@@ -11,6 +11,11 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
+
+    /* 讓所有日期與時間欄位呈現可點擊的手勢 */
+input[type="date"], input[type="time"] {
+    cursor: pointer;
+}
     
     <style>
         :root {
@@ -410,11 +415,11 @@
         <div class="map-controls">
             <div class="control-item">
                 <label>選擇查看日期：</label>
-                <input type="date" id="mapDate">
+                <input type="date" id="mapDate" onkeydown="return false;">
             </div>
             <div class="control-item">
                 <label>目前系統時間：</label>
-                <input type="time" id="mapTime" step="60">
+                <input type="time" id="mapTime" step="60" onkeydown="return false;">
             </div>
         </div>
         
@@ -518,7 +523,7 @@
 
             <div class="form-group">
                 <label for="date">借用日期</label>
-                <input type="date" id="date" required onchange="handleClassroomOrDateChange()">
+                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onkeydown="return false;">
             </div>
 
             <div class="form-group">
@@ -546,7 +551,7 @@
             <h2 style="margin: 0;">最近借用紀錄清單</h2>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()">
+                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
                 <button type="button" style="padding: 8px 12px; background: #e2e8f0; color: var(--text-dark); border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
@@ -690,6 +695,21 @@
         }
     });
 
+    // 💡 自動為所有日期 (date) 與時間 (time) 欄位綁定點擊事件
+document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
+    input.addEventListener('click', function() {
+        try {
+            // 呼叫瀏覽器內建的開啟選擇器 API (Chrome/Edge/Safari 皆支援)
+            if (typeof this.showPicker === 'function') {
+                this.showPicker();
+            }
+        } catch (error) {
+            // 防止部分舊版瀏覽器跳出警告
+            console.log("瀏覽器不支援 showPicker API");
+        }
+    });
+});
+    
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         const activeBookings = bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate);
