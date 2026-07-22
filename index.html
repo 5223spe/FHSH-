@@ -605,6 +605,7 @@
     const timeStr = get24HourTimeString(now);
     
     document.getElementById('date').value = todayStr;
+    document.getElementById('date').min = todayStr; // 🔒 鎖定最小可選日期為今天
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
 
@@ -757,15 +758,39 @@
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
 
+        // 💡 取得當前時間判斷過去節次
+        const nowTime = new Date();
+        const curDateStr = `${nowTime.getFullYear()}-${String(nowTime.getMonth() + 1).padStart(2, '0')}-${String(nowTime.getDate()).padStart(2, '0')}`;
+        const curTimeStr = get24HourTimeString(nowTime);
+        const isTodaySelected = (selectedDate === curDateStr);
+
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
-            if (allOccupiedPeriods.includes(cb.value)) {
+            const periodInfo = periodsConfig.find(p => p.name === cb.value);
+            
+            const isOccupied = allOccupiedPeriods.includes(cb.value);
+
+            // 判斷是否為今天的過去節次
+            let isPastTime = false;
+            if (isTodaySelected && periodInfo && curTimeStr > periodInfo.end) {
+                isPastTime = true;
+            }
+
+            if (isOccupied || isPastTime) {
                 cb.checked = false;
                 cb.disabled = true;
-                if (label) label.classList.add('disabled-period');
+                if (label) {
+                    label.classList.add('disabled-period');
+                    if (isPastTime && !isOccupied) {
+                        label.title = "此節次時間已過，無法借用";
+                    }
+                }
             } else {
                 cb.disabled = false;
-                if (label) label.classList.remove('disabled-period');
+                if (label) {
+                    label.classList.remove('disabled-period');
+                    label.title = "";
+                }
                 if (currentPeriodToAutoCheck && cb.value === currentPeriodToAutoCheck) {
                     cb.checked = true;
                 }
@@ -1240,17 +1265,33 @@
         const classroom = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
 
+        // 1. 驗證借用人姓名
         if (!borrower) {
             alert('⚠️ 請選擇或輸入「借用人姓名」！');
             document.getElementById('borrower').focus();
             return;
         }
 
+        // 2. 驗證借用教室（未選則自動對焦並彈出選單）
         if (!classroom) {
             alert('⚠️ 請選擇「借用教室」！');
+            const classroomIn = document.getElementById('classroom');
+            classroomIn.focus();
+            showClassroomDropdown();
             return;
         }
 
+        // 3. 驗證借用日期（禁止過去日期）
+        const curCheckDate = new Date();
+        const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
+        if (date < todayFormatted) {
+            alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
+            document.getElementById('date').value = todayFormatted;
+            handleClassroomOrDateChange();
+            return;
+        }
+
+        // 4. 驗證節次與衝突檢查
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
