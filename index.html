@@ -249,18 +249,28 @@
         }
 
         .borrower-wrapper {
-            position: relative;
-            width: 100%;
-        }
+    position: relative;
+    width: 100%;
+}
 
-        #borrower {
-            background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 28px;
-            padding-right: 42px;
-            cursor: pointer;
-        }
+/* 將 #borrower 與 #classroom 綁定相同樣式 */
+#borrower, #classroom {
+    /* 1. 設定圓角 (與 input 保持一致) */
+    border-radius: 12px;
+    
+    /* 2. 自訂右側箭頭圖示 */
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 28px;
+    padding-right: 42px;
+    cursor: pointer;
+
+    /* 3. 強制消除各瀏覽器預設的下拉箭頭與原廠外觀 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
 
         .custom-dropdown-list {
             position: absolute;
@@ -504,12 +514,12 @@
                 <label for="classroom">借用教室</label>
                 <select id="classroom" required onchange="handleClassroomOrDateChange()">
                     <option value="" disabled selected>請選擇欲借用的空間</option>
-                    <option value="前小向">前小向</option>
-                    <option value="後小向">後小向</option>
-                    <option value="向圓">向圓</option>
-                    <option value="團輔室">團輔室</option>
                     <option value="前個諮">前個諮</option>
                     <option value="後個諮">後個諮</option>
+                    <option value="團輔室">團輔室</option>
+                    <option value="向圓">向圓</option>
+                    <option value="前小向">前小向</option>
+                    <option value="後小向">後小向</option>
                     <option value="6F潛能教室">6F潛能教室</option>
                     <option value="6F資藝教室">6F資藝教室</option>
                     <option value="6F Z空間">6F Z空間</option>
