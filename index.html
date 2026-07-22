@@ -11,6 +11,24 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
+
+    /* 讓日期與時間框點擊全區都能跳選單 */
+input[type="date"], input[type="time"] {
+    position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* 隱藏圖示，讓全框都能點擊開啟選單 */
+    cursor: pointer;
+}
     
     <style>
         :root {
@@ -411,15 +429,11 @@
             <div class="control-item">
                 <label>選擇查看日期：</label>
                 <!-- ✨ 點選全框即可開啟日曆 -->
-                <input type="date" id="mapDate" 
-       onclick="this.showPicker()" 
-       onkeydown="this.blur(); this.focus();">
+                <input type="date" id="mapDate" onkeydown="this.focus()">>
             </div>
             <div class="control-item">
                 <label>目前系統時間：</label>
-                <input type="time" id="mapTime" step="60" 
-       onclick="this.showPicker()" 
-       onkeydown="this.blur(); this.focus();">
+                <input type="time" id="mapTime" step="60" onkeydown="this.focus()">
             </div>
         </div>
         
@@ -526,10 +540,7 @@
             <div class="form-group">
                 <label for="date">借用日期</label>
                 <!-- ✨ 點選全框即可開啟日曆 -->
-                <input type="date" id="date" required 
-       onchange="handleClassroomOrDateChange()" 
-       onclick="this.showPicker()" 
-       onkeydown="this.blur(); this.focus();">
+                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onkeydown="this.focus()">
             </div>
 
             <div class="form-group">
@@ -558,10 +569,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
                 <!-- ✨ 點選全框即可開啟日曆 -->
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" 
-       onchange="renderTable()" 
-       onclick="this.showPicker()" 
-       onkeydown="this.blur(); this.focus();">
+                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()" onkeydown="this.focus()">
                 <button type="button" style="padding: 8px 12px; background: #e2e8f0; color: var(--text-dark); border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
