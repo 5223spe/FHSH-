@@ -6,7 +6,7 @@
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
     <link rel="manifest" href="manifest-v2.json?v=2026_v13">
-<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
+<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->ㄑ
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
@@ -511,20 +511,12 @@
             </div>
 
             <div class="form-group">
-                <label for="classroom">借用教室</label>
-                <select id="classroom" required onchange="handleClassroomOrDateChange()">
-                    <option value="" disabled selected>請選擇欲借用的空間</option>
-                    <option value="前個諮">前個諮</option>
-                    <option value="後個諮">後個諮</option>
-                    <option value="團輔室">團輔室</option>
-                    <option value="向圓">向圓</option>
-                    <option value="前小向">前小向</option>
-                    <option value="後小向">後小向</option>
-                    <option value="6F潛能教室">6F潛能教室</option>
-                    <option value="6F資藝教室">6F資藝教室</option>
-                    <option value="6F Z空間">6F Z空間</option>
-                </select>
-            </div>
+    <label for="classroom">借用教室</label>
+    <div class="borrower-wrapper">
+        <input type="text" id="classroom" placeholder="請點擊選擇欲借用的空間" required readonly>
+        <div id="classroomDropdown" class="custom-dropdown-list"></div>
+    </div>
+</div>
 
             <div class="form-group">
                 <label for="date">借用日期</label>
@@ -651,7 +643,57 @@
             console.error("無法從雲端載入資料:", error);
         }
     }
+// 💡 1. 教室下拉選單的顯示順序（你可以隨時在這裡調整前後順序）
+const classroomListData = [
+    "前個諮",
+    "後個諮",
+    "團輔室",
+    "向圓",
+    "前小向",
+    "後小向",
+    "6F潛能教室",
+    "6F資藝教室",
+    "6F Z空間"
+];
 
+// 💡 2. 渲染並顯示教室圓角選單
+function showClassroomDropdown() {
+    const dropdown = document.getElementById('classroomDropdown');
+    const input = document.getElementById('classroom');
+    if (!dropdown || !input) return;
+
+    // 產生選項內容
+    let itemsHtml = classroomListData.map(room => `<div class="custom-dropdown-item" data-value="${room}">${room}</div>`).join('');
+    dropdown.innerHTML = itemsHtml;
+    dropdown.style.display = 'block';
+
+    // 點擊選項時的處理
+    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.onclick = function(e) {
+            e.stopPropagation();
+            const val = this.getAttribute('data-value');
+            input.value = val;
+            dropdown.style.display = 'none';
+            
+            // 選取教室後自動更新時段勾選狀態
+            handleClassroomOrDateChange();
+        };
+    });
+}
+
+// 💡 3. 綁定教室輸入框點擊事件
+const classroomInput = document.getElementById('classroom');
+if (classroomInput) {
+    classroomInput.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // 點開教室選單時，先關閉教師姓名選單
+        const teacherDropdown = document.getElementById('teacherDropdown');
+        if (teacherDropdown) teacherDropdown.style.display = 'none';
+        
+        showClassroomDropdown();
+    });
+}
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
@@ -694,11 +736,17 @@
     }
 
     document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('teacherDropdown');
-        if (dropdown && !e.target.closest('.borrower-wrapper')) {
-            dropdown.style.display = 'none';
-        }
-    });
+    const teacherDropdown = document.getElementById('teacherDropdown');
+    const classroomDropdown = document.getElementById('classroomDropdown');
+    
+    // 如果點擊目標不在選單範圍內，則關閉選單
+    if (teacherDropdown && !e.target.closest('.borrower-wrapper')) {
+        teacherDropdown.style.display = 'none';
+    }
+    if (classroomDropdown && !e.target.closest('#classroomDropdown') && e.target !== classroomInput) {
+        classroomDropdown.style.display = 'none';
+    }
+});
 
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
