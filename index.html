@@ -127,7 +127,7 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
-        /* 💡 圖示說明欄 */
+        /* 💡 圖示說明欄 (已精簡) */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -410,9 +410,8 @@
         <div class="map-controls">
             <div class="control-item">
                 <label>選擇查看日期：</label>
-                <input type="date" id="mapDate" 
-       onclick="this._timer = setTimeout(() => this.showPicker(), 200)" 
-       ondblclick="clearTimeout(this._timer); this.focus();">
+                <!-- ✨ 點選全框即可開啟日曆 -->
+                <input type="date" id="mapDate" onclick="this.showPicker()">
             </div>
             <div class="control-item">
                 <label>目前系統時間：</label>
@@ -420,10 +419,11 @@
             </div>
         </div>
         
+       <!-- 💡 已替換為精簡版說明 -->
        <div class="legend-bar">
             <span>🟢 可借用</span>
             <span>🟠 收拾中</span>
-            <span>🔴 使用中(交接時閃爍)</span>
+            <span>🔴 使用中 / 不可借</span>
             <span>⚡ 點擊教室極速借用</span>
         </div>
 
@@ -506,12 +506,13 @@
                 <label for="classroom">借用教室</label>
                 <select id="classroom" required onchange="handleClassroomOrDateChange()">
                     <option value="" disabled selected>請選擇欲借用的空間</option>
-                    <option value="前個諮">前個諮</option>
-                    <option value="後個諮">後個諮</option>
-                    <option value="團輔室">團輔室</option>
-                    <option value="向圓">向圓</option>
+                    <!-- 💡 已調整樓層區域順序 (5F 上、6F 下) -->
                     <option value="前小向">前小向</option>
                     <option value="後小向">後小向</option>
+                    <option value="前個諮">前個諮</option>
+                    <option value="後個諮">後個諮</option>
+                    <option value="向圓">向圓</option>
+                    <option value="團輔室">團輔室</option>
                     <option value="6F潛能教室">6F潛能教室</option>
                     <option value="6F資藝教室">6F資藝教室</option>
                     <option value="6F Z空間">6F Z空間</option>
@@ -520,9 +521,8 @@
 
             <div class="form-group">
                 <label for="date">借用日期</label>
-                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" 
-       onclick="this._timer = setTimeout(() => this.showPicker(), 200)" 
-       ondblclick="clearTimeout(this._timer); this.focus();">
+                <!-- ✨ 點選全框即可開啟日曆 -->
+                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onclick="this.showPicker()">
             </div>
 
             <div class="form-group">
@@ -550,9 +550,8 @@
             <h2 style="margin: 0;">最近借用紀錄清單</h2>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()"
-       onclick="this._timer = setTimeout(() => this.showPicker(), 200)" 
-       ondblclick="clearTimeout(this._timer); this.focus();">
+                <!-- ✨ 點選全框即可開啟日曆 -->
+                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()" onclick="this.showPicker()">
                 <button type="button" style="padding: 8px 12px; background: #e2e8f0; color: var(--text-dark); border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
