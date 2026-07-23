@@ -484,11 +484,11 @@
                     <div class="room-info" id="info-6F資藝教室"></div>
                 </div>
                 <div style="background: transparent; cursor: default;"></div>
-                <div class="room-card" id="map-6F_Z空間" onclick="executeSmartBooking('6F Z空間', event)">
-                    <div class="top-notice" id="top-6F_Z空間" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
+                <div class="room-card" id="map-6F Z空間" onclick="executeSmartBooking('6F Z空間', event)">
+                    <div class="top-notice" id="top-6F Z空間" style="font-weight:700;font-size:12px;margin-bottom:4px;"></div>
                     <div class="status-badge">空堂</div>
                     <div class="room-name">6F Z空間</div>
-                    <div class="room-info" id="info-6F_Z空間"></div>
+                    <div class="room-info" id="info-6F Z空間"></div>
                 </div>
             </div>
         </div>
@@ -873,10 +873,9 @@
         const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
 
         rooms.forEach(room => {
-            const elementId = room === '6F Z空間' ? '6F_Z空間' : room;
-            const card = document.getElementById(`map-${elementId}`);
+            const card = document.getElementById(`map-${room}`);
             if (!card) return;
-            const info = document.getElementById(`info-${elementId}`);
+            const info = document.getElementById(`info-${room}`);
             const badge = card.querySelector('.status-badge');
             
             const roomBookings = bookings.filter(b => b.classroom === room && b.date === date);
