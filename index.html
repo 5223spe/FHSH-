@@ -635,29 +635,53 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    async function loadBookingsFromServer() {
-        if (!GAS_URL || GAS_URL.includes("請填入")) return;
-        try {
-            const response = await fetch(GAS_URL);
-            const rawData = await response.json();
-            
-            const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
-            
-            bookings = bookingSource.map(b => {
-                b.date = formatSafeDate(b.date);
-                return b;
-            });
-            renderTable();
-            updateDashboard();
-            handleClassroomOrDateChange();
+    // ⚡【優化】：開啟網頁先讀 LocalStorage 秒開，背景再同步最新資料
+async function loadBookingsFromServer() {
+    if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-            if (rawData.teachers && rawData.teachers.length > 0) {
-                teacherListData = rawData.teachers;
-            }
-        } catch (error) {
-            console.error("無法從雲端載入資料:", error);
+    // 1. 🚀 第一步：立刻讀取手機/電腦內的本地快取 (0.01秒瞬間繪製)
+    const cachedData = localStorage.getItem('cached_booking_data');
+    if (cachedData) {
+        try {
+            const parsedCache = JSON.parse(cachedData);
+            applyDataToUI(parsedCache); // 先用舊資料繪製畫面
+        } catch (e) {
+            console.log("快取解析失敗", e);
         }
     }
+
+    // 2. 🌐 第二步：背景安靜地去抓雲端最新資料
+    try {
+        const response = await fetch(GAS_URL);
+        const rawData = await response.json();
+        
+        // 寫入本地快取，供下次秒開使用
+        localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
+
+        // 用最新資料刷新畫面
+        applyDataToUI(rawData);
+    } catch (error) {
+        console.error("無法從雲端載入資料:", error);
+    }
+}
+
+// 🎯 將資料更新至畫面的獨立函數
+function applyDataToUI(rawData) {
+    const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
+    
+    bookings = bookingSource.map(b => {
+        b.date = formatSafeDate(b.date);
+        return b;
+    });
+
+    renderTable();
+    updateDashboard();
+    handleClassroomOrDateChange();
+
+    if (rawData.teachers && rawData.teachers.length > 0) {
+        teacherListData = rawData.teachers;
+    }
+}
 
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
