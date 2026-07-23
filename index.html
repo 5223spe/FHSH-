@@ -3,83 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國立鳳新高級中學 輔導室 - 教室借用</title>
+    <title>國立鳳新高級中學 輔導室 教室借用</title>
+<!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
+    <link rel="manifest" href="manifest-v2.json?v=2026_v14">
+<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
+    <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
+    <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
+    <link rel="apple-touch-icon" href="app-logo.png?v=2026">
+    
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        /* 頁首標題區塊樣式 */
-        .site-header {
-            background-color: #003366; /* 學校風格藍色背景 */
-            color: #ffffff;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .site-title {
-            font-size: 24px;
-            font-weight: bold;
-            line-height: 1.5;
-        }
-
-        /* ------------------------------------
-           RWD 斷行控制邏輯
-        ------------------------------------ */
-        
-        /* 預設（電腦版）：隱藏手機換行，顯示電腦換行 */
-        .br-mobile {
-            display: none;
-        }
-
-        .br-desktop {
-            display: inline;
-        }
-
-        /* 當螢幕寬度為 768px 或更小時（手機版/平板） */
-        @media (max-width: 768px) {
-            .site-title {
-                font-size: 20px; /* 手機版字體微調，避免文字溢出 */
-            }
-
-            .br-mobile {
-                display: inline; /* 顯示手機換行 */
-            }
-
-            .br-desktop {
-                display: none; /* 隱藏電腦換行 */
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- 頁頭標題區塊 -->
-    <header class="site-header">
-        <h1 class="site-title">
-            國立鳳新高級中學
-            <br class="br-mobile"> <!-- 手機版斷行處 -->
-            輔導室
-            <br class="br-desktop"> <!-- 電腦版斷行處 -->
-            教室借用
-        </h1>
-    </header>
-
-    <!-- 網頁主要內容區（可自行替換） -->
-    <main style="padding: 40px; text-align: center;">
-        <h2>教室借用系統內容區</h2>
-        <p>請在此處放入表格或借用表單等資訊。</p>
-    </main>
-
-</body>
-</html>
         :root {
             /* Warm Summer Palette 經典配色 */
             --palette-yellow: #F3A953; 
