@@ -636,52 +636,52 @@
     }
 
     // ⚡【優化】：開啟網頁先讀 LocalStorage 秒開，背景再同步最新資料
-async function loadBookingsFromServer() {
-    if (!GAS_URL || GAS_URL.includes("請填入")) return;
+    async function loadBookingsFromServer() {
+        if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-    // 1. 🚀 第一步：立刻讀取手機/電腦內的本地快取 (0.01秒瞬間繪製)
-    const cachedData = localStorage.getItem('cached_booking_data');
-    if (cachedData) {
+        // 1. 🚀 第一步：立刻讀取本地快取 (0.01秒瞬間繪製)
+        const cachedData = localStorage.getItem('cached_booking_data');
+        if (cachedData) {
+            try {
+                const parsedCache = JSON.parse(cachedData);
+                applyDataToUI(parsedCache);
+            } catch (e) {
+                console.log("快取解析失敗", e);
+            }
+        }
+
+        // 2. 🌐 第二步：背景安靜地去抓雲端最新資料
         try {
-            const parsedCache = JSON.parse(cachedData);
-            applyDataToUI(parsedCache); // 先用舊資料繪製畫面
-        } catch (e) {
-            console.log("快取解析失敗", e);
+            const response = await fetch(GAS_URL);
+            const rawData = await response.json();
+            
+            // 寫入本地快取
+            localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
+
+            // 用最新資料刷新畫面
+            applyDataToUI(rawData);
+        } catch (error) {
+            console.error("無法從雲端載入資料:", error);
         }
     }
 
-    // 2. 🌐 第二步：背景安靜地去抓雲端最新資料
-    try {
-        const response = await fetch(GAS_URL);
-        const rawData = await response.json();
+    // 🎯 將資料更新至畫面的獨立函數
+    function applyDataToUI(rawData) {
+        const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
         
-        // 寫入本地快取，供下次秒開使用
-        localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
+        bookings = bookingSource.map(b => {
+            b.date = formatSafeDate(b.date);
+            return b;
+        });
 
-        // 用最新資料刷新畫面
-        applyDataToUI(rawData);
-    } catch (error) {
-        console.error("無法從雲端載入資料:", error);
+        renderTable();
+        updateDashboard();
+        handleClassroomOrDateChange();
+
+        if (rawData.teachers && rawData.teachers.length > 0) {
+            teacherListData = rawData.teachers;
+        }
     }
-}
-
-// 🎯 將資料更新至畫面的獨立函數
-function applyDataToUI(rawData) {
-    const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
-    
-    bookings = bookingSource.map(b => {
-        b.date = formatSafeDate(b.date);
-        return b;
-    });
-
-    renderTable();
-    updateDashboard();
-    handleClassroomOrDateChange();
-
-    if (rawData.teachers && rawData.teachers.length > 0) {
-        teacherListData = rawData.teachers;
-    }
-}
 
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
@@ -1264,114 +1264,127 @@ function applyDataToUI(rawData) {
         });
     }
 
-    // ⚡【優化 1】：改為一次性批次刪除，不再逐筆 run 迴圈
-    async function deleteMergedGroup(idsArray) {
+    // ⚡【樂觀刪除】：0 秒體感回應 + 背景同步
+    function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
-        if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
-            try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
-                });
-                const resData = await response.json();
-                if (resData.status === 'success') {
-                    alert('🗑️ 資料已成功從雲端刪除！');
-                } else {
-                    alert('刪除失敗：' + resData.message);
-                }
-                loadBookingsFromServer();
-            } catch (error) {
-                console.error(error);
-                alert('網路連線異常，無法完整刪除合併的資料！');
-            }
-        }
-    }
+        if (!confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) return;
 
-    // 🔒【優化 2】：表單防重複點擊鎖定機制 (前端 UI Lock)
-    document.getElementById('bookingForm').onsubmit = async function(e) {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
-    const borrower = document.getElementById('borrower').value.trim();
-    const classroom = document.getElementById('classroom').value;
-    const date = document.getElementById('date').value;
+        // 1. 🚀【前端秒刪】：立刻從記憶體剔除
+        bookings = bookings.filter(b => !idsArray.includes(b.id));
 
-    if (!borrower) {
-        alert('⚠️ 請選擇或輸入「借用人姓名」！');
-        document.getElementById('borrower').focus();
-        return;
-    }
+        // 2. 🚀【本地寫入】：更新 LocalStorage
+        localStorage.setItem('cached_booking_data', JSON.stringify({ 
+            bookings: bookings, 
+            teachers: teacherListData 
+        }));
 
-    if (!classroom) {
-        alert('⚠️ 請選擇「借用教室」！');
-        showClassroomDropdown();
-        return;
-    }
-
-    const curCheckDate = new Date();
-    const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
-    if (date < todayFormatted) {
-        alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
-        document.getElementById('date').value = todayFormatted;
+        // 3. 🚀【畫面秒刷】：0 秒體感完成
+        renderTable();
+        updateDashboard();
         handleClassroomOrDateChange();
-        return;
-    }
 
-    const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-    if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
-
-    const hasConflict = bookings.some(b => 
-        b.classroom === classroom && b.date === date && 
-        b.periods.some(p => selectedPeriods.includes(p))
-    );
-
-    if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
-
-    // 🔒 防連擊
-    submitBtn.disabled = true;
-    submitBtn.textContent = '登記中...';
-
-    const newBookingObj = {
-        id: Date.now(),
-        borrower,
-        classroom,
-        date: date, 
-        periods: selectedPeriods
-    };
-
-    // 🚀【極速優化 1】：不等 GAS，立刻先更新本地記憶體與畫面！
-    bookings.push(newBookingObj);
-    localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
-    
-    // 渲染畫面（地圖與表格秒變更）
-    renderTable();
-    updateDashboard();
-
-    // 重置表單
-    document.getElementById('bookingForm').reset();
-    document.getElementById('date').value = document.getElementById('mapDate').value;
-    submitBtn.disabled = false;
-    submitBtn.textContent = '確認提交借用登記';
-
-    // 提示使用者成功 (此時體驗為 0.05 秒內完成！)
-    alert('🎉 恭喜您，教室登記成功！');
-
-    // 🚀【極速優化 2】：背景默默傳送給 GAS，完全不卡頓畫面
-    try {
-        const payload = { action: 'create', ...newBookingObj };
-        fetch(GAS_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload) 
-        }).then(res => res.json()).then(resData => {
+        // 4. 🌐【背景傳送】：默默請求 GAS 刪除
+        fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
+        })
+        .then(res => res.json())
+        .then(resData => {
             if (resData.status !== 'success') {
-                alert('⚠️ 雲端同步失敗：' + resData.message + '，將重新刷新資料');
-                loadBookingsFromServer(); // 若異常才回滾
+                alert('⚠️ 雲端刪除失敗：' + resData.message + '，將重新同步資料。');
+                loadBookingsFromServer(); 
             }
+        })
+        .catch(error => {
+            console.error("背景刪除連線錯誤:", error);
         });
-    } catch(error) {
-        console.error("背景同步失敗:", error);
     }
-};
+
+    // ⚡【樂觀提交】：0 秒秒速提交 + 背景同步
+    document.getElementById('bookingForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        const borrower = document.getElementById('borrower').value.trim();
+        const classroom = document.getElementById('classroom').value;
+        const date = document.getElementById('date').value;
+
+        if (!borrower) {
+            alert('⚠️ 請選擇或輸入「借用人姓名」！');
+            document.getElementById('borrower').focus();
+            return;
+        }
+
+        if (!classroom) {
+            alert('⚠️ 請選擇「借用教室」！');
+            showClassroomDropdown();
+            return;
+        }
+
+        const curCheckDate = new Date();
+        const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
+        if (date < todayFormatted) {
+            alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
+            document.getElementById('date').value = todayFormatted;
+            handleClassroomOrDateChange();
+            return;
+        }
+
+        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
+
+        const hasConflict = bookings.some(b => 
+            b.classroom === classroom && b.date === date && 
+            b.periods.some(p => selectedPeriods.includes(p))
+        );
+
+        if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+
+        // 🔒 防連擊
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登記中...';
+
+        const newBookingObj = {
+            id: Date.now(),
+            borrower,
+            classroom,
+            date: date, 
+            periods: selectedPeriods
+        };
+
+        // 🚀【極速 1】：不等 GAS，立刻先更新本地記憶體與畫面！
+        bookings.push(newBookingObj);
+        localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
+        
+        // 渲染畫面
+        renderTable();
+        updateDashboard();
+
+        // 重置表單
+        document.getElementById('bookingForm').reset();
+        document.getElementById('date').value = document.getElementById('mapDate').value;
+        submitBtn.disabled = false;
+        submitBtn.textContent = '確認提交借用登記';
+
+        // 提示成功 (0.01 秒體感)
+        alert('🎉 恭喜您，教室登記成功！');
+
+        // 🚀【極速 2】：背景默默傳送給 GAS
+        try {
+            const payload = { action: 'create', ...newBookingObj };
+            fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify(payload) 
+            }).then(res => res.json()).then(resData => {
+                if (resData.status !== 'success') {
+                    alert('⚠️ 雲端同步失敗：' + resData.message + '，將重新刷新資料');
+                    loadBookingsFromServer(); // 回滾
+                }
+            });
+        } catch(error) {
+            console.error("背景同步失敗:", error);
+        }
+    };
 
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
@@ -1391,7 +1404,7 @@ function applyDataToUI(rawData) {
         updateDashboard();
     }, 60000);
 
-    // 🔄【優化 3】：低流量智慧輪詢機制 (Smart Dynamic Polling)
+    // 🔄【低流量智慧輪詢】
     function startSmartPolling() {
         if (pollingTimer) clearInterval(pollingTimer);
         
@@ -1402,7 +1415,7 @@ function applyDataToUI(rawData) {
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
-            loadBookingsFromServer(); // 回到頁面時立刻更新一次
+            loadBookingsFromServer(); 
         }
         startSmartPolling();
     });
