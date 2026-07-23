@@ -371,6 +371,13 @@
             box-shadow: 0 6px 20px rgba(15, 76, 92, 0.3);
         }
 
+        button[type="submit"]:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         /* 紀錄表格 */
         .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; min-width: 750px; background-color: var(--white); }
@@ -534,7 +541,7 @@
                 </div>
             </div>
 
-            <button type="submit">確認提交借用登記</button>
+            <button type="submit" id="submitBtn">確認提交借用登記</button>
         </form>
     </div>
 
@@ -593,6 +600,8 @@
     ];
 
     let teacherListData = [];
+    let bookings = [];
+    let pollingTimer = null;
 
     function get24HourTimeString(d = new Date()) {
         const hours = String(d.getHours()).padStart(2, '0');
@@ -608,8 +617,6 @@
     document.getElementById('date').min = todayStr; // 🔒 鎖定最小可選日期為今天
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
-
-    let bookings = [];
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
@@ -683,7 +690,6 @@
 
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
-        // 💡 點擊或 Focus 對焦時自動開選單
         ['click', 'focus'].forEach(eventType => {
             borrowerInput.addEventListener(eventType, function(e) {
                 e.stopPropagation();
@@ -744,7 +750,6 @@
         }
     });
 
-    // 💡 自動為所有日期 (date) 與時間 (time) 欄位綁定點擊事件
     document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
         input.addEventListener('click', function() {
             try {
@@ -760,17 +765,15 @@
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         
-        // 取得特定教室在該日期的預約
         const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
 
-        // 💡 取得當前時間判斷過去日期與節次
         const nowTime = new Date();
         const curDateStr = `${nowTime.getFullYear()}-${String(nowTime.getMonth() + 1).padStart(2, '0')}-${String(nowTime.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(nowTime);
         
-        const isPastDate = selectedDate && (selectedDate < curDateStr); // 判斷是否為今天以前的日期
+        const isPastDate = selectedDate && (selectedDate < curDateStr);
         const isTodaySelected = (selectedDate === curDateStr);
 
         checkboxes.forEach(cb => {
@@ -779,13 +782,11 @@
             
             const isOccupied = allOccupiedPeriods.includes(cb.value);
 
-            // 判斷是否為今天的過去節次
             let isPastTime = false;
             if (isTodaySelected && periodInfo && curTimeStr > periodInfo.end) {
                 isPastTime = true;
             }
 
-            // 💡 若為過去日期、過去時間、或已預約，一律禁用劃掉
             if (isPastDate || isOccupied || isPastTime) {
                 cb.checked = false;
                 cb.disabled = true;
@@ -815,7 +816,6 @@
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
-        // 💡 即使沒選教室（room為空），只要有選擇日期，也會自動鎖定過去的日期或當天已過的節次！
         if (date) {
             refreshCheckboxStates(room, date);
         }
@@ -923,7 +923,6 @@
             const oldAlert = card.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
 
-            // 1️⃣ 08:00 ~ 08:10 上課前準備
             if (time >= "08:00" && time < "08:10") {
                 const firstBooking = roomBookings.find(b => b.periods.includes("第一節"));
                 if (firstBooking) {
@@ -954,7 +953,6 @@
                 }
             }
 
-            // 2️⃣ 🎯 下課時間專用邏輯 1：15:05 ~ 15:25 (第6節與第7節之間下課)
             if (time >= "15:05" && time < "15:25") {
                 const p6Booking = roomBookings.find(b => b.periods.includes("第六節"));
                 const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
@@ -992,7 +990,6 @@
                 }
             }
 
-            // 3️⃣ 🎯 下課時間專用邏輯 2：16:15 ~ 16:25 (第7節與第8節之間下課)
             if (time >= "16:15" && time < "16:25") {
                 const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
                 const p8Booking = roomBookings.find(b => b.periods.includes("第八節"));
@@ -1028,7 +1025,6 @@
                 }
             }
 
-            // 4️⃣ 17:15 ~ 17:25 第八節結束後收拾
             if (time >= "17:15" && time < "17:25") {
                 const eighthBooking = roomBookings.find(b => b.periods.includes("第八節"));
                 if (eighthBooking) {
@@ -1042,7 +1038,6 @@
                 }
             }
 
-            // 5️⃣ 正式上課時間 (時段內)
             const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
             if (!isBreakTime && currentPeriodIdx !== 10 && isOccupiedNow) {
                 const b = roomBookings.find(b => b.periods.includes(currentP));
@@ -1058,7 +1053,6 @@
                 return;
             }
 
-            // 6️⃣ 通用節次與節次間下課/交接時間判斷
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
                 const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
                 const nextPeriodObj = periodsConfig[currentPeriodIdx];     
@@ -1146,7 +1140,6 @@
                 }
             }
 
-            // 7️⃣ 預設空堂
             card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
             badge.textContent = "空堂";
             badge.style.backgroundColor = ""; 
@@ -1247,24 +1240,22 @@
         });
     }
 
+    // ⚡【優化 1】：改為一次性批次刪除，不再逐筆 run 迴圈
     async function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
         if (confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) {
             try {
-                for (const id of idsArray) {
-                    const response = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'delete', id: id })
-                    });
-                    const resData = await response.json();
-                    if (resData.status !== 'success') {
-                        alert('刪除過程中發生部分失敗：' + resData.message);
-                        loadBookingsFromServer();
-                        return;
-                    }
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
+                });
+                const resData = await response.json();
+                if (resData.status === 'success') {
+                    alert('🗑️ 資料已成功從雲端刪除！');
+                } else {
+                    alert('刪除失敗：' + resData.message);
                 }
-                alert('🗑️ 資料已成功從雲端刪除！');
                 loadBookingsFromServer();
             } catch (error) {
                 console.error(error);
@@ -1273,20 +1264,20 @@
         }
     }
 
+    // 🔒【優化 2】：表單防重複點擊鎖定機制 (前端 UI Lock)
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
         const classroom = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
 
-        // 1. 驗證借用人姓名
         if (!borrower) {
             alert('⚠️ 請選擇或輸入「借用人姓名」！');
             document.getElementById('borrower').focus();
             return;
         }
 
-        // 2. 驗證借用教室（未選則自動對焦並彈出選單）
         if (!classroom) {
             alert('⚠️ 請選擇「借用教室」！');
             const classroomIn = document.getElementById('classroom');
@@ -1295,7 +1286,6 @@
             return;
         }
 
-        // 3. 驗證借用日期（禁止過去日期）
         const curCheckDate = new Date();
         const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
         if (date < todayFormatted) {
@@ -1305,7 +1295,6 @@
             return;
         }
 
-        // 4. 驗證節次與衝突檢查
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
@@ -1316,6 +1305,10 @@
         );
 
         if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+
+        // 鎖定按鈕避免連擊
+        submitBtn.disabled = true;
+        submitBtn.textContent = '處理中，請稍候...';
 
         const newBooking = {
             action: 'create',
@@ -1339,6 +1332,10 @@
             }
         } catch(error) {
             alert('網路連線異常，登記失敗！');
+        } finally {
+            // 解鎖按鈕
+            submitBtn.disabled = false;
+            submitBtn.textContent = '確認提交借用登記';
         }
     };
 
@@ -1354,17 +1351,34 @@
         handleClassroomOrDateChange();
     };
     
+    // 時鐘微調（每分鐘）
     setInterval(() => {
         document.getElementById('mapTime').value = get24HourTimeString();
         updateDashboard();
     }, 60000);
 
-    setInterval(loadBookingsFromServer, 20000);
+    // 🔄【優化 3】：低流量智慧輪詢機制 (Smart Dynamic Polling)
+    function startSmartPolling() {
+        if (pollingTimer) clearInterval(pollingTimer);
+        
+        // 視窗前景：15秒更新一次；視窗背景：60秒更新一次
+        const interval = document.hidden ? 60000 : 15000;
+        pollingTimer = setInterval(loadBookingsFromServer, interval);
+    }
 
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            loadBookingsFromServer(); // 回到頁面時立刻更新一次
+        }
+        startSmartPolling();
+    });
+
+    // 初始化啟動
     loadBookingsFromServer();
     renderTable();
     updateDashboard();
-    handleClassroomOrDateChange(); // 💡 網頁初次載入時自動處理當天或過去日期的節次
+    handleClassroomOrDateChange();
+    startSmartPolling();
 </script>
 
 </body>
