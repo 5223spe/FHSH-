@@ -160,7 +160,7 @@
         /* 🗺️ 平面圖外框 */
         .floor-grid-wrapper {
             background-color: #2c3e50; 
-            padding: 12px; /* 💡 四邊深藍邊框加大 */
+            padding: 10px; /* 💡 電腦版比先前小 2px (原本為 12px) */
             border-radius: 16px;
             overflow: hidden;
             width: 100%;
@@ -415,13 +415,29 @@
 
         /* 📱 手機版 RWD 最佳化 */
         @media (max-width: 768px) {
+            /* 💡 手機版縮小頂部深藍色區塊高度 */
+            header {
+                padding: 20px 12px !important; 
+                border-bottom: 4px solid var(--palette-yellow) !important;
+            }
+
+            .header-logo-group {
+                margin-bottom: 4px !important;
+            }
+
             header h1 {
-                font-size: 26px !important; /* 💡 手機版字體微調放大 (原 24px) */
-                line-height: 1.7 !important; /* 💡 手機版兩行間距加大 (原 1.4) */
+                font-size: 26px !important;
+                line-height: 1.6 !important;
+            }
+
+            header p {
+                font-size: 14px !important;
+                letter-spacing: 2px !important;
+                margin-top: 4px !important;
             }
 
             .br-mobile {
-                display: block !important; /* 💡 手機版啟用斷行 */
+                display: block !important;
             }
 
             .container {
@@ -455,7 +471,7 @@
             }
 
             .floor-grid-wrapper {
-                padding: 10px !important; /* 💡 手機版邊框同步適度加大 */
+                padding: 8px !important;
             }
 
             .floor-grid {
@@ -496,7 +512,7 @@
                 margin-bottom: 4px !important;
             }
 
-            /* 對應圖一／圖二雙欄佈局 */
+            /* 對應雙欄佈局 */
             #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
             #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
 
