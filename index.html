@@ -3,16 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國立鳳新高級中學 輔導室 教室借用</title>
-<!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v14">
-<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
-    <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
-    <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
-    <link rel="apple-touch-icon" href="app-logo.png?v=2026">
-    
+    <title>國立鳳新高級中學 輔導室 - 教室借用</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* 頁首標題區塊樣式 */
+        .site-header {
+            background-color: #003366; /* 學校風格藍色背景 */
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .site-title {
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        /* ------------------------------------
+           RWD 斷行控制邏輯
+        ------------------------------------ */
+        
+        /* 預設（電腦版）：隱藏手機換行，顯示電腦換行 */
+        .br-mobile {
+            display: none;
+        }
+
+        .br-desktop {
+            display: inline;
+        }
+
+        /* 當螢幕寬度為 768px 或更小時（手機版/平板） */
+        @media (max-width: 768px) {
+            .site-title {
+                font-size: 20px; /* 手機版字體微調，避免文字溢出 */
+            }
+
+            .br-mobile {
+                display: inline; /* 顯示手機換行 */
+            }
+
+            .br-desktop {
+                display: none; /* 隱藏電腦換行 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頁頭標題區塊 -->
+    <header class="site-header">
+        <h1 class="site-title">
+            國立鳳新高級中學
+            <br class="br-mobile"> <!-- 手機版斷行處 -->
+            輔導室
+            <br class="br-desktop"> <!-- 電腦版斷行處 -->
+            教室借用
+        </h1>
+    </header>
+
+    <!-- 網頁主要內容區（可自行替換） -->
+    <main style="padding: 40px; text-align: center;">
+        <h2>教室借用系統內容區</h2>
+        <p>請在此處放入表格或借用表單等資訊。</p>
+    </main>
+
+</body>
+</html>
         :root {
             /* Warm Summer Palette 經典配色 */
             --palette-yellow: #F3A953; 
@@ -388,8 +455,9 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
+        /* 💡 保持「清除篩選」單行排列 */
         .btn-clear-filter {
-            padding: 8px 10px;
+            padding: 8px 12px;
             background: #e2e8f0;
             color: var(--text-dark);
             border: none;
@@ -397,10 +465,9 @@
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            white-space: normal; /* 允許自動換行 */
+            white-space: nowrap; /* 強制單行不換行 */
             line-height: 1.2;
             text-align: center;
-            width: 50px; /* 固定寬度讓文字漂亮分兩行 */
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -446,7 +513,6 @@
                 padding: 4px !important;
             }
 
-            /* 💡 高度調升至 135px，比照圖二呈現更方正可愛的長寬比 */
             .floor-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -495,8 +561,6 @@
             #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
             #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
 
-            /* 分隔區 */
-
             #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
 
             #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
@@ -512,7 +576,6 @@
 
 <header>
     <div class="header-logo-group">
-        <!-- 💡 使用 nowrap 鎖定「輔導室」，確保「輔導」與「室」永遠不拆開 -->
         <h1>國立鳳新高級中學<br><span style="white-space: nowrap;">輔導室</span> 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
@@ -655,8 +718,8 @@
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
                 <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                <!-- 💡 專屬 class 確保「清除篩選」在兩行時為「清除 / 篩選」 -->
-                <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除<br>篩選</button>
+                <!-- 💡 單行顯示「清除篩選」 -->
+                <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
         <div class="table-responsive">
