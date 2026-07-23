@@ -31,9 +31,7 @@
             --warning: #ea580c; 
         }
 
-        *, *::before, *::after { 
-            box-sizing: border-box; 
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         html, body {
             max-width: 100%;
@@ -52,8 +50,6 @@
         /* 讓所有日期與時間欄位呈現可點擊的手勢 */
         input[type="date"], input[type="time"] {
             cursor: pointer;
-            box-sizing: border-box;
-            max-width: 100%;
         }
 
         /* 🏆 頂部標題區 */
@@ -107,7 +103,6 @@
             max-width: 1100px;
             margin: 30px auto;
             padding: 0 20px;
-            box-sizing: border-box;
         }
 
         /* 卡片設計 */
@@ -118,8 +113,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.03);
             margin-bottom: 35px;
             border: 1px solid rgba(0,0,0,0.01);
-            box-sizing: border-box;
-            width: 100%;
         }
 
         h2 {
@@ -149,23 +142,10 @@
             padding: 18px 20px;
             border-radius: 14px;
             border: 1px solid #f1ece4;
-            box-sizing: border-box;
-            width: 100%;
         }
 
-        .control-item { 
-            flex: 1; 
-            min-width: 0; /* 💡 避免 flex item 被內部 input 硬撐開 */
-            box-sizing: border-box;
-        }
-        
-        .control-item label { 
-            display: block; 
-            font-weight: 700; 
-            margin-bottom: 8px; 
-            color: var(--palette-blue-2); 
-            font-size: 15px; 
-        }
+        .control-item { flex: 1; min-width: 200px; }
+        .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
         /* 💡 圖示說明欄 */
         .legend-bar {
@@ -190,7 +170,6 @@
             overflow: hidden;
             width: 100%;
             box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-            box-sizing: border-box;
         }
 
         .floor-grid {
@@ -210,6 +189,7 @@
             cursor: pointer;
             transition: transform 0.25s, box-shadow 0.25s;
             position: relative;
+            border-radius: 12px; 
         }
 
         .room-card:hover {
@@ -276,13 +256,7 @@
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
         /* 表單與欄位樣式 */
-        .form-group { 
-            margin-bottom: 20px; 
-            position: relative; 
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
+        .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 16px; color: var(--palette-blue-2); }
 
         input, select {
@@ -293,14 +267,11 @@
             font-size: 15px;
             font-family: inherit;
             transition: all 0.3s;
-            box-sizing: border-box; /* 💡 防止 border 和 padding 擠出容器 */
-            max-width: 100%;
         }
 
         .borrower-wrapper {
             position: relative;
             width: 100%;
-            box-sizing: border-box;
         }
 
         #borrower, #classroom {
@@ -326,7 +297,6 @@
             z-index: 99999;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             display: none;
-            box-sizing: border-box;
         }
 
         .custom-dropdown-item {
@@ -373,8 +343,6 @@
             padding: 20px;
             border-radius: 14px;
             border: 2px solid #f1ece4;
-            box-sizing: border-box;
-            width: 100%;
         }
 
         .checkbox-item {
@@ -411,7 +379,6 @@
             margin-top: 15px;
             font-family: inherit;
             box-shadow: 0 4px 15px rgba(15, 76, 92, 0.2);
-            box-sizing: border-box;
         }
 
         button[type="submit"]:hover {
@@ -428,7 +395,7 @@
         }
 
         /* 紀錄表格 */
-        .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; width: 100%; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; background-color: var(--white); }
         th { background: #f8fafc; padding: 15px; text-align: left; font-size: 15px; color: var(--palette-blue-2); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
@@ -489,27 +456,22 @@
                 padding: 0 10px !important; 
                 margin: 15px auto !important;
                 max-width: 100vw;
-                overflow-x: hidden; 
+                overflow-x: hidden; /* 💡 確保內容不把頁面往右撐開 */
             }
 
             .card {
-                padding: 16px 10px !important; 
+                padding: 16px 12px !important; 
                 border-radius: 14px !important;
-                width: 100% !important;
             }
 
-            /* 💡 修正手機版灰色控制框超出問題 */
             .map-controls {
                 flex-direction: column !important;
-                gap: 10px !important;
-                padding: 10px 12px !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
+                gap: 12px !important;
+                padding: 12px 15px !important;
             }
 
             .control-item {
-                width: 100% !important;
-                min-width: 0 !important;
+                min-width: 100% !important;
             }
 
             .control-item label {
@@ -517,14 +479,9 @@
                 margin-bottom: 4px !important;
             }
 
-            /* 💡 強制讓手機版的日期與時間輸入框不溢出 */
-            .control-item input,
-            .form-group input {
-                width: 100% !important;
-                max-width: 100% !important;
+            .control-item input {
                 padding: 10px 12px !important;
                 font-size: 14px !important;
-                box-sizing: border-box !important;
             }
 
             .floor-grid-wrapper {
@@ -734,9 +691,9 @@
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
             <h2 style="margin: 0;">最近借用紀錄清單</h2>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
                 <!-- 💡 單行顯示「清除篩選」 -->
                 <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
