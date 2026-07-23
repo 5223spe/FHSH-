@@ -87,6 +87,13 @@
             font-weight: 500;
         }
 
+        /* ------------------------------------
+           RWD 斷行與標題文字控制
+        ------------------------------------ */
+        .br-mobile {
+            display: none;
+        }
+
         .container {
             max-width: 1100px;
             margin: 30px auto;
@@ -153,8 +160,8 @@
         /* 🗺️ 平面圖外框 */
         .floor-grid-wrapper {
             background-color: #2c3e50; 
-            padding: 5px;
-            border-radius: 12px;
+            padding: 12px; /* 💡 四邊深藍邊框加大 */
+            border-radius: 16px;
             overflow: hidden;
             width: 100%;
             box-shadow: 0 6px 20px rgba(0,0,0,0.05);
@@ -409,7 +416,12 @@
         /* 📱 手機版 RWD 最佳化 */
         @media (max-width: 768px) {
             header h1 {
-                font-size: 24px !important;
+                font-size: 26px !important; /* 💡 手機版字體微調放大 (原 24px) */
+                line-height: 1.7 !important; /* 💡 手機版兩行間距加大 (原 1.4) */
+            }
+
+            .br-mobile {
+                display: block !important; /* 💡 手機版啟用斷行 */
             }
 
             .container {
@@ -443,7 +455,7 @@
             }
 
             .floor-grid-wrapper {
-                padding: 4px !important;
+                padding: 10px !important; /* 💡 手機版邊框同步適度加大 */
             }
 
             .floor-grid {
@@ -509,7 +521,8 @@
 
 <header>
     <div class="header-logo-group">
-        <h1>國立鳳新高級中學<br><span style="white-space: nowrap;">輔導室</span> 教室借用</h1>
+        <!-- 電腦版同一行，手機版顯示 br-mobile 斷行 -->
+        <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
 </header>
