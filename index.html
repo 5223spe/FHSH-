@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
 <!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
-    <link rel="manifest" href="manifest-v2.json?v=2026_v13">
+    <link rel="manifest" href="manifest-v2.json?v=2026_v14">
 <!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
@@ -65,15 +65,18 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 10px;
+            width: 100%;
         }
 
         header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: 30px;
             color: var(--white);
             letter-spacing: 2px;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.4;
+            word-break: keep-all; /* 防止單字在中途斷開 */
         }
 
         header p {
@@ -385,19 +388,40 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
-        /* 📱 手機版 RWD 最佳化 (滿版 + 頂部控制列修正) */
+        .btn-clear-filter {
+            padding: 8px 10px;
+            background: #e2e8f0;
+            color: var(--text-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: normal; /* 允許自動換行 */
+            line-height: 1.2;
+            text-align: center;
+            width: 50px; /* 固定寬度讓文字漂亮分兩行 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 📱 手機版 RWD 最佳化 */
         @media (max-width: 768px) {
+            header h1 {
+                font-size: 24px !important;
+            }
+
             .container {
-                padding: 0 6px !important; /* 縮小兩側留白，最大化空間 */
+                padding: 0 6px !important; 
                 margin: 15px auto !important;
             }
 
             .card {
-                padding: 16px 12px !important; /* 內部卡片縮小外邊距 */
+                padding: 16px 12px !important; 
                 border-radius: 14px !important;
             }
 
-            /* 頂部日期與系統時間列修正：改為兩欄直立或彈性縮放，避免壓縮跑版 */
             .map-controls {
                 flex-direction: column !important;
                 gap: 12px !important;
@@ -418,52 +442,50 @@
                 font-size: 14px !important;
             }
 
-            /* 1. 外框網格：調整列高，最大化寬度與空間利用 */
             .floor-grid-wrapper {
                 padding: 4px !important;
             }
 
+            /* 💡 高度調升至 135px，比照圖二呈現更方正可愛的長寬比 */
             .floor-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                grid-template-rows: 110px 110px 110px 18px 110px 110px !important;
-                grid-auto-rows: 110px !important;
+                grid-template-rows: 135px 135px 135px 18px 135px 135px !important;
+                grid-auto-rows: 135px !important;
                 grid-template-areas: none !important;
                 gap: 6px !important;
             }
 
-            /* 2. 隱藏電腦版留白用的舊 div */
             .floor-grid > div:not(.room-card) {
                 display: none !important;
             }
 
-            /* 3. 卡片內縮與比例調整 */
             .room-card,
             .room-card.span-vertical {
                 grid-row: auto !important;
                 grid-column: auto !important;
                 height: 100% !important;
                 min-height: 0 !important;
-                padding: 8px 5px !important;
-                border-radius: 8px !important;
+                padding: 12px 6px !important;
+                border-radius: 10px !important;
             }
 
             .room-name {
-                font-size: 16px !important;
-                margin-bottom: 2px !important;
+                font-size: 18px !important;
+                margin-bottom: 4px !important;
             }
 
             .room-info {
-                font-size: 11px !important;
+                font-size: 12px !important;
             }
 
             .status-badge {
-                font-size: 10px !important;
-                padding: 1px 8px !important;
-                margin-bottom: 3px !important;
+                font-size: 11px !important;
+                padding: 2px 10px !important;
+                margin-bottom: 4px !important;
             }
 
-            /* 4. 精確對應位置（圖一邏輯：前對後、樓層區隔明確） */
+            /* 對應圖一／圖二雙欄佈局 */
             #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
             #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
 
@@ -473,7 +495,7 @@
             #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
             #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
 
-            /* --- 第 4 排（18px）為空白分隔區 --- */
+            /* 分隔區 */
 
             #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
 
@@ -490,7 +512,8 @@
 
 <header>
     <div class="header-logo-group">
-        <h1>國立鳳新高級中學 輔導室 教室借用</h1>
+        <!-- 💡 使用 nowrap 鎖定「輔導室」，確保「輔導」與「室」永遠不拆開 -->
+        <h1>國立鳳新高級中學<br><span style="white-space: nowrap;">輔導室</span> 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
 </header>
@@ -617,7 +640,7 @@
                     <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 (12:35-13:10)</label>
                     <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 (13:15-14:05)</label>
                     <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> 第六節 (14:15-15:05)</label>
-                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第第七節 (15:25-16:15)</label>
+                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第七節 (15:25-16:15)</label>
                     <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 (16:25-17:15)</label>
                 </div>
             </div>
@@ -629,10 +652,11 @@
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
             <h2 style="margin: 0;">最近借用紀錄清單</h2>
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 170px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                <button type="button" style="padding: 8px 12px; background: #e2e8f0; color: var(--text-dark); border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
+                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+                <!-- 💡 專屬 class 確保「清除篩選」在兩行時為「清除 / 篩選」 -->
+                <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除<br>篩選</button>
             </div>
         </div>
         <div class="table-responsive">
@@ -683,7 +707,7 @@
     let teacherListData = [];
     let bookings = [];
     let pollingTimer = null;
-    let pendingDeletedIds = new Set(); // 🆕 新增：追蹤背景處理中的刪除 ID
+    let pendingDeletedIds = new Set();
 
     function get24HourTimeString(d = new Date()) {
         const hours = String(d.getHours()).padStart(2, '0');
@@ -696,7 +720,7 @@
     const timeStr = get24HourTimeString(now);
     
     document.getElementById('date').value = todayStr;
-    document.getElementById('date').min = todayStr; // 🔒 鎖定最小可選日期為今天
+    document.getElementById('date').min = todayStr;
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
 
@@ -717,11 +741,9 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // ⚡【優化】：開啟網頁先讀 LocalStorage 秒開，背景再同步最新資料
     async function loadBookingsFromServer() {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-        // 1. 🚀 第一步：樂觀載入本地快取
         const cachedData = localStorage.getItem('cached_booking_data');
         if (cachedData) {
             try {
@@ -732,26 +754,20 @@
             }
         }
 
-        // 2. 🌐 第二步：背景安靜地去抓雲端最新資料
         try {
             const response = await fetch(GAS_URL);
             const rawData = await response.json();
             
-            // 寫入本地快取
             localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
-
-            // 用最新資料刷新畫面
             applyDataToUI(rawData);
         } catch (error) {
             console.error("無法從雲端載入資料:", error);
         }
     }
 
-    // 🎯 將資料更新至畫面的獨立函數
     function applyDataToUI(rawData) {
         const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
         
-        // 💡 自動過濾掉還在背景處理刪除中的紀錄
         bookings = bookingSource
             .filter(b => !pendingDeletedIds.has(b.id))
             .map(b => {
@@ -1349,7 +1365,6 @@
         });
     }
 
-    // ⚡【樂觀刪除】：0 秒體感回應 + 背景同步
     function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
@@ -1396,7 +1411,6 @@
         });
     }
 
-    // ⚡【樂觀提交】：0 秒秒速提交 + 背景同步
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
