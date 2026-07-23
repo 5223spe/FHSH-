@@ -1272,7 +1272,7 @@
     function deleteMergedGroup(idsArray) {
     if (!idsArray || idsArray.length === 0) return;
     
-    if (!confirm('確定要刪除此欄位內合併的所有預約紀錄嗎？')) return;
+    if (!confirm('確定要刪除這筆預約紀錄嗎？')) return;
 
     // 1. 🆕 將這些 ID 加入黑名單，防止背景刷新時舊資料跑出來
     idsArray.forEach(id => pendingDeletedIds.add(id));
