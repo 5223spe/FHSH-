@@ -385,68 +385,101 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
-       @media (max-width: 768px) {
-    /* 1. 外框網格：調整列高為 110px，並在第 3 排與第 4 排之間加入 18px 的分隔列 */
-    .floor-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        /* 第 1~3 排高 110px ｜ 第 4 排分隔區高 18px ｜ 第 5~6 排高 110px */
-        grid-template-rows: 110px 110px 110px 18px 110px 110px !important;
-        grid-auto-rows: 110px !important;
-        grid-template-areas: none !important;
-        gap: 6px !important;
-    }
+        /* 📱 手機版 RWD 最佳化 (滿版 + 頂部控制列修正) */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 6px !important; /* 縮小兩側留白，最大化空間 */
+                margin: 15px auto !important;
+            }
 
-    /* 2. 隱藏電腦版留白用的舊 div */
-    .floor-grid > div:not(.room-card) {
-        display: none !important;
-    }
+            .card {
+                padding: 16px 12px !important; /* 內部卡片縮小外邊距 */
+                border-radius: 14px !important;
+            }
 
-    /* 3. 卡片內縮與比例調整（讓它像圖片一樣精緻） */
-    .room-card,
-    .room-card.span-vertical {
-        grid-row: auto !important;
-        grid-column: auto !important;
-        height: 100% !important;
-        min-height: 0 !important;
-        padding: 8px 5px !important; /* 縮小內留白 */
-    }
+            /* 頂部日期與系統時間列修正：改為兩欄直立或彈性縮放，避免壓縮跑版 */
+            .map-controls {
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 12px 15px !important;
+            }
 
-    .room-name {
-        font-size: 16px !important;  /* 稍微縮小教室名稱字體 */
-        margin-bottom: 2px !important;
-    }
+            .control-item {
+                min-width: 100% !important;
+            }
 
-    .room-info {
-        font-size: 11px !important;  /* 縮小底部說明文字 */
-    }
+            .control-item label {
+                font-size: 14px !important;
+                margin-bottom: 4px !important;
+            }
 
-    .status-badge {
-        font-size: 10px !important;
-        padding: 1px 8px !important;
-        margin-bottom: 3px !important;
-    }
+            .control-item input {
+                padding: 10px 12px !important;
+                font-size: 14px !important;
+            }
 
-    /* 4. 精確對應位置（注意：因為中間加了分隔列，6F 教室順延到第 5、6 排） */
-    #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
-    #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
+            /* 1. 外框網格：調整列高，最大化寬度與空間利用 */
+            .floor-grid-wrapper {
+                padding: 4px !important;
+            }
 
-    #map-團輔室    { grid-row: 2 !important; grid-column: 1 !important; }
-    #map-向圓      { grid-row: 2 !important; grid-column: 2 !important; }
+            .floor-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-rows: 110px 110px 110px 18px 110px 110px !important;
+                grid-auto-rows: 110px !important;
+                grid-template-areas: none !important;
+                gap: 6px !important;
+            }
 
-    #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
-    #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
+            /* 2. 隱藏電腦版留白用的舊 div */
+            .floor-grid > div:not(.room-card) {
+                display: none !important;
+            }
 
-    /* --- 第 4 排（18px）為空白分隔區 --- */
+            /* 3. 卡片內縮與比例調整 */
+            .room-card,
+            .room-card.span-vertical {
+                grid-row: auto !important;
+                grid-column: auto !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                padding: 8px 5px !important;
+                border-radius: 8px !important;
+            }
 
-    #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
+            .room-name {
+                font-size: 16px !important;
+                margin-bottom: 2px !important;
+            }
 
-    #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
-    #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
-}
-            .room-card.span-vertical { grid-row: span 1 !important; }
-            .room-card { min-height: 120px; border-radius: 8px; }
-            .room-name { font-size: 18px; }
+            .room-info {
+                font-size: 11px !important;
+            }
+
+            .status-badge {
+                font-size: 10px !important;
+                padding: 1px 8px !important;
+                margin-bottom: 3px !important;
+            }
+
+            /* 4. 精確對應位置（圖一邏輯：前對後、樓層區隔明確） */
+            #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
+            #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
+
+            #map-團輔室    { grid-row: 2 !important; grid-column: 1 !important; }
+            #map-向圓      { grid-row: 2 !important; grid-column: 2 !important; }
+
+            #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
+            #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
+
+            /* --- 第 4 排（18px）為空白分隔區 --- */
+
+            #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
+
+            #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
+            #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
+
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
         }
@@ -688,7 +721,7 @@
     async function loadBookingsFromServer() {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-        // 1. 🚀 第一步：立刻讀取本地快取 (0.01秒瞬間繪製)
+        // 1. 🚀 第一步：樂觀載入本地快取
         const cachedData = localStorage.getItem('cached_booking_data');
         if (cachedData) {
             try {
@@ -716,24 +749,24 @@
 
     // 🎯 將資料更新至畫面的獨立函數
     function applyDataToUI(rawData) {
-    const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
-    
-    // 💡 自動過濾掉還在背景處理刪除中的紀錄，徹底解決「閃現」問題
-    bookings = bookingSource
-        .filter(b => !pendingDeletedIds.has(b.id))
-        .map(b => {
-            b.date = formatSafeDate(b.date);
-            return b;
-        });
+        const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
+        
+        // 💡 自動過濾掉還在背景處理刪除中的紀錄
+        bookings = bookingSource
+            .filter(b => !pendingDeletedIds.has(b.id))
+            .map(b => {
+                b.date = formatSafeDate(b.date);
+                return b;
+            });
 
-    renderTable();
-    updateDashboard();
-    handleClassroomOrDateChange();
+        renderTable();
+        updateDashboard();
+        handleClassroomOrDateChange();
 
-    if (rawData.teachers && rawData.teachers.length > 0) {
-        teacherListData = rawData.teachers;
+        if (rawData.teachers && rawData.teachers.length > 0) {
+            teacherListData = rawData.teachers;
+        }
     }
-}
 
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
@@ -1318,57 +1351,50 @@
 
     // ⚡【樂觀刪除】：0 秒體感回應 + 背景同步
     function deleteMergedGroup(idsArray) {
-    if (!idsArray || idsArray.length === 0) return;
-    
-    // 💡 1. 找出該筆預約紀錄的「借用人姓名」與「日期」
-    const targetBooking = bookings.find(b => idsArray.includes(b.id));
-    const borrowerName = targetBooking ? targetBooking.borrower : '';
-    const bookingDate = targetBooking ? targetBooking.date : '';
+        if (!idsArray || idsArray.length === 0) return;
+        
+        const targetBooking = bookings.find(b => idsArray.includes(b.id));
+        const borrowerName = targetBooking ? targetBooking.borrower : '';
+        const bookingDate = targetBooking ? targetBooking.date : '';
 
-    // 💡 2. 動態組合提示文字：同時呈現【日期】與【姓名】
-    const confirmMsg = (borrowerName && bookingDate) 
-        ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預預嗎？` 
-        : '確定要刪除這筆預約嗎？';
+        const confirmMsg = (borrowerName && bookingDate) 
+            ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預約嗎？` 
+            : '確定要刪除這筆預約嗎？';
 
-    if (!confirm(confirmMsg)) return;
+        if (!confirm(confirmMsg)) return;
 
-    // 3. 將 ID 加入黑名單，防止背景自動更新時舊資料閃現
-    idsArray.forEach(id => pendingDeletedIds.add(id));
+        idsArray.forEach(id => pendingDeletedIds.add(id));
 
-    // 4. 前端秒刪 (樂觀刪除)
-    bookings = bookings.filter(b => !idsArray.includes(b.id));
+        bookings = bookings.filter(b => !idsArray.includes(b.id));
 
-    // 5. 更新 LocalStorage
-    localStorage.setItem('cached_booking_data', JSON.stringify({ 
-        bookings: bookings, 
-        teachers: teacherListData 
-    }));
+        localStorage.setItem('cached_booking_data', JSON.stringify({ 
+            bookings: bookings, 
+            teachers: teacherListData 
+        }));
 
-    // 6. 畫面瞬間刷更新
-    renderTable();
-    updateDashboard();
-    handleClassroomOrDateChange();
+        renderTable();
+        updateDashboard();
+        handleClassroomOrDateChange();
 
-    // 7. 背景請求 GAS 刪除
-    fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
-    })
-    .then(res => res.json())
-    .then(resData => {
-        if (resData.status === 'success') {
+        fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
+        })
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.status === 'success') {
+                idsArray.forEach(id => pendingDeletedIds.delete(id));
+            } else {
+                idsArray.forEach(id => pendingDeletedIds.delete(id));
+                alert('⚠️ 雲端刪除失敗：' + resData.message + '，將重新同步資料。');
+                loadBookingsFromServer(); 
+            }
+        })
+        .catch(error => {
             idsArray.forEach(id => pendingDeletedIds.delete(id));
-        } else {
-            idsArray.forEach(id => pendingDeletedIds.delete(id));
-            alert('⚠️ 雲端刪除失敗：' + resData.message + '，將重新同步資料。');
-            loadBookingsFromServer(); 
-        }
-    })
-    .catch(error => {
-        idsArray.forEach(id => pendingDeletedIds.delete(id));
-        console.error("背景刪除連線錯誤:", error);
-    });
-}
+            console.error("背景刪除連線錯誤:", error);
+        });
+    }
 
     // ⚡【樂觀提交】：0 秒秒速提交 + 背景同步
     document.getElementById('bookingForm').onsubmit = async function(e) {
@@ -1409,7 +1435,6 @@
 
         if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
 
-        // 🔒 防連擊
         submitBtn.disabled = true;
         submitBtn.textContent = '登記中...';
 
@@ -1421,24 +1446,19 @@
             periods: selectedPeriods
         };
 
-        // 🚀【極速 1】：不等 GAS，立刻先更新本地記憶體與畫面！
         bookings.push(newBookingObj);
         localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
         
-        // 渲染畫面
         renderTable();
         updateDashboard();
 
-        // 重置表單
         document.getElementById('bookingForm').reset();
         document.getElementById('date').value = document.getElementById('mapDate').value;
         submitBtn.disabled = false;
         submitBtn.textContent = '確認提交借用登記';
 
-        // 提示成功 (0.01 秒體感)
         alert('🎉 恭喜您，教室登記成功！');
 
-        // 🚀【極速 2】：背景默默傳送給 GAS
         try {
             const payload = { action: 'create', ...newBookingObj };
             fetch(GAS_URL, { 
@@ -1447,7 +1467,7 @@
             }).then(res => res.json()).then(resData => {
                 if (resData.status !== 'success') {
                     alert('⚠️ 雲端同步失敗：' + resData.message + '，將重新刷新資料');
-                    loadBookingsFromServer(); // 回滾
+                    loadBookingsFromServer(); 
                 }
             });
         } catch(error) {
@@ -1467,17 +1487,13 @@
         handleClassroomOrDateChange();
     };
     
-    // 時鐘微調（每分鐘）
     setInterval(() => {
         document.getElementById('mapTime').value = get24HourTimeString();
         updateDashboard();
     }, 60000);
 
-    // 🔄【低流量智慧輪詢】
     function startSmartPolling() {
         if (pollingTimer) clearInterval(pollingTimer);
-        
-        // 視窗前景：15秒更新一次；視窗背景：60秒更新一次
         const interval = document.hidden ? 60000 : 15000;
         pollingTimer = setInterval(loadBookingsFromServer, interval);
     }
@@ -1489,7 +1505,6 @@
         startSmartPolling();
     });
 
-    // 初始化啟動
     loadBookingsFromServer();
     renderTable();
     updateDashboard();
