@@ -386,31 +386,48 @@
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
        @media (max-width: 768px) {
-    /* 1. 外框：強制鎖定為 2 欄，每排高度一律 130px */
+    /* 1. 外框網格：調整列高為 110px，並在第 3 排與第 4 排之間加入 18px 的分隔列 */
     .floor-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        grid-template-rows: repeat(5, 130px) !important;
-        grid-auto-rows: 130px !important;
-        grid-template-areas: none !important; /* 清除區域設定 */
-        gap: 8px !important;
+        /* 第 1~3 排高 110px ｜ 第 4 排分隔區高 18px ｜ 第 5~6 排高 110px */
+        grid-template-rows: 110px 110px 110px 18px 110px 110px !important;
+        grid-auto-rows: 110px !important;
+        grid-template-areas: none !important;
+        gap: 6px !important;
     }
 
-    /* 2. 隱藏電腦版留白用的分隔 div，不讓它佔位 */
+    /* 2. 隱藏電腦版留白用的舊 div */
     .floor-grid > div:not(.room-card) {
         display: none !important;
     }
 
-    /* 3. 重置所有卡片的合併屬性，強制填滿格子 */
+    /* 3. 卡片內縮與比例調整（讓它像圖片一樣精緻） */
     .room-card,
     .room-card.span-vertical {
         grid-row: auto !important;
         grid-column: auto !important;
         height: 100% !important;
         min-height: 0 !important;
+        padding: 8px 5px !important; /* 縮小內留白 */
     }
 
-    /* 4. 手動指定每一間教室在手機版的座標 (橫排 / 直行) */
+    .room-name {
+        font-size: 16px !important;  /* 稍微縮小教室名稱字體 */
+        margin-bottom: 2px !important;
+    }
+
+    .room-info {
+        font-size: 11px !important;  /* 縮小底部說明文字 */
+    }
+
+    .status-badge {
+        font-size: 10px !important;
+        padding: 1px 8px !important;
+        margin-bottom: 3px !important;
+    }
+
+    /* 4. 精確對應位置（注意：因為中間加了分隔列，6F 教室順延到第 5、6 排） */
     #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
     #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
 
@@ -420,11 +437,12 @@
     #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
     #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
 
-    /* 第 4 排左邊空著，6F Z空間在右邊 */
-    #map-6F\ Z空間 { grid-row: 4 !important; grid-column: 2 !important; }
+    /* --- 第 4 排（18px）為空白分隔區 --- */
 
     #map-6F潛能教室 { grid-row: 5 !important; grid-column: 1 !important; }
     #map-6F資藝教室 { grid-row: 5 !important; grid-column: 2 !important; }
+
+    #map-6F\ Z空間 { grid-row: 6 !important; grid-column: 2 !important; }
 }
             .room-card.span-vertical { grid-row: span 1 !important; }
             .room-card { min-height: 120px; border-radius: 8px; }
