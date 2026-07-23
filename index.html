@@ -536,7 +536,7 @@
                     <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 (12:35-13:10)</label>
                     <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 (13:15-14:05)</label>
                     <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> 第六節 (14:15-15:05)</label>
-                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第七節 (15:25-16:15)</label>
+                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第第七節 (15:25-16:15)</label>
                     <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 (16:25-17:15)</label>
                 </div>
             </div>
@@ -1005,7 +1005,7 @@
                     badge.textContent = "收拾中";
                     badge.style.backgroundColor = "#ea580c";
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${p6Booking.borrower}</div>`;
-                    if (upcomingList.length > 0) { htmlContent += `<div style="margin-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`; }
+                    if (upcomingList.length > 0) { htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`; }
                     else { htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`; }
                     info.innerHTML = htmlContent;
                     return;
