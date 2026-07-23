@@ -1272,26 +1272,36 @@
     function deleteMergedGroup(idsArray) {
     if (!idsArray || idsArray.length === 0) return;
     
-    if (!confirm('確定要刪除這筆預約紀錄嗎？')) return;
+    // 💡 1. 找出該筆預約紀錄的「借用人姓名」與「日期」
+    const targetBooking = bookings.find(b => idsArray.includes(b.id));
+    const borrowerName = targetBooking ? targetBooking.borrower : '';
+    const bookingDate = targetBooking ? targetBooking.date : '';
 
-    // 1. 🆕 將這些 ID 加入黑名單，防止背景刷新時舊資料跑出來
+    // 💡 2. 動態組合提示文字：同時呈現【日期】與【姓名】
+    const confirmMsg = (borrowerName && bookingDate) 
+        ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預預嗎？` 
+        : '確定要刪除這筆預約嗎？';
+
+    if (!confirm(confirmMsg)) return;
+
+    // 3. 將 ID 加入黑名單，防止背景自動更新時舊資料閃現
     idsArray.forEach(id => pendingDeletedIds.add(id));
 
-    // 2. 🚀【前端秒刪】：立刻從記憶體剔除
+    // 4. 前端秒刪 (樂觀刪除)
     bookings = bookings.filter(b => !idsArray.includes(b.id));
 
-    // 3. 🚀【本地寫入】：更新 LocalStorage
+    // 5. 更新 LocalStorage
     localStorage.setItem('cached_booking_data', JSON.stringify({ 
         bookings: bookings, 
         teachers: teacherListData 
     }));
 
-    // 4. 🚀【畫面秒刷】
+    // 6. 畫面瞬間刷更新
     renderTable();
     updateDashboard();
     handleClassroomOrDateChange();
 
-    // 5. 🌐【背景傳送】：默默請求 GAS 刪除
+    // 7. 背景請求 GAS 刪除
     fetch(GAS_URL, {
         method: 'POST',
         body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
@@ -1299,10 +1309,8 @@
     .then(res => res.json())
     .then(resData => {
         if (resData.status === 'success') {
-            // 伺服器已徹底刪除完畢，從黑名單移除
             idsArray.forEach(id => pendingDeletedIds.delete(id));
         } else {
-            // 若伺服器失敗，將黑名單移除並還原
             idsArray.forEach(id => pendingDeletedIds.delete(id));
             alert('⚠️ 雲端刪除失敗：' + resData.message + '，將重新同步資料。');
             loadBookingsFromServer(); 
