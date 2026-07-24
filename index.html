@@ -545,10 +545,10 @@
             .checkbox-item { font-size: 13px; }
         }
 
-      /* 🔄 蜜桃珊瑚粉膠囊風格 即時同步按鈕 */
+      /* 🔄 珊瑚蜜桃粉膠囊風格 即時同步按鈕 (完美契合左側亮紅條) */
 .btn-sync {
-    background: linear-gradient(135deg, #FFB5A7, #FA9A8C); /* 預設：柔和蜜桃粉 */
-    color: #4A4A4A;            /* 深灰色文字，閱讀舒適 */
+    background: linear-gradient(135deg, #ffb3a7, #f78c7b); /* 柔和珊瑚蜜桃粉 */
+    color: #ffffff;            /* 純白文字，與左側紅條搭配更鮮明 */
     border: none;
     padding: 7px 16px;
     border-radius: 20px;
@@ -559,28 +559,28 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 3px 8px rgba(250, 154, 140, 0.25);
+    box-shadow: 0 3px 8px rgba(247, 140, 123, 0.3);
     white-space: nowrap;
     outline: none;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-sync:hover:not(:disabled) {
-    background: linear-gradient(135deg, #FFC1B3, #FFB5A7);
+    background: linear-gradient(135deg, #ffc2b8, #ffb3a7);
     transform: translateY(-1px);
-    box-shadow: 0 5px 12px rgba(250, 154, 140, 0.35);
+    box-shadow: 0 5px 12px rgba(247, 140, 123, 0.4);
 }
 
 .btn-sync:active:not(:disabled) {
     transform: translateY(0);
 }
 
-/* ⏳ 同步更新中（點擊鎖定狀態）：變成較深的珊瑚焦糖色 + 呼吸感 */
+/* ⏳ 同步更新中（點擊鎖定狀態）：轉為沉穩深珊瑚色 + 呼吸感（不變灰） */
 .btn-sync:disabled,
 .btn-sync.loading {
-    background: #E39C8C !important; /* 深珊瑚焦糖色，看得出是粉色系變暗 */
-    color: rgba(74, 74, 74, 0.8) !important;
-    opacity: 0.9;
+    background: #d66f60 !important; /* 沉穩深珊瑚色，看得出正在更新 */
+    color: rgba(255, 255, 255, 0.9) !important;
+    opacity: 0.85;
     cursor: not-allowed;
     transform: none !important;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
@@ -595,11 +595,11 @@
 
 .spin-icon {
     display: inline-block;
-    color: #4A4A4A; /* 深灰色圖示 */
+    color: #ffffff;
 }
 
 .btn-sync.loading .spin-icon {
-    animation: spin 0.9s linear infinite; /* 轉圈動畫 */
+    animation: spin 0.9s linear infinite;
 }
         
     </style>
