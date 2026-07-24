@@ -545,13 +545,13 @@
             .checkbox-item { font-size: 13px; }
         }
 
-       /* 🔄 琥珀暖金風格即時同步按鈕 */
+       /* 🔄 柔和奶茶淺灰底 + 暖色文字 即時同步按鈕 */
 .btn-sync {
-    background: linear-gradient(135deg, #f59e0b, #d97706); /* 暖金 / 琥珀橘漸層 */
-    color: #ffffff;
-    border: none;
+    background-color: #f1ece4; /* 柔和淺灰奶茶底 */
+    color: #c26d20;            /* 暖焦糖色文字 */
+    border: 1px solid #e2d7c7;  /* 極細細緻邊框 */
     padding: 6px 14px;
-    border-radius: 20px; /* 膠囊圓角 */
+    border-radius: 20px;        /* 膠囊圓角 */
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -559,15 +559,16 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-    white-space: nowrap; /* 避免手機版文字斷行 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    white-space: nowrap;        /* 避免手機版文字斷行 */
     outline: none;
 }
 
 .btn-sync:hover {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b); /* 懸浮時變亮 */
-    transform: translateY(-1.5px);
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+    background-color: #e6dfd3; /* 滑鼠移入稍微加深 */
+    color: #9a5213;            /* 文字變成深焦糖色 */
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-sync:active {
@@ -575,8 +576,9 @@
 }
 
 .btn-sync:disabled {
-    background: #cbd5e1;
-    color: #64748b;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    border-color: #e2e8f0;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -590,7 +592,7 @@
 
 .spin-icon {
     display: inline-block;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); /* 讓圖示更立體 */
+    color: #9a5213; /* 讓圖示也呈現暖焦糖色，擺脫藍綠色質感更好 */
 }
 
 .btn-sync.loading .spin-icon {
