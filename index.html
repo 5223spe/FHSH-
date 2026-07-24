@@ -545,33 +545,56 @@
             .checkbox-item { font-size: 13px; }
         }
 
-        /* 🔄 立即同步按鈕樣式 */
+        /* 🔄 膠囊風格即時同步按鈕 */
 .btn-sync {
-    background-color: var(--palette-teal);
-    color: white;
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    color: #ffffff;
     border: none;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 20px; /* 膠囊圓角 */
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
+    box-shadow: 0 2px 6px rgba(8, 145, 178, 0.25);
+    white-space: nowrap; /* 避免手機版文字斷行 */
+    outline: none;
 }
 
 .btn-sync:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.35);
+}
+
+.btn-sync:active {
+    transform: translateY(0);
 }
 
 .btn-sync:disabled {
-    background-color: #94a3b8;
+    background: #cbd5e1;
+    color: #64748b;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+/* 轉圈圖示旋轉動畫 */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+    display: inline-block;
+    transition: transform 0.3s;
+}
+
+.btn-sync.loading .spin-icon {
+    animation: spin 1s linear infinite;
 }
         
     </style>
@@ -589,11 +612,14 @@
 <div class="container">
     
     <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
-        <h2 style="margin: 0;">教室借用即時動態</h2>
-        <!-- 💡 新增的手動同步按鈕 -->
+    <!-- 使用 flex 排版，設定 space-between 確保按鈕永遠靠右，align-items: center 垂直對齊 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
+        <h2 style="margin: 0; font-size: 1.25rem;">教室借用即時動態</h2>
+        
+        <!-- 💡 膠囊設計按鈕 -->
         <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
-            🔄 立即同步資料
+            <span class="spin-icon">🔄</span>
+            <span>同步資料</span>
         </button>
     </div>
         
@@ -1601,33 +1627,33 @@ const newBookingObj = {
     updateDashboard();
     handleClassroomOrDateChange();
     startSmartPolling();
-    // 💡 手動同步觸發函式
+    // 💡 手動同步觸發函式（含轉圈動畫）
 async function manualSync() {
     const btn = document.getElementById('manualSyncBtn');
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
 
-    // 1. 鎖定按鈕並顯示處理中狀態
+    // 1. 啟用旋轉動畫與鎖定按鈕
     btn.disabled = true;
-    btn.innerHTML = '⌛ 同步中...';
+    btn.classList.add('loading');
+    btn.innerHTML = `<span class="spin-icon">🔄</span> <span>同步中...</span>`;
 
     try {
-        // 2. 執行從雲端抓取資料
+        // 2. 向伺服器抓取資料
         await loadBookingsFromServer();
         
-        // 3. 提示成功（閃爍一下綠色標籤文字）
-        btn.innerHTML = '✅ 同步完成！';
-        setTimeout(() => {
-            btn.innerHTML = '🔄 立即同步資料';
-            btn.disabled = false;
-        }, 1500);
-
+        // 3. 顯示成功圖示
+        btn.innerHTML = `<span style="color: #4ade80;">✓</span> <span>已更新</span>`;
+        
     } catch (error) {
         console.error("手動同步失敗:", error);
-        btn.innerHTML = '❌ 同步失敗';
+        btn.innerHTML = `<span style="color: #f87171;">✕</span> <span>失敗</span>`;
+    } finally {
+        // 4. 1.2 秒後恢復預設膠囊狀態
         setTimeout(() => {
-            btn.innerHTML = '🔄 立即同步資料';
+            btn.classList.remove('loading');
+            btn.innerHTML = `<span class="spin-icon">🔄</span> <span>同步資料</span>`;
             btn.disabled = false;
-        }, 2000);
+        }, 1200);
     }
 }
 </script>
