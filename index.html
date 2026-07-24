@@ -1491,13 +1491,16 @@
         submitBtn.disabled = true;
         submitBtn.textContent = '登記中...';
 
-        const newBookingObj = {
-            id: Date.now(),
-            borrower,
-            classroom,
-            date: date, 
-            periods: selectedPeriods
-        };
+        // 🟢 強制使用 formatSafeDate 確保手機版與電腦版日期格式 100% 統一
+const safeDate = formatSafeDate(date);
+
+const newBookingObj = {
+    id: Date.now(),
+    borrower,
+    classroom,
+    date: safeDate, // 👈 改用格式化後的 safeDate
+    periods: selectedPeriods
+};
 
         bookings.push(newBookingObj);
         localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
