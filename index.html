@@ -575,14 +575,15 @@
     transform: translateY(0);
 }
 
-/* ⏳ 當點擊 / 同步中（disabled）時變灰色 */
+/* ⏳ 同步更新中（點擊鎖定狀態）：不變灰，而是變成半透明深焦糖色 + 呼吸感 */
 .btn-sync:disabled,
 .btn-sync.loading {
-    background: #94a3b8 !important; /* 質感冷灰色 */
-    color: #ffffff !important;
+    background: #c2782b !important; /* 深焦糖色，保留黃色系基因 */
+    color: rgba(255, 255, 255, 0.9) !important;
+    opacity: 0.85;                  /* 稍微變暗淡，提示處理中 */
     cursor: not-allowed;
     transform: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
     text-shadow: none !important;
 }
 
@@ -598,7 +599,7 @@
 }
 
 .btn-sync.loading .spin-icon {
-    animation: spin 1s linear infinite;
+    animation: spin 0.9s linear infinite; /* 轉圈動畫 */
 }
         
     </style>
