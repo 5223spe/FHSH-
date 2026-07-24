@@ -545,12 +545,12 @@
             .checkbox-item { font-size: 13px; }
         }
 
-      /* 🔄 莫蘭迪灰藍膠囊風格 即時同步按鈕 */
+      /* 🔄 琥珀焦糖黃膠囊風格 即時同步按鈕 (加深黃色版) */
 .btn-sync {
-    background-color: #99c5d1; /* 你的指定色：莫蘭迪粉藍 */
-    color: #0f4c5c;            /* 與頂部 Header 同款深藍色文字 */
+    background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 琥珀焦糖黃漸層 */
+    color: #ffffff;            /* 白色文字，最顯眼 */
     border: none;
-    padding: 6px 14px;
+    padding: 7px 16px;         /* 稍微加大，增加點擊便利性 */
     border-radius: 20px;        /* 膠囊圓角 */
     font-size: 13px;
     font-weight: 700;
@@ -559,16 +559,16 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 6px rgba(15, 76, 92, 0.15);
+    box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3); /* 與黃色對比的陰影 */
     white-space: nowrap;        /* 避免手機版文字斷行 */
     outline: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 讓文字更浮出 */
 }
 
 .btn-sync:hover {
-    background-color: #84b3bf; /* 滑鼠移入稍微加深，增加互動感 */
-    color: #0a3642;            /* 文字加深 */
+    background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時變亮 */
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(15, 76, 92, 0.22);
+    box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
 }
 
 .btn-sync:active {
@@ -581,6 +581,7 @@
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    text-shadow: none;
 }
 
 /* 轉圈圖示旋轉動畫 */
@@ -591,7 +592,7 @@
 
 .spin-icon {
     display: inline-block;
-    color: #0f4c5c; /* 轉圈圖示使用深藍色，對比非常清晰 */
+    color: #ffffff; /* 轉圈圖示也使用白色 */
 }
 
 .btn-sync.loading .spin-icon {
