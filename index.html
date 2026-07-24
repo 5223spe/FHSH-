@@ -545,13 +545,13 @@
             .checkbox-item { font-size: 13px; }
         }
 
-      /* 🔄 琥珀焦糖黃膠囊風格 即時同步按鈕 (加深黃色版) */
+      /* 🔄 琥珀焦糖黃膠囊風格 即時同步按鈕 */
 .btn-sync {
-    background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 琥珀焦糖黃漸層 */
-    color: #ffffff;            /* 白色文字，最顯眼 */
+    background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：琥珀焦糖黃 */
+    color: #ffffff;
     border: none;
-    padding: 7px 16px;         /* 稍微加大，增加點擊便利性 */
-    border-radius: 20px;        /* 膠囊圓角 */
+    padding: 7px 16px;
+    border-radius: 20px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -559,29 +559,31 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3); /* 與黃色對比的陰影 */
-    white-space: nowrap;        /* 避免手機版文字斷行 */
+    box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3);
+    white-space: nowrap;
     outline: none;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 讓文字更浮出 */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.btn-sync:hover {
-    background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時變亮 */
+.btn-sync:hover:not(:disabled) {
+    background: linear-gradient(135deg, #fbb86a, #f5ac53);
     transform: translateY(-1px);
     box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
 }
 
-.btn-sync:active {
+.btn-sync:active:not(:disabled) {
     transform: translateY(0);
 }
 
-.btn-sync:disabled {
-    background-color: #cbd5e1;
-    color: #64748b;
+/* ⏳ 當點擊 / 同步中（disabled）時變灰色 */
+.btn-sync:disabled,
+.btn-sync.loading {
+    background: #94a3b8 !important; /* 質感冷灰色 */
+    color: #ffffff !important;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    text-shadow: none;
+    transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
 }
 
 /* 轉圈圖示旋轉動畫 */
@@ -592,7 +594,7 @@
 
 .spin-icon {
     display: inline-block;
-    color: #ffffff; /* 轉圈圖示也使用白色 */
+    color: #ffffff;
 }
 
 .btn-sync.loading .spin-icon {
