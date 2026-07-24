@@ -577,15 +577,12 @@
 
         /* ⏳ 同步更新中（點擊鎖定）：轉為低彩度麥芽灰黃 + 呼吸感 */
         .btn-sync:disabled,
-        .btn-sync.loading {
-            background: #fde68a !important; /* 沉穩燕麥灰黃，看得出有被按下且保留黃色基因 */
-            color: #b45309 !important;
-            opacity: 0.9;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
-            text-shadow: none !important;
-        }
+.btn-sync.loading {
+    background: linear-gradient(135deg, #f5ac53, #e89a3f) !important;
+    opacity: 0.65; /* 輕微透光感 */
+    cursor: not-allowed;
+    box-shadow: none !important;
+}
 
         /* 轉圈圖示旋轉動畫 */
         @keyframes spin {
