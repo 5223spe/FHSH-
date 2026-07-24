@@ -545,62 +545,67 @@
             .checkbox-item { font-size: 13px; }
         }
 
-      /* 🔄 琥珀焦糖黃膠囊按鈕 */
-.btn-sync {
-    background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：鮮明琥珀焦糖黃 */
-    color: #ffffff;
-    border: none;
-    padding: 7px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3);
-    white-space: nowrap;
-    outline: none;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
+        /* 🔄 琥珀焦糖黃膠囊按鈕 */
+        .btn-sync {
+            background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：鮮明琥珀焦糖黃 */
+            color: #ffffff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3);
+            white-space: nowrap;
+            outline: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
 
-.btn-sync:hover:not(:disabled) {
-    background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時稍微加亮 */
-    transform: translateY(-1px);
-    box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
-}
+        .btn-sync:hover:not(:disabled) {
+            background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時稍微加亮 */
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
+        }
 
-.btn-sync:active:not(:disabled) {
-    transform: translateY(0);
-}
+        .btn-sync:active:not(:disabled) {
+            transform: translateY(0);
+        }
 
-/* ⏳ 同步更新中（點擊鎖定）：轉為低彩度麥芽灰黃 + 呼吸感 */
-.btn-sync:disabled,
-.btn-sync.loading {
-    background: #d4c3a3 !important; /* 沉穩燕麥灰黃，看得出有被按下且保留黃色基因 */
-    color: #ffffff !important;
-    opacity: 0.9;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
-    text-shadow: none !important;
-}
+        /* ⏳ 同步更新中（點擊鎖定）：轉為低彩度麥芽灰黃 + 呼吸感 */
+        .btn-sync:disabled,
+        .btn-sync.loading {
+            background: #d4c3a3 !important; /* 沉穩燕麥灰黃，看得出有被按下且保留黃色基因 */
+            color: #ffffff !important;
+            opacity: 0.9;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+            text-shadow: none !important;
+        }
 
-/* 轉圈圖示旋轉動畫 */
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        /* 轉圈圖示旋轉動畫 */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-.spin-icon {
-    display: inline-block;
-    color: #ffffff;
-}
+        /* 純白 SVG 向量圖示 */
+        .spin-icon {
+            width: 15px;
+            height: 15px;
+            color: #ffffff;
+            display: inline-block;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
 
-.btn-sync.loading .spin-icon {
-    animation: spin 0.9s linear infinite;
-}
+        .btn-sync.loading .spin-icon {
+            animation: spin 0.8s linear infinite;
+        }
         
     </style>
 </head>
@@ -621,9 +626,12 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
         <h2 style="margin: 0; font-size: 1.25rem;">教室借用即時動態</h2>
         
-        <!-- 💡 膠囊設計按鈕 -->
+        <!-- 💡 膠囊設計按鈕（已換為精緻純白 SVG 向量圖示） -->
         <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
-            <span class="spin-icon">🔄</span>
+            <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
+                <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
+            </svg>
             <span>同步資料</span>
         </button>
     </div>
@@ -1558,15 +1566,15 @@
         submitBtn.textContent = '登記中...';
 
         // 🟢 強制使用 formatSafeDate 確保手機版與電腦版日期格式 100% 統一
-const safeDate = formatSafeDate(date);
+        const safeDate = formatSafeDate(date);
 
-const newBookingObj = {
-    id: Date.now(),
-    borrower,
-    classroom,
-    date: safeDate, // 👈 改用格式化後的 safeDate
-    periods: selectedPeriods
-};
+        const newBookingObj = {
+            id: Date.now(),
+            borrower,
+            classroom,
+            date: safeDate,
+            periods: selectedPeriods
+        };
 
         bookings.push(newBookingObj);
         localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
@@ -1632,35 +1640,42 @@ const newBookingObj = {
     updateDashboard();
     handleClassroomOrDateChange();
     startSmartPolling();
-    // 💡 手動同步觸發函式（含轉圈動畫）
-async function manualSync() {
-    const btn = document.getElementById('manualSyncBtn');
-    if (!btn || btn.disabled) return;
 
-    // 1. 啟用旋轉動畫與鎖定按鈕
-    btn.disabled = true;
-    btn.classList.add('loading');
-    btn.innerHTML = `<span class="spin-icon">🔄</span> <span>同步中...</span>`;
+    // 💡 手動同步觸發函式（含純白 SVG 與旋轉動畫）
+    async function manualSync() {
+        const btn = document.getElementById('manualSyncBtn');
+        if (!btn || btn.disabled) return;
 
-    try {
-        // 2. 向伺服器抓取資料
-        await loadBookingsFromServer();
-        
-        // 3. 顯示成功圖示
-        btn.innerHTML = `<span style="color: #4ade80;">✓</span> <span>已更新</span>`;
-        
-    } catch (error) {
-        console.error("手動同步失敗:", error);
-        btn.innerHTML = `<span style="color: #f87171;">✕</span> <span>失敗</span>`;
-    } finally {
-        // 4. 1.2 秒後恢復預設膠囊狀態
-        setTimeout(() => {
-            btn.classList.remove('loading');
-            btn.innerHTML = `<span class="spin-icon">🔄</span> <span>同步資料</span>`;
-            btn.disabled = false;
-        }, 1200);
+        const svgIcon = `
+            <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
+                <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
+            </svg>`;
+
+        // 1. 啟用旋轉動畫與鎖定按鈕
+        btn.disabled = true;
+        btn.classList.add('loading');
+        btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
+
+        try {
+            // 2. 向伺服器抓取資料
+            await loadBookingsFromServer();
+            
+            // 3. 顯示成功圖示
+            btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
+            
+        } catch (error) {
+            console.error("手動同步失敗:", error);
+            btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✕</span> <span>失敗</span>`;
+        } finally {
+            // 4. 1.2 秒後恢復預設膠囊狀態
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                btn.innerHTML = `${svgIcon} <span>同步資料</span>`;
+                btn.disabled = false;
+            }, 1200);
+        }
     }
-}
 </script>
 
 </body>
