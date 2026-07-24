@@ -545,11 +545,11 @@
             .checkbox-item { font-size: 13px; }
         }
 
-       /* 🔄 柔和奶茶淺灰底 + 暖色文字 即時同步按鈕 */
+      /* 🔄 莫蘭迪灰藍膠囊風格 即時同步按鈕 */
 .btn-sync {
-    background-color: #f1ece4; /* 柔和淺灰奶茶底 */
-    color: #c26d20;            /* 暖焦糖色文字 */
-    border: 1px solid #e2d7c7;  /* 極細細緻邊框 */
+    background-color: #99c5d1; /* 你的指定色：莫蘭迪粉藍 */
+    color: #0f4c5c;            /* 與頂部 Header 同款深藍色文字 */
+    border: none;
     padding: 6px 14px;
     border-radius: 20px;        /* 膠囊圓角 */
     font-size: 13px;
@@ -559,16 +559,16 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 6px rgba(15, 76, 92, 0.15);
     white-space: nowrap;        /* 避免手機版文字斷行 */
     outline: none;
 }
 
 .btn-sync:hover {
-    background-color: #e6dfd3; /* 滑鼠移入稍微加深 */
-    color: #9a5213;            /* 文字變成深焦糖色 */
+    background-color: #84b3bf; /* 滑鼠移入稍微加深，增加互動感 */
+    color: #0a3642;            /* 文字加深 */
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 10px rgba(15, 76, 92, 0.22);
 }
 
 .btn-sync:active {
@@ -576,9 +576,8 @@
 }
 
 .btn-sync:disabled {
-    background-color: #f1f5f9;
-    color: #94a3b8;
-    border-color: #e2e8f0;
+    background-color: #cbd5e1;
+    color: #64748b;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -592,7 +591,7 @@
 
 .spin-icon {
     display: inline-block;
-    color: #9a5213; /* 讓圖示也呈現暖焦糖色，擺脫藍綠色質感更好 */
+    color: #0f4c5c; /* 轉圈圖示使用深藍色，對比非常清晰 */
 }
 
 .btn-sync.loading .spin-icon {
