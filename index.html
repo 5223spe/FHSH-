@@ -545,10 +545,10 @@
             .checkbox-item { font-size: 13px; }
         }
 
-      /* 🔄 琥珀焦糖黃膠囊風格 即時同步按鈕 */
+      /* 🔄 蜜桃珊瑚粉膠囊風格 即時同步按鈕 */
 .btn-sync {
-    background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：琥珀焦糖黃 */
-    color: #ffffff;
+    background: linear-gradient(135deg, #FFB5A7, #FA9A8C); /* 預設：柔和蜜桃粉 */
+    color: #4A4A4A;            /* 深灰色文字，閱讀舒適 */
     border: none;
     padding: 7px 16px;
     border-radius: 20px;
@@ -559,28 +559,28 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 3px 8px rgba(232, 154, 63, 0.3);
+    box-shadow: 0 3px 8px rgba(250, 154, 140, 0.25);
     white-space: nowrap;
     outline: none;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 1px rgba(255,255,255,0.4);
 }
 
 .btn-sync:hover:not(:disabled) {
-    background: linear-gradient(135deg, #fbb86a, #f5ac53);
+    background: linear-gradient(135deg, #FFC1B3, #FFB5A7);
     transform: translateY(-1px);
-    box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
+    box-shadow: 0 5px 12px rgba(250, 154, 140, 0.35);
 }
 
 .btn-sync:active:not(:disabled) {
     transform: translateY(0);
 }
 
-/* ⏳ 同步更新中（點擊鎖定狀態）：不變灰，而是變成半透明深焦糖色 + 呼吸感 */
+/* ⏳ 同步更新中（點擊鎖定狀態）：變成較深的珊瑚焦糖色 + 呼吸感 */
 .btn-sync:disabled,
 .btn-sync.loading {
-    background: #c2782b !important; /* 深焦糖色，保留黃色系基因 */
-    color: rgba(255, 255, 255, 0.9) !important;
-    opacity: 0.85;                  /* 稍微變暗淡，提示處理中 */
+    background: #E39C8C !important; /* 深珊瑚焦糖色，看得出是粉色系變暗 */
+    color: rgba(74, 74, 74, 0.8) !important;
+    opacity: 0.9;
     cursor: not-allowed;
     transform: none !important;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
@@ -595,7 +595,7 @@
 
 .spin-icon {
     display: inline-block;
-    color: #ffffff;
+    color: #4A4A4A; /* 深灰色圖示 */
 }
 
 .btn-sync.loading .spin-icon {
