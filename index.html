@@ -545,6 +545,35 @@
             .checkbox-item { font-size: 13px; }
         }
 
+        /* 🔄 立即同步按鈕樣式 */
+.btn-sync {
+    background-color: var(--palette-teal);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
+}
+
+.btn-sync:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.btn-sync:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+        
     </style>
 </head>
 <body>
@@ -560,7 +589,13 @@
 <div class="container">
     
     <div class="card">
-        <h2>教室借用即時動態</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
+        <h2 style="margin: 0;">教室借用即時動態</h2>
+        <!-- 💡 新增的手動同步按鈕 -->
+        <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
+            🔄 立即同步資料
+        </button>
+    </div>
         
         <div class="map-controls">
             <div class="control-item">
@@ -1566,6 +1601,35 @@ const newBookingObj = {
     updateDashboard();
     handleClassroomOrDateChange();
     startSmartPolling();
+    // 💡 手動同步觸發函式
+async function manualSync() {
+    const btn = document.getElementById('manualSyncBtn');
+    if (!btn) return;
+
+    // 1. 鎖定按鈕並顯示處理中狀態
+    btn.disabled = true;
+    btn.innerHTML = '⌛ 同步中...';
+
+    try {
+        // 2. 執行從雲端抓取資料
+        await loadBookingsFromServer();
+        
+        // 3. 提示成功（閃爍一下綠色標籤文字）
+        btn.innerHTML = '✅ 同步完成！';
+        setTimeout(() => {
+            btn.innerHTML = '🔄 立即同步資料';
+            btn.disabled = false;
+        }, 1500);
+
+    } catch (error) {
+        console.error("手動同步失敗:", error);
+        btn.innerHTML = '❌ 同步失敗';
+        setTimeout(() => {
+            btn.innerHTML = '🔄 立即同步資料';
+            btn.disabled = false;
+        }, 2000);
+    }
+}
 </script>
 
 </body>
