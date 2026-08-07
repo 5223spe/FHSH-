@@ -12,9 +12,6 @@
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
     
-    <!-- 💡 引入 Google 登入 API -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
     <style>
         :root {
             /* Warm Summer Palette 經典配色 */
@@ -66,7 +63,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
         .header-logo-group {
@@ -94,52 +90,6 @@
             color: rgba(255, 255, 255, 0.8);
             letter-spacing: 4px;
             font-weight: 500;
-        }
-
-        /* 🔒 全螢幕登入遮罩 */
-        #authOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(15, 76, 92, 0.95);
-            backdrop-filter: blur(8px);
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .auth-card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 420px;
-            width: 100%;
-        }
-
-        .auth-card h2 {
-            margin: 0 0 10px 0;
-            color: var(--palette-blue-2);
-            justify-content: center;
-        }
-
-        .auth-card h2::before { display: none; }
-
-        .auth-card p {
-            color: var(--text-muted);
-            font-size: 15px;
-            margin-bottom: 25px;
-        }
-
-        .auth-btn-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-top: 15px;
         }
 
         /* ------------------------------------
@@ -593,11 +543,6 @@
 
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
-            
-            #headerUserInfo {
-                position: static !important;
-                margin-top: 10px;
-            }
         }
 
         /* 🔄 琥珀焦糖黃膠囊按鈕 */
@@ -666,31 +611,7 @@
 </head>
 <body>
 
-<!-- 🔒 首次進入時顯示全螢幕強制 Google 登入遮罩 -->
-<div id="authOverlay">
-    <div class="auth-card">
-        <h2>歡迎使用借用系統</h2>
-        <p>為維護使用者權益，首次使用請先完成 Google 帳戶身分驗證。</p>
-        
-        <!-- 💡 Google 官方登入設定 -->
-        <div id="g_id_onload"
-             data-client_id="939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse"
-             data-auto_select="true">
-        </div>
-        <div class="auth-btn-wrapper">
-            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"></div>
-        </div>
-    </div>
-</div>
-
 <header>
-    <!-- 💡 右上角已登入使用者資訊與切換按鈕 -->
-    <div id="headerUserInfo" style="display: none; position: absolute; right: 20px; top: 15px; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; color: white; font-size: 14px; align-items: center; gap: 10px; z-index: 10;">
-        <span>👤 <strong id="userNameText"></strong> 老師</span>
-        <button type="button" onclick="logout()" style="background: white; color: var(--palette-blue-2); border: none; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">切換帳號</button>
-    </div>
-
     <div class="header-logo-group">
         <!-- 電腦版同一行，手機版顯示 br-mobile 斷行 -->
         <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
@@ -871,60 +792,6 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
-    // ----------------------------------------------------
-    // 🔐 Google 身份驗證處理邏輯
-    // ----------------------------------------------------
-    function parseJwt(token) {
-        try {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function handleCredentialResponse(response) {
-        const payload = parseJwt(response.credential);
-        if (!payload) return;
-
-        const userEmail = payload.email;
-        const userName = payload.name;
-
-        localStorage.setItem('currentUser', userName);
-        localStorage.setItem('currentUserEmail', userEmail);
-
-        checkAuthStatus();
-    }
-
-    function checkAuthStatus() {
-        const savedUser = localStorage.getItem('currentUser');
-        const overlay = document.getElementById('authOverlay');
-        const headerInfo = document.getElementById('headerUserInfo');
-        const userNameText = document.getElementById('userNameText');
-
-        if (savedUser) {
-            if (overlay) overlay.style.display = 'none';
-            if (headerInfo) headerInfo.style.display = 'flex';
-            if (userNameText) userNameText.innerText = savedUser;
-        } else {
-            if (overlay) overlay.style.display = 'flex';
-            if (headerInfo) headerInfo.style.display = 'none';
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentUserEmail');
-        checkAuthStatus();
-    }
-
-    // ----------------------------------------------------
-    // 🏫 原有借用系統邏輯
-    // ----------------------------------------------------
     const periodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
         { name: "第二節", start: "09:10", end: "10:00" },
@@ -1637,17 +1504,9 @@
         updateDashboard();
         handleClassroomOrDateChange();
 
-        // 💡 附帶登入者資訊以利審計歷史記錄
-        const currentUser = localStorage.getItem('currentUser') || '未知';
-        const currentUserEmail = localStorage.getItem('currentUserEmail') || '';
-
         fetch(GAS_URL, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: 'batchDelete', 
-                ids: idsArray,
-                deleter: currentUser + (currentUserEmail ? ` (${currentUserEmail})` : '')
-            })
+            body: JSON.stringify({ action: 'batchDelete', ids: idsArray })
         })
         .then(res => res.json())
         .then(resData => {
@@ -1731,14 +1590,7 @@
         alert('🎉 恭喜您，教室登記成功！');
 
         try {
-            const currentUser = localStorage.getItem('currentUser') || '未知';
-            const currentUserEmail = localStorage.getItem('currentUserEmail') || '';
-
-            const payload = { 
-                action: 'create', 
-                ...newBookingObj,
-                operator: currentUser + (currentUserEmail ? ` (${currentUserEmail})` : '')
-            };
+            const payload = { action: 'create', ...newBookingObj };
             fetch(GAS_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(payload) 
@@ -1783,8 +1635,6 @@
         startSmartPolling();
     });
 
-    // 初始化登入狀態檢查與資料載入
-    checkAuthStatus();
     loadBookingsFromServer();
     renderTable();
     updateDashboard();
