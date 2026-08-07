@@ -11,6 +11,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
         :root {
@@ -537,22 +539,29 @@
 </head>
 <body>
 
-<!-- 🔒 身分驗證彈窗 -->
-<div id="loginModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box">
-        <h3>👤 請選擇您的身份</h3>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">選擇後系統將記錄於此裝置，方便日後自動帶入身份。</p>
-        
-        <div id="modalTeacherList" class="modal-select-list">
-            <!-- 動態載入教師清單 -->
-        </div>
+<body>
+  <div class="header">
+    <h1>校園教室借用系統</h1>
 
-        <div style="margin-top: 15px;">
-            <input type="text" id="manualTeacherInput" placeholder="或手動輸入姓名..." style="margin-bottom: 10px; padding: 10px;">
-            <button type="button" onclick="confirmManualIdentity()" style="width:100%; padding: 10px; background: var(--palette-blue-2); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">確認輸入</button>
-        </div>
+    <!-- 👈【新增這裡】：登入狀態與 Google 登入按鈕區塊 -->
+    <div id="authContainer" style="display: flex; align-items: center; gap: 10px;">
+      
+      <!-- 未登入時顯示：Google 登入按鈕 -->
+      <div id="g_id_onload"
+           data-client_id="貼上你剛剛申請好的Client_ID.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_select="true">
+      </div>
+      <div id="googleBtnContainer" class="g_id_signin" data-type="standard"></div>
+
+      <!-- 已登入時顯示：歡迎詞與切換按鈕 -->
+      <div id="userInfo" style="display: none; align-items: center; gap: 8px;">
+        <span>歡迎，<strong id="userNameText"></strong> 老師</span>
+        <button type="button" onclick="logout()" style="padding: 4px 10px; cursor: pointer;">切換帳號</button>
+      </div>
+
     </div>
-</div>
+  </div>
 
 <header>
     <div class="header-logo-group">
@@ -734,6 +743,62 @@
 </div>
 
 <script>
+  // 👈【新增這裡】：頁面一打開，先檢查有沒有登入紀錄[cite: 1]
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const savedUser = localStorage.getItem('currentUser');[cite: 1]
+    const savedEmail = localStorage.getItem('currentUserEmail');
+    
+    if (savedUser && savedEmail) {
+      // 如果已經登入過，自動隱藏登入按鈕並顯示姓名[cite: 1]
+      showLoggedInState(savedUser);
+    }
+  });
+
+  // 👈【新增這裡】：解密 Google 回傳的 Token
+  function parseJwt(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  }
+
+  // 👈【新增這裡】：Google 登入成功後觸發的回調函數
+  function handleCredentialResponse(response) {
+    const payload = parseJwt(response.credential);
+    const userEmail = payload.email;
+    const userName = payload.name;
+
+    // 可選：限制學校 Email 結尾
+    /*
+    if (!userEmail.endsWith("@fhsh.kh.edu.tw")) {
+      alert("請使用學校官方 Google 帳號登入！");
+      return;
+    }
+    */
+
+    // 儲存到瀏覽器[cite: 1]
+    localStorage.setItem('currentUser', userName);[cite: 1]
+    localStorage.setItem('currentUserEmail', userEmail);
+
+    // 切換 UI 顯示
+    showLoggedInState(userName);
+  }
+
+  // 👈【新增這裡】：更新 UI 顯示狀態
+  function showLoggedInState(userName) {
+    document.getElementById('googleBtnContainer').style.display = 'none';
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('userNameText').innerText = userName;
+  }
+
+  // 👈【新增這裡】：登出 / 切換帳號[cite: 1]
+  function logout() {
+    localStorage.removeItem('currentUser');[cite: 1]
+    localStorage.removeItem('currentUserEmail');
+    location.reload(); // 重整頁面讓 Google 登入按鈕重新顯示
+  }
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
     const periodsConfig = [
@@ -1610,6 +1675,37 @@
             }, 1200);
         }
     }
+    // 👈【修改這裡】：以發送預約為例
+  function submitBooking(formData) {
+    const currentUser = localStorage.getItem('currentUser');[cite: 1]
+    const currentUserEmail = localStorage.getItem('currentUserEmail');
+
+    if (!currentUser || !currentUserEmail) {
+      alert("請先完成 Google 帳號登入！");
+      return;
+    }
+
+    const payload = {
+      action: 'create',
+      id: Date.now().toString(),
+      borrower: currentUser,         // 借用人
+      operator: currentUser,         // 實際點擊提交者[cite: 2]
+      userEmail: currentUserEmail,   // 操作者的 Google Email
+      classroom: formData.classroom,
+      date: formData.date,
+      periods: formData.periods
+    };
+
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert("預約成功！");
+      location.reload();
+    });
+  }
 </script>
 
 </body>
