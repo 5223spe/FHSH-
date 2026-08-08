@@ -480,12 +480,12 @@
             }
 
             header {
-                padding: 12px 10px 16px 10px !important; 
-                border-bottom: 4px solid var(--palette-yellow) !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-            }
+        padding: 20px 10px 24px 10px !important; /* 增加頂部與底部的留白 padding */
+        border-bottom: 4px solid var(--palette-yellow) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
 
             /* 手機版顯示專用標題 */
             .desktop-title {
@@ -497,10 +497,10 @@
             }
 
             /* 【第一行】帳號 + 登出鍵 */
-            .auth-banner {
-                margin-bottom: 8px !important;
-                width: 100% !important;
-            }
+    .auth-banner {
+        margin-bottom: 16px !important; /* 拉大第一行與第二行之間的距離（原本為 8px） */
+        width: 100% !important;
+    }
 
             .auth-container {
                 display: flex !important;
@@ -522,25 +522,26 @@
             }
 
             /* 【第二行】鳳新輔導室 教室借用 */
-            .header-logo-group {
-                margin-bottom: 4px !important;
-                width: 100% !important;
-            }
+    .header-logo-group {
+        margin-bottom: 12px !important; /* 拉大第二行與第三行之間的距離（原本為 4px） */
+        width: 100% !important;
+    }
 
-            header h1 {
-                font-size: 26px !important;
-                line-height: 1.3 !important;
-                white-space: nowrap !important;
-                margin: 0 !important;
-            }
+           header h1 {
+        font-size: 26px !important;
+        line-height: 1.6 !important; /* 拉大標題本身的行高（原本為 1.3） */
+        white-space: nowrap !important;
+        margin: 0 !important;
+    }
 
             /* 【第三行】智慧教室借用系統｜即時看板 */
-            header p {
-                font-size: 13px !important;
-                letter-spacing: 1px !important;
-                margin: 2px 0 0 0 !important;
-                white-space: nowrap !important;
-            }
+    header p {
+        font-size: 13px !important;
+        letter-spacing: 1px !important;
+        margin: 6px 0 0 0 !important; /* 增加上方邊界（原本為 2px） */
+        line-height: 1.5 !important;   /* 調整文字行高 */
+        white-space: nowrap !important;
+    }
 
             .br-mobile {
                 display: none !important;
