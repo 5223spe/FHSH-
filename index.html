@@ -953,6 +953,23 @@
 </div>
 
 <script>
+    // 1. Email 與借用人姓名/單位對照表 (放在最前面)
+    const emailToNameMap = {
+        'queen73212@fhsh.khc.edu.tw': '陳俞吟 主任',
+        '10909@fhsh.khc.edu.tw': '歐佩琪 組長',
+        'guidance.chen@fhsh.khc.edu.tw': '陳怡君 老師',
+        'jaywang@fhsh.khc.edu.tw': '王慧婕 老師',
+        '11303@fhsh.khc.edu.tw': '胡馨中 老師',
+        '10908@fhsh.khc.edu.tw': '李紫綾 老師',
+        'spe@fhsh.khc.edu.tw': '朱家臻 老師',
+        '11308@fhsh.khc.edu.tw': '林宜蓁 老師',
+        '5223@fhsh.khc.edu.tw': '補救教學'
+    };
+
+    // 原本全域變數宣告
+    let currentUser = null;
+    let teacherListData = [ ... ]; // 原本的教師清單
+    
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzlThP3Hx9CcvT-tc_4IT5AVfaka-UZDKQfBUrKYdaOnlGHxsi5N0FSZVUmsTGgzad0ew/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
@@ -1029,19 +1046,29 @@
     function updateAuthUI() {
     const authContent = document.getElementById('authContent');
     if (currentUser) {
+        // 從對照表尋找 Email 對應的名稱
+        const matchedName = emailToNameMap[currentUser.email];
+        
+        // 頂部狀態列：有對照名就顯示對照名，沒有就顯示 Google 帳號名字
+        const displayName = matchedName || currentUser.name;
+
         authContent.innerHTML = `
             <div class="user-status">
-                <span class="user-name">鳳新高中特教行政助理</span>
-                <span class="user-account">5223@fhsh.khc.edu.tw</span>
+                <span class="user-name">${displayName}</span>
+                <span class="user-account">${currentUser.email}</span>
             </div>
             <button class="btn-auth" onclick="logoutGoogle()">登出</button>
         `;
 
-        // 💡 自動帶入登入者姓名，但維持選單機制
+        // 💡 借用人欄位：有對照成功才自動填入，找不到就維持空白
         const borrowerIn = document.getElementById('borrower');
-        if (borrowerIn && currentUser.name) {
-            borrowerIn.value = currentUser.name;
-            borrowerIn.setAttribute('readonly', 'true'); // 確保點擊時依然能觸發選單
+        if (borrowerIn) {
+            if (matchedName) {
+                borrowerIn.value = matchedName;
+                borrowerIn.setAttribute('readonly', 'true'); // 保持唯讀以利點擊展開選單
+            } else {
+                borrowerIn.value = ''; // 找不到對照，保持空白
+            }
         }
 
     } else {
