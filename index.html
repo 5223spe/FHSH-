@@ -47,21 +47,30 @@
             line-height: 1.6;
         }
 
-        /* 頂部固定導覽列 - 將右上角留給使用者工具列 */
-        .auth-banner {
-            background: rgba(15, 76, 92, 0.95);
-            backdrop-filter: blur(8px);
-            color: #ffffff;
-            padding: 8px 20px;
-            font-size: 14px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        /* 頂部藍色背景標題區塊：增加相對定位 */
+        header {
+            background-color: var(--palette-blue-2);
+            padding: 40px 20px 60px 20px; /* 下方留出空間給右下角使用者資訊 */
+            text-align: center;
+            border-bottom: 6px solid var(--palette-yellow); 
+            box-shadow: 0 4px 20px rgba(15, 76, 92, 0.15);
             display: flex;
-            justify-content: flex-end; /* 固定移至右上角 */
+            flex-direction: column;
             align-items: center;
-            min-height: 52px;
+            justify-content: center;
+            position: relative; /* 定位基準點 */
+        }
+
+        /* 藍色背景右下角的使用者狀態區塊 */
+        .auth-banner {
+            position: absolute;
+            right: 20px;
+            bottom: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
         }
 
         .auth-container {
@@ -71,15 +80,15 @@
             gap: 12px;
         }
 
-        /* 右上角登入狀態卡片化小工具 */
+        /* 使用者狀態卡片 */
         .user-status {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.15);
             padding: 4px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             font-size: 13px;
         }
 
@@ -112,18 +121,6 @@
 
         input[type="date"], input[type="time"] {
             cursor: pointer;
-        }
-
-        header {
-            background-color: var(--palette-blue-2);
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 6px solid var(--palette-yellow); 
-            box-shadow: 0 4px 20px rgba(15, 76, 92, 0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
         }
 
         .header-logo-group {
@@ -473,7 +470,8 @@
             }
 
             .auth-banner {
-                padding: 6px 12px;
+                position: static; /* 手機版還原，置於底部或調至適當位置 */
+                margin-top: 10px;
             }
 
             .user-account {
@@ -718,19 +716,19 @@
 </head>
 <body>
 
-<!-- Google 登入提示列（固定右上角小工具列） -->
-<div class="auth-banner" id="authBanner">
-    <div id="authContent" class="auth-container">
-        <span>🔒 請登入 Google 帳號</span>
-        <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
-    </div>
-</div>
-
 <header>
     <div class="header-logo-group">
         <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
+
+    <!-- 已移至 header 右下角的使用者狀態區塊 -->
+    <div class="auth-banner" id="authBanner">
+        <div id="authContent" class="auth-container">
+            <span>🔒 請登入 Google 帳號</span>
+            <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
+        </div>
+    </div>
 </header>
 
 <div class="container">
