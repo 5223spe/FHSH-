@@ -47,10 +47,10 @@
             line-height: 1.6;
         }
 
-        /* 頂部藍色背景標題區塊：增加相對定位 */
+        /* 頂部藍色背景標題區塊 */
         header {
             background-color: var(--palette-blue-2);
-            padding: 40px 20px 60px 20px; /* 下方留出空間給右下角使用者資訊 */
+            padding: 24px 20px 30px 20px;
             text-align: center;
             border-bottom: 6px solid var(--palette-yellow); 
             box-shadow: 0 4px 20px rgba(15, 76, 92, 0.15);
@@ -58,26 +58,26 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative; /* 定位基準點 */
         }
 
-        /* 藍色背景右下角的使用者狀態區塊 */
+        /* 中間上方的使用者狀態區塊 */
         .auth-banner {
-            position: absolute;
-            right: 20px;
-            bottom: 12px;
             color: #ffffff;
             font-size: 14px;
-            z-index: 10;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         .auth-container {
             display: flex;
             flex-direction: row;
             align-items: center;
+            justify-content: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         /* 使用者狀態卡片 */
@@ -86,7 +86,7 @@
             align-items: center;
             gap: 8px;
             background: rgba(255, 255, 255, 0.15);
-            padding: 4px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.25);
             font-size: 13px;
@@ -103,7 +103,7 @@
             background: var(--palette-yellow);
             color: #1e293b;
             border: none;
-            padding: 5px 14px;
+            padding: 6px 16px;
             border-radius: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -127,7 +127,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             width: 100%;
         }
 
@@ -143,7 +143,7 @@
         }
 
         header p {
-            margin: 6px 0 0 0;
+            margin: 4px 0 0 0;
             font-size: 16px;
             color: rgba(255, 255, 255, 0.8);
             letter-spacing: 4px;
@@ -470,8 +470,7 @@
             }
 
             .auth-banner {
-                position: static; /* 手機版還原，置於底部或調至適當位置 */
-                margin-top: 10px;
+                margin-bottom: 10px;
             }
 
             .user-account {
@@ -479,7 +478,7 @@
             }
 
             header {
-                padding: 20px 12px !important; 
+                padding: 16px 12px 20px 12px !important; 
                 border-bottom: 4px solid var(--palette-yellow) !important;
             }
 
@@ -717,18 +716,18 @@
 <body>
 
 <header>
-    <div class="header-logo-group">
-        <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
-    </div>
-    <p>智慧教室借用系統 ｜ 即時看板</p>
-
-    <!-- 已移至 header 右下角的使用者狀態區塊 -->
+    <!-- 已移至藍色背景頂部正中央的使用者狀態區塊 -->
     <div class="auth-banner" id="authBanner">
         <div id="authContent" class="auth-container">
             <span>🔒 請登入 Google 帳號</span>
             <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
         </div>
     </div>
+
+    <div class="header-logo-group">
+        <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
+    </div>
+    <p>智慧教室借用系統 ｜ 即時看板</p>
 </header>
 
 <div class="container">
