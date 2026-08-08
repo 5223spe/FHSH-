@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
-<!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
     <link rel="manifest" href="manifest-v2.json?v=2026_v14">
-<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
@@ -17,7 +15,6 @@
 
     <style>
         :root {
-            /* Warm Summer Palette 經典配色 */
             --palette-yellow: #F3A953; 
             --palette-pink: #d65a6d;   
             --palette-teal: #0891b2;   
@@ -89,12 +86,10 @@
             background: rgba(255, 255, 255, 0.35);
         }
 
-        /* 讓所有日期與時間欄位呈現可點擊的手勢 */
         input[type="date"], input[type="time"] {
             cursor: pointer;
         }
 
-        /* 🏆 頂部標題區 */
         header {
             background-color: var(--palette-blue-2);
             padding: 40px 20px;
@@ -123,7 +118,7 @@
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             line-height: 1.4;
-            word-break: keep-all; /* 防止單字在中途斷開 */
+            word-break: keep-all;
         }
 
         header p {
@@ -134,12 +129,7 @@
             font-weight: 500;
         }
 
-        /* ------------------------------------
-           RWD 斷行與標題文字控制
-        ------------------------------------ */
-        .br-mobile {
-            display: none;
-        }
+        .br-mobile { display: none; }
 
         .container {
             max-width: 1100px;
@@ -147,7 +137,6 @@
             padding: 0 20px;
         }
 
-        /* 卡片設計 */
         .card {
             background: var(--white);
             border-radius: 20px;
@@ -175,7 +164,6 @@
             border-radius: 10px;
         }
 
-        /* 日期與時間控制列 */
         .map-controls {
             display: flex;
             gap: 20px;
@@ -189,7 +177,6 @@
         .control-item { flex: 1; min-width: 200px; }
         .control-item label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--palette-blue-2); font-size: 15px; }
 
-        /* 💡 圖示說明欄 */
         .legend-bar {
             margin-bottom: 20px;
             font-size: 15px;
@@ -204,7 +191,6 @@
             flex-wrap: wrap;
         }
 
-        /* 🗺️ 平面圖外框 */
         .floor-grid-wrapper {
             background-color: #2c3e50; 
             padding: 12px; 
@@ -241,21 +227,9 @@
         }
 
         .room-card.span-vertical { grid-row: span 2; }
-
-        /* 🟢 空堂樣式 */
         .room-card.available { background-color: #f2fdf7; border: 1px solid #d1fae5; }
-        
-        /* 🔴 當節使用中 / 連堂中 / 靜態紅色 */
-        .room-card.occupied, .room-card.preparing, .room-card.handover-card { 
-            background-color: #fff5f5; 
-            border: 1px solid #ffe3e3;
-        }
-
-        /* 🟠 靜態收拾中 (不閃爍) */
-        .room-card.clearing { 
-            background-color: #fff8f0; 
-            border: 1px solid #ffedd5; 
-        }
+        .room-card.occupied, .room-card.preparing, .room-card.handover-card { background-color: #fff5f5; border: 1px solid #ffe3e3; }
+        .room-card.clearing { background-color: #fff8f0; border: 1px solid #ffedd5; }
 
         .room-name {
             font-weight: 700;
@@ -283,7 +257,6 @@
         .occupied .status-badge, .preparing .status-badge { background-color: var(--danger); }
         .clearing .status-badge { background-color: var(--warning); }
 
-        /* 🔴 僅紅色橢圖燈號進行呼吸閃爍 */
         .handover-flash-badge {
             background-color: var(--danger);
             animation: pulseBadgeBg 1.5s infinite ease-in-out;
@@ -297,7 +270,6 @@
 
         .room-info { font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; line-height: 1.4; }
 
-        /* 表單與欄位樣式 */
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 16px; color: var(--palette-blue-2); }
 
@@ -311,10 +283,7 @@
             transition: all 0.3s;
         }
 
-        .borrower-wrapper {
-            position: relative;
-            width: 100%;
-        }
+        .borrower-wrapper { position: relative; width: 100%; }
 
         #borrower, #classroom {
             background-image: url("data:image/svg+xml;utf8,<svg fill='%230f4c5c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
@@ -348,34 +317,12 @@
             border-bottom: 1px solid #f1f5f9;
             transition: background 0.2s, color 0.2s;
         }
+        .custom-dropdown-item:last-child { border-bottom: none; }
+        .custom-dropdown-item:hover { background-color: #f0f9ff; color: var(--palette-blue-2); font-weight: bold; }
+        .custom-dropdown-item.manual-option { color: var(--palette-blue-1); font-weight: bold; background-color: #f8fafc; border-top: 2px dashed #cbd5e1; }
+        .custom-dropdown-item.manual-option:hover { background-color: #e0f2fe; color: var(--palette-blue-2); }
 
-        .custom-dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .custom-dropdown-item:hover {
-            background-color: #f0f9ff;
-            color: var(--palette-blue-2);
-            font-weight: bold;
-        }
-
-        .custom-dropdown-item.manual-option {
-            color: var(--palette-blue-1);
-            font-weight: bold;
-            background-color: #f8fafc;
-            border-top: 2px dashed #cbd5e1;
-        }
-
-        .custom-dropdown-item.manual-option:hover {
-            background-color: #e0f2fe;
-            color: var(--palette-blue-2);
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--palette-yellow);
-            box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15);
-        }
+        input:focus, select:focus { outline: none; border-color: var(--palette-yellow); box-shadow: 0 0 0 4px rgba(243, 169, 83, 0.15); }
 
         .checkbox-grid {
             display: grid;
@@ -397,15 +344,7 @@
             transition: all 0.2s;
         }
         .checkbox-item input { width: auto; margin: 0; transform: scale(1.1); }
-        
-        .checkbox-item.disabled-period {
-            color: #94a3b8 !important;
-            cursor: not-allowed;
-            background: #f1f5f9;
-            padding: 4px 8px;
-            border-radius: 6px;
-            text-decoration: line-through;
-        }
+        .checkbox-item.disabled-period { color: #94a3b8 !important; cursor: not-allowed; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; text-decoration: line-through; }
 
         button[type="submit"] {
             width: 100%;
@@ -422,28 +361,15 @@
             font-family: inherit;
             box-shadow: 0 4px 15px rgba(15, 76, 92, 0.2);
         }
+        button[type="submit"]:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 6px 20px rgba(15, 76, 92, 0.3); }
+        button[type="submit"]:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        button[type="submit"]:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.15);
-            box-shadow: 0 6px 20px rgba(15, 76, 92, 0.3);
-        }
-
-        button[type="submit"]:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* 紀錄表格 */
         .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; width: 100%; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; background-color: var(--white); }
         th { background: #f8fafc; padding: 15px; text-align: left; font-size: 15px; color: var(--palette-blue-2); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
-        /* 💡 保持「清除篩選」單行排列 */
         .btn-clear-filter {
             padding: 8px 12px;
             background: #e2e8f0;
@@ -453,7 +379,7 @@
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            white-space: nowrap; /* 強制單行不換行 */
+            white-space: nowrap;
             line-height: 1.2;
             text-align: center;
             display: inline-flex;
@@ -461,75 +387,20 @@
             justify-content: center;
         }
 
-        /* 📱 手機版 RWD 最佳化 */
         @media (max-width: 768px) {
-            /* 💡 防止手機出現右邊白邊 / 溢出空白 */
-            html, body {
-                max-width: 100vw;
-                overflow-x: hidden;
-            }
-
-            /* 💡 手機版縮小頂部深藍色區塊高度 */
-            header {
-                padding: 20px 12px !important; 
-                border-bottom: 4px solid var(--palette-yellow) !important;
-            }
-
-            .header-logo-group {
-                margin-bottom: 4px !important;
-            }
-
-            header h1 {
-                font-size: 26px !important;
-                line-height: 1.6 !important;
-            }
-
-            header p {
-                font-size: 14px !important;
-                letter-spacing: 2px !important;
-                margin-top: 4px !important;
-            }
-
-            .br-mobile {
-                display: block !important;
-            }
-
-            .container {
-                padding: 0 10px !important; 
-                margin: 15px auto !important;
-                max-width: 100vw;
-                overflow-x: hidden; /* 💡 確保內容不把頁面往右撐開 */
-            }
-
-            .card {
-                padding: 16px 12px !important; 
-                border-radius: 14px !important;
-            }
-
-            .map-controls {
-                flex-direction: column !important;
-                gap: 12px !important;
-                padding: 12px 15px !important;
-            }
-
-            .control-item {
-                min-width: 100% !important;
-            }
-
-            .control-item label {
-                font-size: 14px !important;
-                margin-bottom: 4px !important;
-            }
-
-            .control-item input {
-                padding: 10px 12px !important;
-                font-size: 14px !important;
-            }
-
-            .floor-grid-wrapper {
-                padding: 8px !important;
-            }
-
+            html, body { max-width: 100vw; overflow-x: hidden; }
+            header { padding: 20px 12px !important; border-bottom: 4px solid var(--palette-yellow) !important; }
+            .header-logo-group { margin-bottom: 4px !important; }
+            header h1 { font-size: 26px !important; line-height: 1.6 !important; }
+            header p { font-size: 14px !important; letter-spacing: 2px !important; margin-top: 4px !important; }
+            .br-mobile { display: block !important; }
+            .container { padding: 0 10px !important; margin: 15px auto !important; max-width: 100vw; overflow-x: hidden; }
+            .card { padding: 16px 12px !important; border-radius: 14px !important; }
+            .map-controls { flex-direction: column !important; gap: 12px !important; padding: 12px 15px !important; }
+            .control-item { min-width: 100% !important; }
+            .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
+            .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
+            .floor-grid-wrapper { padding: 8px !important; }
             .floor-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -538,48 +409,19 @@
                 grid-template-areas: none !important;
                 gap: 8px !important;
             }
+            .floor-grid > div:not(.room-card) { display: none !important; }
+            .room-card, .room-card.span-vertical { grid-row: auto !important; grid-column: auto !important; height: 100% !important; min-height: 0 !important; padding: 12px 6px !important; border-radius: 10px !important; }
+            .room-name { font-size: 18px !important; margin-bottom: 4px !important; }
+            .room-info { font-size: 12px !important; }
+            .status-badge { font-size: 11px !important; padding: 2px 10px !important; margin-bottom: 4px !important; }
 
-            .floor-grid > div:not(.room-card) {
-                display: none !important;
-            }
-
-            .room-card,
-            .room-card.span-vertical {
-                grid-row: auto !important;
-                grid-column: auto !important;
-                height: 100% !important;
-                min-height: 0 !important;
-                padding: 12px 6px !important;
-                border-radius: 10px !important;
-            }
-
-            .room-name {
-                font-size: 18px !important;
-                margin-bottom: 4px !important;
-            }
-
-            .room-info {
-                font-size: 12px !important;
-            }
-
-            .status-badge {
-                font-size: 11px !important;
-                padding: 2px 10px !important;
-                margin-bottom: 4px !important;
-            }
-
-            /* 對應雙欄佈局 */
             #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
             #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
-
             #map-團輔室    { grid-row: 2 !important; grid-column: 1 !important; }
             #map-向圓      { grid-row: 2 !important; grid-column: 2 !important; }
-
             #map-前小向    { grid-row: 3 !important; grid-column: 1 !important; }
             #map-後小向    { grid-row: 3 !important; grid-column: 2 !important; }
-
             #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
-
             #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
             #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
 
@@ -587,9 +429,8 @@
             .checkbox-item { font-size: 13px; }
         }
 
-        /* 🔄 琥珀焦糖黃膠囊按鈕 */
         .btn-sync {
-            background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：鮮明琥珀焦糖黃 */
+            background: linear-gradient(135deg, #f5ac53, #e89a3f);
             color: #ffffff;
             border: none;
             padding: 7px 16px;
@@ -606,54 +447,17 @@
             outline: none;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
+        .btn-sync:hover:not(:disabled) { background: linear-gradient(135deg, #fbb86a, #f5ac53); transform: translateY(-1px); box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4); }
+        .btn-sync:active:not(:disabled) { transform: translateY(0); }
+        .btn-sync:disabled, .btn-sync.loading { background: #d4c3a3 !important; color: #b45309 !important; opacity: 0.9; cursor: not-allowed; transform: none !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important; text-shadow: none !important; }
 
-        .btn-sync:hover:not(:disabled) {
-            background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時稍微加亮 */
-            transform: translateY(-1px);
-            box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
-        }
-
-        .btn-sync:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        /* ⏳ 同步更新中（點擊鎖定）：轉為低彩度麥芽灰黃 + 呼吸感 */
-        .btn-sync:disabled,
-        .btn-sync.loading {
-            background: #d4c3a3 !important; /* 沉穩燕麥灰黃，看得出有被按下且保留黃色基因 */
-            color: #b45309 !important;
-            opacity: 0.9;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
-            text-shadow: none !important;
-        }
-
-        /* 轉圈圖示旋轉動畫 */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* 純白 SVG 向量圖示 */
-        .spin-icon {
-            width: 15px;
-            height: 15px;
-            color: #ffffff;
-            display: inline-block;
-            vertical-align: middle;
-            flex-shrink: 0;
-        }
-
-        .btn-sync.loading .spin-icon {
-            animation: spin 0.8s linear infinite;
-        }
-        
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin-icon { width: 15px; height: 15px; color: #ffffff; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+        .btn-sync.loading .spin-icon { animation: spin 0.8s linear infinite; }
     </style>
 </head>
 <body>
 
-<!-- 💡 頂部 Google 登入驗證與透明提示橫幅 -->
 <div id="authBanner" class="auth-banner">
     <div id="unauthNotice" class="auth-info" style="display: flex;">
         <span>🔒 系統功能提示：首次使用請點擊右側進行 Google 驗證 (僅需登入一次) ➔</span>
@@ -672,28 +476,23 @@
 
 <header>
     <div class="header-logo-group">
-        <!-- 電腦版同一行，手機版顯示 br-mobile 斷行 -->
         <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
 </header>
 
 <div class="container">
-    
     <div class="card">
-    <!-- 使用 flex 排版，設定 space-between 確保按鈕永遠靠右，align-items: center 垂直對齊 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
-        <h2 style="margin: 0; font-size: 1.25rem;">教室借用即時動態</h2>
-        
-        <!-- 💡 膠囊設計按鈕（已換為精緻純白 SVG 向量圖示） -->
-        <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
-            <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
-                <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
-            </svg>
-            <span>同步資料</span>
-        </button>
-    </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
+            <h2 style="margin: 0; font-size: 1.25rem;">教室借用即時動態</h2>
+            <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
+                <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
+                    <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
+                </svg>
+                <span>同步資料</span>
+            </button>
+        </div>
         
         <div class="map-controls">
             <div class="control-item">
@@ -706,7 +505,7 @@
             </div>
         </div>
         
-       <div class="legend-bar">
+        <div class="legend-bar">
             <span>🟢 可借用</span>
             <span>🟠 收拾中</span>
             <span>🔴 使用中(交接時閃爍)</span>
@@ -827,7 +626,6 @@
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
                 <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                <!-- 💡 單行顯示「清除篩選」 -->
                 <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
@@ -852,7 +650,6 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
 
-    // 🔑 Google OAuth 用戶資訊快取
     let currentUser = JSON.parse(localStorage.getItem('google_auth_user') || 'null');
 
     function parseJwt(token) {
@@ -906,7 +703,6 @@
         }
     }
 
-    // 初始化 Auth 狀態
     window.addEventListener('DOMContentLoaded', updateAuthUI);
 
     const periodsConfig = [
@@ -923,15 +719,7 @@
     ];
 
     const classroomListData = [
-        "前個諮",
-        "後個諮",
-        "團輔室",
-        "向圓",
-        "前小向",
-        "後小向",
-        "6F潛能教室",
-        "6F資藝教室",
-        "6F Z空間"
+        "前個諮", "後個諮", "團輔室", "向圓", "前小向", "後小向", "6F潛能教室", "6F資藝教室", "6F Z空間"
     ];
 
     let teacherListData = [];
@@ -987,7 +775,6 @@
         try {
             const response = await fetch(GAS_URL);
             const rawData = await response.json();
-            
             localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
             applyDataToUI(rawData);
         } catch (error) {
@@ -1050,7 +837,6 @@
                 e.stopPropagation();
                 const classroomDropdown = document.getElementById('classroomDropdown');
                 if (classroomDropdown) classroomDropdown.style.display = 'none';
-                
                 showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
             });
         });
@@ -1087,7 +873,6 @@
                 e.stopPropagation();
                 const teacherDropdown = document.getElementById('teacherDropdown');
                 if (teacherDropdown) teacherDropdown.style.display = 'none';
-                
                 showClassroomDropdown();
             });
         });
@@ -1097,29 +882,20 @@
         const teacherDropdown = document.getElementById('teacherDropdown');
         const classroomDropdown = document.getElementById('classroomDropdown');
         
-        if (teacherDropdown && !e.target.closest('.borrower-wrapper')) {
-            teacherDropdown.style.display = 'none';
-        }
-        if (classroomDropdown && !e.target.closest('#classroomDropdown') && e.target !== classroomInput) {
-            classroomDropdown.style.display = 'none';
-        }
+        if (teacherDropdown && !e.target.closest('.borrower-wrapper')) teacherDropdown.style.display = 'none';
+        if (classroomDropdown && !e.target.closest('#classroomDropdown') && e.target !== classroomInput) classroomDropdown.style.display = 'none';
     });
 
     document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
         input.addEventListener('click', function() {
             try {
-                if (typeof this.showPicker === 'function') {
-                    this.showPicker();
-                }
-            } catch (error) {
-                console.log("瀏覽器不支援 showPicker API");
-            }
+                if (typeof this.showPicker === 'function') this.showPicker();
+            } catch (error) {}
         });
     });
     
     function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
-        
         const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
@@ -1134,26 +910,19 @@
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
             const periodInfo = periodsConfig.find(p => p.name === cb.value);
-            
             const isOccupied = allOccupiedPeriods.includes(cb.value);
 
             let isPastTime = false;
-            if (isTodaySelected && periodInfo && curTimeStr > periodInfo.end) {
-                isPastTime = true;
-            }
+            if (isTodaySelected && periodInfo && curTimeStr > periodInfo.end) isPastTime = true;
 
             if (isPastDate || isOccupied || isPastTime) {
                 cb.checked = false;
                 cb.disabled = true;
                 if (label) {
                     label.classList.add('disabled-period');
-                    if (isPastDate) {
-                        label.title = "過去日期無法借用";
-                    } else if (isPastTime && !isOccupied) {
-                        label.title = "此節次時間已過，無法借用";
-                    } else if (isOccupied) {
-                        label.title = "此節次已被預約";
-                    }
+                    if (isPastDate) label.title = "過去日期無法借用";
+                    else if (isPastTime && !isOccupied) label.title = "此節次時間已過，無法借用";
+                    else if (isOccupied) label.title = "此節次已被預約";
                 }
             } else {
                 cb.disabled = false;
@@ -1161,9 +930,7 @@
                     label.classList.remove('disabled-period');
                     label.title = "";
                 }
-                if (currentPeriodToAutoCheck && cb.value === currentPeriodToAutoCheck) {
-                    cb.checked = true;
-                }
+                if (currentPeriodToAutoCheck && cb.value === currentPeriodToAutoCheck) cb.checked = true;
             }
         });
     }
@@ -1171,9 +938,7 @@
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
-        if (date) {
-            refreshCheckboxStates(room, date);
-        }
+        if (date) refreshCheckboxStates(room, date);
     }
 
     function executeSmartBooking(room, evt) {
@@ -1187,27 +952,18 @@
         const roomBookings = bookings.filter(b => b.classroom === room && b.date === chosenDate);
         const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
 
-        if (isOccupiedNow) {
-            refreshCheckboxStates(room, chosenDate, "");
-        } else {
-            refreshCheckboxStates(room, chosenDate, currentP);
-        }
+        if (isOccupiedNow) refreshCheckboxStates(room, chosenDate, "");
+        else refreshCheckboxStates(room, chosenDate, currentP);
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
-        
-        if (borrowerInput) {
-            showTeacherDropdown(borrowerInput.getAttribute('readonly') ? '' : borrowerInput.value.trim());
-        }
+        if (borrowerInput) showTeacherDropdown(borrowerInput.getAttribute('readonly') ? '' : borrowerInput.value.trim());
     }
 
     function getCurrentPeriod(time) {
         const found = periodsConfig.find(p => time >= p.start && time <= p.end);
         if (found) return found.name;
-
         const nextPeriod = periodsConfig.find(p => time < p.start);
-        if (nextPeriod) {
-            return nextPeriod.name; 
-        }
+        if (nextPeriod) return nextPeriod.name; 
         return "";
     }
 
@@ -1246,7 +1002,6 @@
 
             function generateUpcomingGridHtml(prefixText) {
                 if (upcomingList.length === 0) return '';
-                
                 const periodSpans = upcomingList.map((p, idx) => {
                     const separator = (idx === upcomingList.length - 1) ? '' : '、';
                     return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
@@ -1260,20 +1015,11 @@
                                 ${periodSpans}
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
-            card.style.position = "";
-            card.style.paddingTop = "";
-            card.style.display = "";
-            card.style.flexDirection = "";
-            card.style.justifyContent = "";
-            
-            if (badge) {
-                badge.style.marginTop = "";
-                badge.classList.remove('handover-flash-badge');
-            }
+            card.style.position = ""; card.style.paddingTop = ""; card.style.display = ""; card.style.flexDirection = ""; card.style.justifyContent = "";
+            if (badge) { badge.style.marginTop = ""; badge.classList.remove('handover-flash-badge'); }
 
             const oldAlert = card.querySelector('.dynamic-alert');
             if (oldAlert) oldAlert.remove();
@@ -1283,10 +1029,7 @@
                 if (firstBooking) {
                     card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
                     badge.textContent = "準備中";
-                    badge.style.backgroundColor = ""; 
-
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${firstBooking.borrower}</div>`;
-                    
                     const remainingUpcoming = upcomingList.filter(p => p !== "第一節");
                     if (remainingUpcoming.length > 0) {
                         const remainingSpans = remainingUpcoming.map((p, idx) => {
@@ -1332,8 +1075,8 @@
                     badge.textContent = "收拾中";
                     badge.style.backgroundColor = "#ea580c";
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${p6Booking.borrower}</div>`;
-                    if (upcomingList.length > 0) { htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`; }
-                    else { htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`; }
+                    if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
+                    else htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
                     info.innerHTML = htmlContent;
                     return;
                 } else if (!p6Booking && p7Booking) {
@@ -1386,7 +1129,6 @@
                     card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
                     badge.textContent = "收拾中";
                     badge.style.backgroundColor = "#ea580c"; 
-                    
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${eighthBooking.borrower}</div>`;
                     info.innerHTML = htmlContent;
                     return; 
@@ -1398,12 +1140,8 @@
                 const b = roomBookings.find(b => b.periods.includes(currentP));
                 card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                 badge.textContent = "使用中";
-                badge.style.backgroundColor = ""; 
-
                 let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${b.borrower}</div>`;
-                if (upcomingList.length > 0) {
-                    htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                }
+                if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
                 info.innerHTML = htmlContent;
                 return;
             }
@@ -1422,12 +1160,8 @@
                     if (nextBooking && prevBooking.borrower === nextBooking.borrower) {
                         card.className = isVertical ? 'room-card span-vertical occupied' : 'room-card occupied';
                         badge.textContent = "連堂中";
-                        badge.style.backgroundColor = ""; 
-
                         let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${prevBooking.borrower}</div>`;
-                        if (upcomingList.length > 0) {
-                            htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                        }
+                        if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
                         info.innerHTML = htmlContent;
                         return;
                     }
@@ -1436,15 +1170,8 @@
                         card.className = isVertical ? 'room-card span-vertical handover-card' : 'room-card handover-card';
                         badge.textContent = "交接中";
                         badge.classList.add('handover-flash-badge');
-
-                        badge.insertAdjacentHTML('beforebegin', `
-                            <div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">
-                                ⚠️ 前一節：${prevBooking.borrower}
-                            </div>
-                        `);
-
+                        badge.insertAdjacentHTML('beforebegin', `<div class="dynamic-alert" style="color:#e06666; font-weight:700; font-size:12px; white-space:nowrap; text-align: center; width: 100%; margin-bottom: 2px;">⚠️ 前一節：${prevBooking.borrower}</div>`);
                         let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👉 下節課：${nextBooking.borrower}</div>`;
-                        
                         const remainingUpcoming = upcomingList.filter(p => p !== nextP);
                         if (remainingUpcoming.length > 0) {
                             const remainingSpans = remainingUpcoming.map((p, idx) => {
@@ -1469,13 +1196,9 @@
                         card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
                         badge.textContent = "收拾中";
                         badge.style.backgroundColor = "#ea580c"; 
-
                         let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 前一節：${prevBooking.borrower}</div>`;
-                        if (upcomingList.length > 0) {
-                            htmlContent += `<div style="margin-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
-                        } else {
-                            htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
-                        }
+                        if (upcomingList.length > 0) htmlContent += `<div style="margin-top:2px;">${generateUpcomingGridHtml('⏳ 即將：')}</div>`;
+                        else htmlContent += `<div style="font-size:12px; color:#94a3b8; margin-top:4px; font-weight: 500; text-align: center;">之後無預約 🟢</div>`;
                         info.innerHTML = htmlContent;
                         return;
                     }
@@ -1484,12 +1207,8 @@
                 if (!prevBooking && nextBooking) {
                     card.className = isVertical ? 'room-card span-vertical preparing' : 'room-card preparing';
                     badge.textContent = "準備中"; 
-                    badge.style.backgroundColor = ""; 
-                    
                     let htmlContent = `<div style="font-size:12px;color:var(--text-dark);font-weight:700;margin-top:2px;">👤 借用：${nextBooking.borrower}</div>`;
-                    if (upcomingList.length > 0) {
-                        htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-                    }
+                    if (upcomingList.length > 0) htmlContent += `<div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
                     info.innerHTML = htmlContent;
                     return;
                 }
@@ -1497,13 +1216,8 @@
 
             card.className = isVertical ? 'room-card span-vertical available' : 'room-card available';
             badge.textContent = "空堂";
-            badge.style.backgroundColor = ""; 
-            
-            if (upcomingList.length > 0) {
-                info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
-            } else {
-                info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
-            }
+            if (upcomingList.length > 0) info.innerHTML = `<div style="margin-top:5px; width: 100%;">${generateUpcomingGridHtml('⏳ 後續：')}</div>`;
+            else info.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-top:5px;font-weight:500;text-align: center;">今日後續全空堂 🟢</div>`;
         });
     }
 
@@ -1514,16 +1228,11 @@
 
         const nowTs = new Date();
         const todayStr = `${nowTs.getFullYear()}-${String(nowTs.getMonth() + 1).padStart(2, '0')}-${String(nowTs.getDate()).padStart(2, '0')}`;
-
         const filterDateStr = document.getElementById('tableFilterDate').value; 
 
-        let displayBookings = [];
-
-        if (filterDateStr) {
-            displayBookings = bookings.filter(b => b.date === filterDateStr);
-        } else {
-            displayBookings = bookings.filter(b => b.date >= todayStr);
-        }
+        let displayBookings = filterDateStr 
+            ? bookings.filter(b => b.date === filterDateStr)
+            : bookings.filter(b => b.date >= todayStr);
 
         if (displayBookings.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
@@ -1533,21 +1242,18 @@
         const mergedMap = {};
         displayBookings.forEach(b => {
             const key = `${b.date}_${b.classroom}_${b.borrower}`;
-            
             if (!mergedMap[key]) {
                 mergedMap[key] = {
                     date: b.date,
                     classroom: b.classroom,
                     borrower: b.borrower,
-                    createdUser: b.createdUser || "未記錄",
+                    createdUser: b.createdUser || "未紀錄",
                     periods: [...b.periods],
                     ids: [b.id]
                 };
             } else {
                 b.periods.forEach(p => {
-                    if (!mergedMap[key].periods.includes(p)) {
-                        mergedMap[key].periods.push(p);
-                    }
+                    if (!mergedMap[key].periods.includes(p)) mergedMap[key].periods.push(p);
                 });
                 mergedMap[key].ids.push(b.id);
             }
@@ -1556,31 +1262,21 @@
         let mergedList = Object.values(mergedMap);
 
         mergedList.sort((a, b) => {
-            if (a.date !== b.date) {
-                return new Date(a.date) - new Date(b.date);
-            }
-            
+            if (a.date !== b.date) return new Date(a.date) - new Date(b.date);
             const getMinPeriodIdx = (periods) => {
                 if (!periods || periods.length === 0) return 999;
                 const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
                 const validIndexes = indexes.filter(idx => idx !== -1);
                 return validIndexes.length > 0 ? Math.min(...validIndexes) : 999;
             };
-            
             const aMinIdx = getMinPeriodIdx(a.periods);
             const bMinIdx = getMinPeriodIdx(b.periods);
-            
-            if (aMinIdx !== bMinIdx) {
-                return aMinIdx - bMinIdx;
-            }
-            
+            if (aMinIdx !== bMinIdx) return aMinIdx - bMinIdx;
             return a.classroom.localeCompare(b.classroom);
         });
 
         mergedList.forEach(b => {
-            b.periods.sort((x, y) => {
-                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
-            });
+            b.periods.sort((x, y) => periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y));
 
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
@@ -1613,7 +1309,6 @@
         if (!confirm(confirmMsg)) return;
 
         idsArray.forEach(id => pendingDeletedIds.add(id));
-
         bookings = bookings.filter(b => !idsArray.includes(b.id));
 
         localStorage.setItem('cached_booking_data', JSON.stringify({ 
@@ -1690,9 +1385,7 @@
         submitBtn.disabled = true;
         submitBtn.textContent = '登記中...';
 
-        // 🟢 強制使用 formatSafeDate 確保手機版與電腦版日期格式 100% 統一
         const safeDate = formatSafeDate(date);
-
         const activeUserEmail = (currentUser && currentUser.email) ? currentUser.email : "未登入使用者";
 
         const newBookingObj = {
@@ -1757,9 +1450,7 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            loadBookingsFromServer(); 
-        }
+        if (!document.hidden) loadBookingsFromServer();
         startSmartPolling();
     });
 
@@ -1769,7 +1460,6 @@
     handleClassroomOrDateChange();
     startSmartPolling();
 
-    // 💡 手動同步觸發函式（含純白 SVG 與旋轉動畫）
     async function manualSync() {
         const btn = document.getElementById('manualSyncBtn');
         if (!btn || btn.disabled) return;
@@ -1780,23 +1470,17 @@
                 <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
             </svg>`;
 
-        // 1. 啟用旋轉動畫與鎖定按鈕
         btn.disabled = true;
         btn.classList.add('loading');
         btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
 
         try {
-            // 2. 向伺服器抓取資料
             await loadBookingsFromServer();
-            
-            // 3. 顯示成功圖示
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
-            
         } catch (error) {
             console.error("手動同步失敗:", error);
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✕</span> <span>失敗</span>`;
         } finally {
-            // 4. 1.2 秒後恢復預設膠囊狀態
             setTimeout(() => {
                 btn.classList.remove('loading');
                 btn.innerHTML = `${svgIcon} <span>同步資料</span>`;
