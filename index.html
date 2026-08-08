@@ -480,12 +480,12 @@
             }
 
             header {
-        padding: 20px 10px 24px 10px !important; /* 增加頂部與底部的留白 padding */
-        border-bottom: 4px solid var(--palette-yellow) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-    }
+                padding: 20px 10px 24px 10px !important;
+                border-bottom: 4px solid var(--palette-yellow) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
 
             /* 手機版顯示專用標題 */
             .desktop-title {
@@ -497,10 +497,10 @@
             }
 
             /* 【第一行】帳號 + 登出鍵 */
-    .auth-banner {
-        margin-bottom: 16px !important; /* 拉大第一行與第二行之間的距離（原本為 8px） */
-        width: 100% !important;
-    }
+            .auth-banner {
+                margin-bottom: 16px !important;
+                width: 100% !important;
+            }
 
             .auth-container {
                 display: flex !important;
@@ -522,26 +522,26 @@
             }
 
             /* 【第二行】鳳新輔導室 教室借用 */
-    .header-logo-group {
-        margin-bottom: 12px !important; /* 拉大第二行與第三行之間的距離（原本為 4px） */
-        width: 100% !important;
-    }
+            .header-logo-group {
+                margin-bottom: 12px !important;
+                width: 100% !important;
+            }
 
-           header h1 {
-        font-size: 26px !important;
-        line-height: 1.6 !important; /* 拉大標題本身的行高（原本為 1.3） */
-        white-space: nowrap !important;
-        margin: 0 !important;
-    }
+            header h1 {
+                font-size: 26px !important;
+                line-height: 1.6 !important;
+                white-space: nowrap !important;
+                margin: 0 !important;
+            }
 
             /* 【第三行】智慧教室借用系統｜即時看板 */
-    header p {
-        font-size: 13px !important;
-        letter-spacing: 1px !important;
-        margin: 6px 0 0 0 !important; /* 增加上方邊界（原本為 2px） */
-        line-height: 1.5 !important;   /* 調整文字行高 */
-        white-space: nowrap !important;
-    }
+            header p {
+                font-size: 13px !important;
+                letter-spacing: 1px !important;
+                margin: 6px 0 0 0 !important;
+                line-height: 1.5 !important;
+                white-space: nowrap !important;
+            }
 
             .br-mobile {
                 display: none !important;
@@ -1131,7 +1131,14 @@
     }
 
     function applyDataToUI(rawData) {
-        const bookingSource = rawData.bookings ? rawData.bookings : (Array.isArray(rawData) ? rawData : []);
+        let bookingSource = [];
+        if (rawData.bookings) {
+            bookingSource = rawData.bookings;
+        } else if (Array.isArray(rawData)) {
+            bookingSource = rawData;
+        } else if (rawData.data && Array.isArray(rawData.data)) {
+            bookingSource = rawData.data;
+        }
         
         bookings = bookingSource
             .filter(b => !pendingDeletedIds.has(b.id))
@@ -1140,13 +1147,20 @@
                 return b;
             });
 
+        let teachersSource = [];
+        if (rawData.teachers && Array.isArray(rawData.teachers)) {
+            teachersSource = rawData.teachers;
+        } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
+            teachersSource = rawData.teachersList;
+        }
+
+        if (teachersSource.length > 0) {
+            teacherListData = teachersSource;
+        }
+
         renderTable();
         updateDashboard();
         handleClassroomOrDateChange();
-
-        if (rawData.teachers && rawData.teachers.length > 0) {
-            teacherListData = rawData.teachers;
-        }
     }
 
     function showTeacherDropdown(filterText = '') {
@@ -1812,17 +1826,23 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
+        const safeDate = formatSafeDate(date);
+
+        // 前端即時重複預約檢測
         const hasConflict = bookings.some(b => 
-            b.classroom === classroom && b.date === date && 
+            b.classroom === classroom && 
+            b.date === safeDate && 
             b.periods.some(p => selectedPeriods.includes(p))
         );
 
-        if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+        if (hasConflict) { 
+            alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); 
+            return; 
+        }
 
         submitBtn.disabled = true;
         submitBtn.textContent = '登記中...';
 
-        const safeDate = formatSafeDate(date);
         const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
         const newBookingObj = {
@@ -1834,32 +1854,29 @@
             operator: operatorName
         };
 
-        bookings.push(newBookingObj);
-        localStorage.setItem('cached_booking_data', JSON.stringify({ bookings, teachers: teacherListData }));
-        
-        renderTable();
-        updateDashboard();
-
-        document.getElementById('bookingForm').reset();
-        document.getElementById('date').value = document.getElementById('mapDate').value;
         submitBtn.disabled = false;
         submitBtn.textContent = '確認提交借用登記';
 
-        alert('🎉 恭喜您，教室登記成功！');
-
         try {
             const payload = { action: 'create', ...newBookingObj };
-            fetch(GAS_URL, { 
+            const res = await fetch(GAS_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(payload) 
-            }).then(res => res.json()).then(resData => {
-                if (resData.status !== 'success') {
-                    alert('⚠️ 雲端同步失敗：' + resData.message + '，將重新刷新資料');
-                    loadBookingsFromServer(); 
-                }
             });
+            const resData = await res.json();
+
+            if (resData.status === 'success') {
+                alert('🎉 恭喜您，教室登記成功！');
+                document.getElementById('bookingForm').reset();
+                document.getElementById('date').value = document.getElementById('mapDate').value;
+                await loadBookingsFromServer(); // 預約成功後即時向雲端重新同步最新狀態與列表
+            } else {
+                alert('❌ 登記失敗：' + resData.message);
+                await loadBookingsFromServer(); 
+            }
         } catch(error) {
-            console.error("背景同步失敗:", error);
+            console.error("新增失敗:", error);
+            alert('⚠️ 連線失敗，請檢查網路後重試！');
         }
     };
 
