@@ -1037,10 +1037,11 @@
             <button class="btn-auth" onclick="logoutGoogle()">登出</button>
         `;
 
-        // 💡 關鍵新增：登入成功後，自動將登入者姓名帶入「借用人」輸入框
+        // 💡 自動帶入登入者姓名，但維持選單機制
         const borrowerIn = document.getElementById('borrower');
         if (borrowerIn && currentUser.name) {
             borrowerIn.value = currentUser.name;
+            borrowerIn.setAttribute('readonly', 'true'); // 確保點擊時依然能觸發選單
         }
 
     } else {
@@ -1048,8 +1049,6 @@
             <span>🔒 請登入 Google 帳號</span>
             <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
         `;
-
-        // 💡 關鍵新增：登出時，清空借用人欄位
         const borrowerIn = document.getElementById('borrower');
         if (borrowerIn) {
             borrowerIn.value = '';
@@ -1177,34 +1176,37 @@
     }
 
     function showTeacherDropdown(filterText = '') {
-        const dropdown = document.getElementById('teacherDropdown');
-        const borrowerIn = document.getElementById('borrower');
-        if (!dropdown || !borrowerIn) return;
+    const dropdown = document.getElementById('teacherDropdown');
+    const borrowerIn = document.getElementById('borrower');
+    if (!dropdown || !borrowerIn) return;
 
-        const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
-        let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
-        itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
+    // 💡 若為唯讀狀態（點擊展開時），顯示完整教師名單；若是手動打字狀態，才進行文字過濾
+    const isReadonly = borrowerIn.hasAttribute('readonly');
+    const searchKey = isReadonly ? '' : filterText.toLowerCase();
 
-        dropdown.innerHTML = itemsHtml;
-        dropdown.style.display = 'block';
+    const filtered = teacherListData.filter(t => t.toLowerCase().includes(searchKey));
+    let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
+    itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
-        dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-            item.onclick = function(e) {
-                e.stopPropagation();
-                const action = this.getAttribute('data-action');
-                if (action === 'manual') {
-                    borrowerIn.removeAttribute('readonly');
-                    borrowerIn.value = '';
-                    borrowerIn.focus();
-                } else {
-                    borrowerIn.setAttribute('readonly', 'true');
-                    borrowerIn.value = this.getAttribute('data-value');
-                }
-                dropdown.style.display = 'none';
-            };
-        });
-    }
+    dropdown.innerHTML = itemsHtml;
+    dropdown.style.display = 'block';
 
+    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.onclick = function(e) {
+            e.stopPropagation();
+            const action = this.getAttribute('data-action');
+            if (action === 'manual') {
+                borrowerIn.removeAttribute('readonly');
+                borrowerIn.value = '';
+                borrowerIn.focus();
+            } else {
+                borrowerIn.setAttribute('readonly', 'true');
+                borrowerIn.value = this.getAttribute('data-value');
+            }
+            dropdown.style.display = 'none';
+        };
+    });
+}
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
         ['click', 'focus'].forEach(eventType => {
