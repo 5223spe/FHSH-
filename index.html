@@ -47,35 +47,44 @@
             line-height: 1.6;
         }
 
-        /* 頂部半透明 Google 登入狀態列 */
+        /* 頂部半透明 Google 登入狀態列 - 標準單列橫排 */
         .auth-banner {
             background: rgba(15, 76, 92, 0.85);
             backdrop-filter: blur(8px);
             color: #ffffff;
             padding: 10px 20px;
-            text-align: center;
             font-size: 14px;
             font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 12px;
             position: sticky;
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        .auth-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         .auth-banner .user-info {
             display: flex;
             align-items: center;
             gap: 8px;
+            white-space: nowrap;
         }
 
         .auth-banner img {
             width: 24px;
             height: 24px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
         .btn-auth {
@@ -88,6 +97,8 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-auth:hover {
@@ -630,14 +641,67 @@
         .btn-sync.loading .spin-icon {
             animation: spin 0.8s linear infinite;
         }
-        
+
+        /* 彈窗樣式 */
+        .modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(4px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 99999;
+        }
+
+        .modal-card {
+          background: #ffffff;
+          padding: 30px 40px;
+          border-radius: 16px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+          text-align: center;
+          max-width: 400px;
+          width: 90%;
+          animation: modalPop 0.3s ease-out;
+        }
+
+        .modal-icon {
+          font-size: 48px;
+          margin-bottom: 12px;
+        }
+
+        .modal-card h2 {
+          margin: 0 0 10px 0;
+          color: #1f2937;
+          font-size: 22px;
+        }
+
+        .modal-card p {
+          color: #4b5563;
+          font-size: 14px;
+          line-height: 1.5;
+          margin-bottom: 24px;
+        }
+
+        #modalGoogleBtn {
+          display: flex;
+          justify-content: center;
+        }
+
+        @keyframes modalPop {
+          from { transform: scale(0.8); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
 <!-- Google 登入提示列 -->
 <div class="auth-banner" id="authBanner">
-    <div id="authContent" style="display: flex; align-items: center; gap: 10px;">
+    <div id="authContent" class="auth-container">
         <span>🔒 請登入 Google 帳號以進行後台備份與操作紀錄</span>
         <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
     </div>
@@ -817,6 +881,16 @@
     </div>
 </div>
 
+<!-- 強制登入 Modal 視窗 -->
+<div id="loginModal" class="modal-backdrop" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-icon">🔒</div>
+    <h2>請先登入系統</h2>
+    <p>為了記錄借用與管理權限，第一次使用請先完成 Google 帳號登入。</p>
+    <div id="modalGoogleBtn"></div>
+  </div>
+</div>
+
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzlThP3Hx9CcvT-tc_4IT5AVfaka-UZDKQfBUrKYdaOnlGHxsi5N0FSZVUmsTGgzad0ew/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
@@ -834,57 +908,46 @@
     }
 
     function initGoogleAuth() {
-  google.accounts.id.initialize({
-    client_id: "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com", // 您原本寫的 Client ID
-    callback: handleCredentialResponse
-  });
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse
+        });
 
-  // 您原本渲染頂端按鈕的地方
-  google.accounts.id.renderButton(
-    document.getElementById("googleBtn"), 
-    { theme: "outline", size: "medium" }
-  );
+        const modalBtn = document.getElementById("modalGoogleBtn");
+        if (modalBtn) {
+            google.accounts.id.renderButton(modalBtn, { theme: "filled_blue", size: "large", width: 250 });
+        }
 
-  // ➕ 【新增 1】在彈窗內也渲染一個大登入按鈕
-  const modalBtn = document.getElementById("modalGoogleBtn");
-  if (modalBtn) {
-    google.accounts.id.renderButton(modalBtn, { theme: "filled_blue", size: "large", width: 250 });
-  }
+        const savedUser = localStorage.getItem('google_user_session');
+        const modal = document.getElementById("loginModal");
 
-  // 您原本檢查 Session 的邏輯
-  const savedUser = localStorage.getItem('google_user_session');
-  const modal = document.getElementById("loginModal");
-
-  if (savedUser) {
-    currentUser = JSON.parse(savedUser);
-    updateAuthUI();
-    // ➕ 【新增 2】有登入過，隱藏彈窗
-    if (modal) modal.style.display = "none";
-  } else {
-    // ➕ 【新增 3】沒登入過，顯示強制登入彈窗
-    if (modal) modal.style.display = "flex";
-  }
-}
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            updateAuthUI();
+            if (modal) modal.style.display = "none";
+        } else {
+            if (modal) modal.style.display = "flex";
+        }
+    }
 
     window.onload = function() {
         initGoogleAuth();
     };
 
     function handleCredentialResponse(response) {
-  const payload = parseJwt(response.credential);
-  currentUser = {
-    name: payload.name,
-    email: payload.email,
-    picture: payload.picture
-  };
-  
-  localStorage.setItem('google_user_session', JSON.stringify(currentUser));
-  updateAuthUI();
+        const payload = parseJwt(response.credential);
+        currentUser = {
+            name: payload.name,
+            email: payload.email,
+            picture: payload.picture
+        };
+        
+        localStorage.setItem('google_user_session', JSON.stringify(currentUser));
+        updateAuthUI();
 
-  // ➕ 登入成功後關閉強制彈窗
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.style.display = "none";
-}
+        const modal = document.getElementById("loginModal");
+        if (modal) modal.style.display = "none";
+    }
 
     function promptGoogleLogin() {
         if (window.google) {
@@ -898,6 +961,8 @@
         currentUser = null;
         localStorage.removeItem('google_user_session');
         updateAuthUI();
+        const modal = document.getElementById("loginModal");
+        if (modal) modal.style.display = "flex";
     }
 
     function updateAuthUI() {
@@ -1516,7 +1581,6 @@
         });
     }
 
-    // 渲染表格：已移除「登記操作人」欄位
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
@@ -1606,7 +1670,6 @@
         });
     }
 
-    // 刪除資料：會帶上目前登入者的資訊 deletedBy
     function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
@@ -1657,7 +1720,6 @@
         });
     }
 
-    // 提交借用：會在背景帶上目前登入者的資訊 operator
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1805,72 +1867,5 @@
         }
     }
 </script>
-
- <!-- 強制登入 Modal 視窗 -->
-<div id="loginModal" class="modal-backdrop" style="display: none;">
-  <div class="modal-card">
-    <div class="modal-icon">🔒</div>
-    <h2>請先登入系統</h2>
-    <p>為了記錄借用與管理權限，第一次使用請先完成 Google 帳號登入。</p>
-    <div id="modalGoogleBtn"></div>
-  </div>
-</div>
-
-<style>
-/* 彈窗樣式 */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 99999;
-}
-
-.modal-card {
-  background: #ffffff;
-  padding: 30px 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  animation: modalPop 0.3s ease-out;
-}
-
-.modal-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.modal-card h2 {
-  margin: 0 0 10px 0;
-  color: #1f2937;
-  font-size: 22px;
-}
-
-.modal-card p {
-  color: #4b5563;
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
-
-#modalGoogleBtn {
-  display: flex;
-  justify-content: center;
-}
-
-@keyframes modalPop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-</style>
-    
 </body>
 </html>
