@@ -971,7 +971,7 @@
     function initGoogleAuth() {
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse
+            callback: logoutGoogle
         });
 
         const modalBtn = document.getElementById("modalGoogleBtn");
@@ -985,17 +985,20 @@
         if (savedUser) {
             currentUser = JSON.parse(savedUser);
             updateAuthUI();
-            if (modal) modal.style.display = "none";
-        } else {
-            if (modal) modal.style.display = "flex";
-        }
+            // 👈 加在這裡：如果網頁打開時已經是登入狀態，自動把老師名字填入借用人欄位
+        autoFillBorrower(); 
+
+        if (modal) modal.style.display = "none";
+    } else {
+        if (modal) modal.style.display = "flex";
     }
+}
 
     window.onload = function() {
         initGoogleAuth();
     };
 
-    function handleCredentialResponse(response) {
+    function logoutGoogle(response) {
         const payload = parseJwt(response.credential);
         currentUser = {
             name: payload.name,
@@ -1006,9 +1009,12 @@
         localStorage.setItem('google_user_session', JSON.stringify(currentUser));
         updateAuthUI();
 
-        const modal = document.getElementById("loginModal");
-        if (modal) modal.style.display = "none";
-    }
+        // 👈 加在這裡：登入成功立刻比對 Email，把對應的老師姓名填進去
+    autoFillBorrower();
+
+    const modal = document.getElementById("loginModal");
+    if (modal) modal.style.display = "none";
+}
 
     function promptGoogleLogin() {
         if (window.google) {
@@ -1022,9 +1028,12 @@
         currentUser = null;
         localStorage.removeItem('google_user_session');
         updateAuthUI();
-        const modal = document.getElementById("loginModal");
-        if (modal) modal.style.display = "flex";
-    }
+        // 👈 加在這裡：登出之後沒有 Email 了，系統會自動把借用人欄位清空變空白
+    autoFillBorrower();
+
+    const modal = document.getElementById("loginModal");
+    if (modal) modal.style.display = "flex";
+}
 
     function updateAuthUI() {
         const authContent = document.getElementById('authContent');
@@ -1070,6 +1079,7 @@
     ];
 
     let teacherListData = [];
+    let teacherEmailMap = {}; // 💡 新增：儲存 Email -> 姓名的對照表
     let bookings = [];
     let pollingTimer = null;
     let pendingDeletedIds = new Set();
@@ -1131,66 +1141,72 @@
     }
 
     function applyDataToUI(rawData) {
-        let bookingSource = [];
-        if (rawData.bookings) {
-            bookingSource = rawData.bookings;
-        } else if (Array.isArray(rawData)) {
-            bookingSource = rawData;
-        } else if (rawData.data && Array.isArray(rawData.data)) {
-            bookingSource = rawData.data;
-        }
-        
-        bookings = bookingSource
-            .filter(b => !pendingDeletedIds.has(b.id))
-            .map(b => {
-                b.date = formatSafeDate(b.date);
-                return b;
-            });
-
-        let teachersSource = [];
-        if (rawData.teachers && Array.isArray(rawData.teachers)) {
-            teachersSource = rawData.teachers;
-        } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
-            teachersSource = rawData.teachersList;
-        }
-
-        if (teachersSource.length > 0) {
-            teacherListData = teachersSource;
-        }
-
-        renderTable();
-        updateDashboard();
-        handleClassroomOrDateChange();
+    let bookingSource = [];
+    if (rawData.bookings) {
+        bookingSource = rawData.bookings;
+    } else if (Array.isArray(rawData)) {
+        bookingSource = rawData;
+    } else if (rawData.data && Array.isArray(rawData.data)) {
+        bookingSource = rawData.data;
     }
-
-    function showTeacherDropdown(filterText = '') {
-        const dropdown = document.getElementById('teacherDropdown');
-        const borrowerIn = document.getElementById('borrower');
-        if (!dropdown || !borrowerIn) return;
-
-        const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
-        let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
-        itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
-
-        dropdown.innerHTML = itemsHtml;
-        dropdown.style.display = 'block';
-
-        dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-            item.onclick = function(e) {
-                e.stopPropagation();
-                const action = this.getAttribute('data-action');
-                if (action === 'manual') {
-                    borrowerIn.removeAttribute('readonly');
-                    borrowerIn.value = '';
-                    borrowerIn.focus();
-                } else {
-                    borrowerIn.setAttribute('readonly', 'true');
-                    borrowerIn.value = this.getAttribute('data-value');
-                }
-                dropdown.style.display = 'none';
-            };
+    
+    bookings = bookingSource
+        .filter(b => !pendingDeletedIds.has(b.id))
+        .map(b => {
+            b.date = formatSafeDate(b.date);
+            return b;
         });
+
+    // 💡 讀取教師名單與 Email 對照表
+    let teachersSource = [];
+    if (rawData.teachers && Array.isArray(rawData.teachers)) {
+        teachersSource = rawData.teachers;
+    } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
+        teachersSource = rawData.teachersList;
     }
+
+    if (teachersSource.length > 0) {
+        teacherListData = teachersSource;
+    }
+
+    // 💡 儲存後端傳來的 teacherEmailMap (請確保後端 doGet 有正確回傳此物件)
+    if (rawData.teacherEmailMap) {
+        teacherEmailMap = rawData.teacherEmailMap;
+    }
+
+    // 💡 自動帶入登入者姓名邏輯 (需求 2 & 需求 3)
+    autoFillBorrower();
+
+    renderTable();
+    updateDashboard();
+    handleClassroomOrDateChange();
+}
+
+// 💡 獨立寫成一個自動帶入欄位的函式
+function autoFillBorrower() {
+    const borrowerInput = document.getElementById('borrower');
+    if (!borrowerInput) return;
+
+    // 若使用者已經手動點選或輸入過內容，則不強行覆蓋
+    if (borrowerInput.value.trim() !== "" && !borrowerInput.dataset.autoFilled) {
+        return;
+    }
+
+    const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase().trim() : "";
+    
+    // 檢查 Google 登入 Email 是否存在於後端 teachers 的 Email Map 中
+    if (userEmail && teacherEmailMap[userEmail]) {
+        borrowerInput.value = teacherEmailMap[userEmail];
+        borrowerInput.setAttribute('readonly', 'true');
+        borrowerInput.dataset.autoFilled = "true"; // 標記為自動填寫
+    } else {
+        // 需求 3：如果 Email 不在 sheet 裡，維持空白
+        if (borrowerInput.dataset.autoFilled) {
+            borrowerInput.value = "";
+            delete borrowerInput.dataset.autoFilled;
+        }
+    }
+}
 
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
