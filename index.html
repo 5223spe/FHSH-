@@ -1497,7 +1497,7 @@
         });
     }
 
-    // 💡 渲染表格：已移除「登記操作人」欄位
+    // 💡 渲染表格
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
@@ -1638,23 +1638,27 @@
         });
     }
 
-    // 💡 提交借用：會在背景帶上目前登入者的資訊 operator
+    // 💡 提交借用：修復與優化後的表單提交 logic
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
-        const borrower = document.getElementById('borrower').value.trim();
-        const classroom = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
+        const borrowerInput = document.getElementById('borrower');
+        const classroomInput = document.getElementById('classroom');
+        const dateInput = document.getElementById('date');
+
+        const borrower = borrowerInput ? borrowerInput.value.trim() : '';
+        const classroom = classroomInput ? classroomInput.value : '';
+        const date = dateInput ? dateInput.value : '';
 
         if (!borrower) {
             alert('⚠️ 請選擇或輸入「借用人姓名」！');
-            document.getElementById('borrower').focus();
+            if (borrowerInput) borrowerInput.focus();
             return;
         }
 
         if (!classroom) {
             alert('⚠️ 請選擇「借用教室」！');
-            showClassroomDropdown();
+            if (typeof showClassroomDropdown === 'function') showClassroomDropdown();
             return;
         }
 
@@ -1662,23 +1666,33 @@
         const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
         if (date < todayFormatted) {
             alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
-            document.getElementById('date').value = todayFormatted;
-            handleClassroomOrDateChange();
+            if (dateInput) {
+                dateInput.value = todayFormatted;
+                handleClassroomOrDateChange();
+            }
             return;
         }
 
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
+        if (selectedPeriods.length === 0) { 
+            alert('⚠️ 請至少選擇一個借用時段節次！'); 
+            return; 
+        }
 
         const hasConflict = bookings.some(b => 
             b.classroom === classroom && b.date === date && 
             b.periods.some(p => selectedPeriods.includes(p))
         );
 
-        if(hasConflict) { alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); return; }
+        if (hasConflict) { 
+            alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); 
+            return; 
+        }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = '登記中...';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登記中...';
+        }
 
         const safeDate = formatSafeDate(date);
         const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
@@ -1698,10 +1712,19 @@
         renderTable();
         updateDashboard();
 
-        document.getElementById('bookingForm').reset();
-        document.getElementById('date').value = document.getElementById('mapDate').value;
-        submitBtn.disabled = false;
-        submitBtn.textContent = '確認提交借用登記';
+        this.reset();
+        const mapDateInput = document.getElementById('mapDate');
+        if (dateInput && mapDateInput) {
+            dateInput.value = mapDateInput.value;
+        }
+        if (borrowerInput) {
+            borrowerInput.setAttribute('readonly', 'true');
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '確認提交借用登記';
+        }
 
         alert('🎉 恭喜您，教室登記成功！');
 
@@ -1709,14 +1732,20 @@
             const payload = { action: 'create', ...newBookingObj };
             fetch(GAS_URL, { 
                 method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload) 
-            }).then(res => res.json()).then(resData => {
+            })
+            .then(res => res.json())
+            .then(resData => {
                 if (resData.status !== 'success') {
-                    alert('⚠️ 雲端同步失敗：' + resData.message + '，將重新刷新資料');
+                    alert('⚠️ 雲端同步失敗：' + (resData.message || '') + '，將重新刷新資料');
                     loadBookingsFromServer(); 
                 }
+            })
+            .catch(err => {
+                console.error("背景連線失敗:", err);
             });
-        } catch(error) {
+        } catch (error) {
             console.error("背景同步失敗:", error);
         }
     };
