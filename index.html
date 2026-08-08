@@ -473,10 +473,6 @@
                 margin-bottom: 10px;
             }
 
-            .user-account {
-                display: none !important;
-            }
-
             header {
                 padding: 16px 12px 20px 12px !important; 
                 border-bottom: 4px solid var(--palette-yellow) !important;
@@ -705,12 +701,20 @@
           to { transform: scale(1); opacity: 1; }
         }
 
-        /* 手機版設定：當螢幕寬度小於或等於 768px 時觸發 */
-        @media screen and (max-width: 768px) {
-          .user-name {
-            display: none !important; /* 隱藏名稱 */
-          }
-        }
+        /* 手機版設定：當螢幕寬度小於或等於 768px 時 */
+@media screen and (max-width: 768px) {
+  /* 隱藏使用者名稱 */
+  .user-name {
+    display: none !important;
+  }
+  
+  /* 強制顯示 Gmail 帳號並調整手機版大小與斷詞 */
+  .user-account {
+    display: inline-block !important;
+    font-size: 11px;
+    word-break: break-all; /* 防止 Gmail 太長超出畫面 */
+  }
+}
     </style>
 </head>
 <body>
