@@ -695,6 +695,14 @@
           from { transform: scale(0.8); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
+
+        /* 手機版設定：當螢幕寬度小於或等於 768px 時觸發 */
+@media screen and (max-width: 768px) {
+  .user-name {
+    display: none !important; /* 隱藏名稱 */
+  }
+}
+        
     </style>
 </head>
 <body>
@@ -969,10 +977,11 @@
         const authContent = document.getElementById('authContent');
         if (currentUser) {
             authContent.innerHTML = `
-                <div class="user-info">
-                    <img src="${currentUser.picture}" alt="Avatar">
-                    <span>已登入：<b>${currentUser.name}</b> (${currentUser.email})</span>
-                </div>
+                <div class="user-status">
+  已登入：
+  <span class="user-name">鳳新高中特教行政助理</span>
+  <span class="user-account">5223@fhsh.khc.edu.tw</span>
+</div>
                 <button class="btn-auth" onclick="logoutGoogle()">登出</button>
             `;
         } else {
