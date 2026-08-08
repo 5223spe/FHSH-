@@ -47,37 +47,40 @@
             line-height: 1.6;
         }
 
-        /* 頂部半透明 Google 登入狀態列 - 標準單列橫排 */
+        /* 頂部固定導覽列 - 將右上角留給使用者工具列 */
         .auth-banner {
-            background: rgba(15, 76, 92, 0.85);
+            background: rgba(15, 76, 92, 0.95);
             backdrop-filter: blur(8px);
             color: #ffffff;
-            padding: 10px 20px;
+            padding: 8px 20px;
             font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: flex-end; /* 固定移至右上角 */
+            align-items: center;
+            min-height: 52px;
         }
 
         .auth-container {
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            flex-wrap: wrap;
         }
 
-        .auth-banner .user-info {
-            display: flex;
+        /* 右上角登入狀態卡片化小工具 */
+        .user-status {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 13px;
         }
 
         .auth-banner img {
@@ -99,11 +102,12 @@
             font-size: 13px;
             white-space: nowrap;
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .btn-auth:hover {
             filter: brightness(1.1);
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
 
         input[type="date"], input[type="time"] {
@@ -468,6 +472,14 @@
                 overflow-x: hidden;
             }
 
+            .auth-banner {
+                padding: 6px 12px;
+            }
+
+            .user-account {
+                display: none !important;
+            }
+
             header {
                 padding: 20px 12px !important; 
                 border-bottom: 4px solid var(--palette-yellow) !important;
@@ -697,20 +709,19 @@
         }
 
         /* 手機版設定：當螢幕寬度小於或等於 768px 時觸發 */
-@media screen and (max-width: 768px) {
-  .user-name {
-    display: none !important; /* 隱藏名稱 */
-  }
-}
-        
+        @media screen and (max-width: 768px) {
+          .user-name {
+            display: none !important; /* 隱藏名稱 */
+          }
+        }
     </style>
 </head>
 <body>
 
-<!-- Google 登入提示列 -->
+<!-- Google 登入提示列（固定右上角小工具列） -->
 <div class="auth-banner" id="authBanner">
     <div id="authContent" class="auth-container">
-        <span>🔒 請登入 Google 帳號以進行後台備份與操作紀錄</span>
+        <span>🔒 請登入 Google 帳號</span>
         <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
     </div>
 </div>
@@ -978,15 +989,14 @@
         if (currentUser) {
             authContent.innerHTML = `
                 <div class="user-status">
-  已登入：
-  <span class="user-name">鳳新高中特教行政助理</span>
-  <span class="user-account">5223@fhsh.khc.edu.tw</span>
-</div>
+                    <span class="user-name">鳳新高中特教行政助理</span>
+                    <span class="user-account">5223@fhsh.khc.edu.tw</span>
+                </div>
                 <button class="btn-auth" onclick="logoutGoogle()">登出</button>
             `;
         } else {
             authContent.innerHTML = `
-                <span>🔒 請登入 Google 帳號以進行後台備份與操作紀錄</span>
+                <span>🔒 請登入 Google 帳號</span>
                 <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
             `;
         }
