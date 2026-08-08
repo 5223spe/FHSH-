@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
     
-    <!-- 引入 Google Sign-In SDK -->
+    <!-- 🔑 Google Identity Services API (Google OAuth 登入) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
@@ -48,6 +48,45 @@
             margin: 0;
             padding: 0;
             line-height: 1.6;
+        }
+
+        /* 💡 首次進入透明引導登入提示橫幅 */
+        .auth-banner {
+            background: rgba(15, 76, 92, 0.88);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-bottom: 2px solid var(--palette-yellow);
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+        .auth-banner .auth-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .auth-banner .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .auth-banner .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.35);
         }
 
         /* 讓所有日期與時間欄位呈現可點擊的手勢 */
@@ -424,11 +463,13 @@
 
         /* 📱 手機版 RWD 最佳化 */
         @media (max-width: 768px) {
+            /* 💡 防止手機出現右邊白邊 / 溢出空白 */
             html, body {
                 max-width: 100vw;
                 overflow-x: hidden;
             }
 
+            /* 💡 手機版縮小頂部深藍色區塊高度 */
             header {
                 padding: 20px 12px !important; 
                 border-bottom: 4px solid var(--palette-yellow) !important;
@@ -457,7 +498,7 @@
                 padding: 0 10px !important; 
                 margin: 15px auto !important;
                 max-width: 100vw;
-                overflow-x: hidden;
+                overflow-x: hidden; /* 💡 確保內容不把頁面往右撐開 */
             }
 
             .card {
@@ -527,6 +568,7 @@
                 margin-bottom: 4px !important;
             }
 
+            /* 對應雙欄佈局 */
             #map-前個諮    { grid-row: 1 !important; grid-column: 1 !important; }
             #map-後個諮    { grid-row: 1 !important; grid-column: 2 !important; }
 
@@ -547,7 +589,7 @@
 
         /* 🔄 琥珀焦糖黃膠囊按鈕 */
         .btn-sync {
-            background: linear-gradient(135deg, #f5ac53, #e89a3f);
+            background: linear-gradient(135deg, #f5ac53, #e89a3f); /* 預設：鮮明琥珀焦糖黃 */
             color: #ffffff;
             border: none;
             padding: 7px 16px;
@@ -566,7 +608,7 @@
         }
 
         .btn-sync:hover:not(:disabled) {
-            background: linear-gradient(135deg, #fbb86a, #f5ac53);
+            background: linear-gradient(135deg, #fbb86a, #f5ac53); /* 懸浮時稍微加亮 */
             transform: translateY(-1px);
             box-shadow: 0 5px 12px rgba(232, 154, 63, 0.4);
         }
@@ -575,9 +617,10 @@
             transform: translateY(0);
         }
 
+        /* ⏳ 同步更新中（點擊鎖定）：轉為低彩度麥芽灰黃 + 呼吸感 */
         .btn-sync:disabled,
         .btn-sync.loading {
-            background: #d4c3a3 !important;
+            background: #d4c3a3 !important; /* 沉穩燕麥灰黃，看得出有被按下且保留黃色基因 */
             color: #b45309 !important;
             opacity: 0.9;
             cursor: not-allowed;
@@ -586,11 +629,13 @@
             text-shadow: none !important;
         }
 
+        /* 轉圈圖示旋轉動畫 */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
 
+        /* 純白 SVG 向量圖示 */
         .spin-icon {
             width: 15px;
             height: 15px;
@@ -608,8 +653,26 @@
 </head>
 <body>
 
+<!-- 💡 頂部 Google 登入驗證與透明提示橫幅 -->
+<div id="authBanner" class="auth-banner">
+    <div id="unauthNotice" class="auth-info" style="display: flex;">
+        <span>🔒 系統功能提示：首次使用請點擊右側進行 Google 驗證 (僅需登入一次) ➔</span>
+        <div id="g_id_onload"
+            data-client_id="939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse"
+            data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard" data-size="medium" data-theme="outline" data-text="signin_with"></div>
+    </div>
+    <div id="authNotice" class="auth-info" style="display: none;">
+        <span>👤 已登入身份：<strong id="userEmailTag" style="color: #fde047;"></strong></span>
+        <button class="btn-logout" onclick="logoutGoogle()">切換/登出帳號</button>
+    </div>
+</div>
+
 <header>
     <div class="header-logo-group">
+        <!-- 電腦版同一行，手機版顯示 br-mobile 斷行 -->
         <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
     </div>
     <p>智慧教室借用系統 ｜ 即時看板</p>
@@ -618,9 +681,11 @@
 <div class="container">
     
     <div class="card">
+    <!-- 使用 flex 排版，設定 space-between 確保按鈕永遠靠右，align-items: center 垂直對齊 -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
         <h2 style="margin: 0; font-size: 1.25rem;">教室借用即時動態</h2>
         
+        <!-- 💡 膠囊設計按鈕（已換為精緻純白 SVG 向量圖示） -->
         <button type="button" id="manualSyncBtn" class="btn-sync" onclick="manualSync()">
             <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
@@ -762,6 +827,7 @@
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
                 <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+                <!-- 💡 單行顯示「清除篩選」 -->
                 <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
             </div>
         </div>
@@ -773,6 +839,7 @@
                         <th>教室空間</th>
                         <th>借用節次</th>
                         <th>借用登記人</th>
+                        <th>登記帳號</th>
                         <th>資料操作</th>
                     </tr>
                 </thead>
@@ -784,12 +851,10 @@
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
-    const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
-    let googleUserToken = localStorage.getItem('google_id_token') || "";
-    let googleUserEmail = localStorage.getItem('google_user_email') || "";
+    // 🔑 Google OAuth 用戶資訊快取
+    let currentUser = JSON.parse(localStorage.getItem('google_auth_user') || 'null');
 
-    // 解析 JWT Token 取得 Email
     function parseJwt(token) {
         try {
             var base64Url = token.split('.')[1];
@@ -799,68 +864,50 @@
             }).join(''));
             return JSON.parse(jsonPayload);
         } catch(e) {
-            return {};
+            return null;
         }
     }
 
     function handleCredentialResponse(response) {
-        googleUserToken = response.credential;
-        const decoded = parseJwt(googleUserToken);
-        googleUserEmail = decoded.email || "";
-        localStorage.setItem('google_id_token', googleUserToken);
-        localStorage.setItem('google_user_email', googleUserEmail);
-    }
-
-    function initGoogleAuth() {
-        if (!googleUserToken || !googleUserEmail) {
-            window.onload = function () {
-                if (typeof google !== 'undefined') {
-                    google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: handleCredentialResponse,
-                        auto_select: true
-                    });
-                    google.accounts.id.prompt();
-                }
+        const payload = parseJwt(response.credential);
+        if (payload && payload.email) {
+            currentUser = {
+                email: payload.email,
+                name: payload.name || payload.email.split('@')[0]
             };
+            localStorage.setItem('google_auth_user', JSON.stringify(currentUser));
+            updateAuthUI();
         }
     }
 
-    initGoogleAuth();
+    function updateAuthUI() {
+        const unauthNotice = document.getElementById('unauthNotice');
+        const authNotice = document.getElementById('authNotice');
+        const userEmailTag = document.getElementById('userEmailTag');
 
-    function ensureAuth() {
-        if (!googleUserEmail || !googleUserToken) {
-            return new Promise((resolve) => {
-                if (typeof google !== 'undefined') {
-                    google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: (res) => {
-                            handleCredentialResponse(res);
-                            resolve(true);
-                        }
-                    });
-                    google.accounts.id.prompt((notification) => {
-                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                            let email = prompt("請輸入您的 Google 帳號 (Email) 以利系統紀錄操作身分：");
-                            if (email) {
-                                googleUserEmail = email;
-                                localStorage.setItem('google_user_email', googleUserEmail);
-                            }
-                            resolve(true);
-                        }
-                    });
-                } else {
-                    let email = prompt("請輸入您的 Google 帳號 (Email) 以利系統紀錄操作身分：");
-                    if (email) {
-                        googleUserEmail = email;
-                        localStorage.setItem('google_user_email', googleUserEmail);
-                    }
-                    resolve(true);
-                }
-            });
+        if (currentUser && currentUser.email) {
+            unauthNotice.style.display = 'none';
+            authNotice.style.display = 'flex';
+            userEmailTag.textContent = currentUser.email;
+        } else {
+            unauthNotice.style.display = 'flex';
+            authNotice.style.display = 'none';
         }
-        return Promise.resolve(true);
     }
+
+    function logoutGoogle() {
+        if (confirm("確定要切換或登出目前的 Google 帳號嗎？")) {
+            localStorage.removeItem('google_auth_user');
+            currentUser = null;
+            updateAuthUI();
+            if (window.google && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+        }
+    }
+
+    // 初始化 Auth 狀態
+    window.addEventListener('DOMContentLoaded', updateAuthUI);
 
     const periodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
@@ -1479,7 +1526,7 @@
         }
 
         if (displayBookings.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
             return;
         }
 
@@ -1492,6 +1539,7 @@
                     date: b.date,
                     classroom: b.classroom,
                     borrower: b.borrower,
+                    createdUser: b.createdUser || "未記錄",
                     periods: [...b.periods],
                     ids: [b.id]
                 };
@@ -1542,24 +1590,25 @@
                 <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
                 <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
                 <td><b>${b.borrower}</b></td>
+                <td style="font-size:12px; color:#64748b;">${b.createdUser}</td>
                 <td><button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    async function deleteMergedGroup(idsArray) {
+    function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
-        await ensureAuth();
-
         const targetBooking = bookings.find(b => idsArray.includes(b.id));
         const borrowerName = targetBooking ? targetBooking.borrower : '';
         const bookingDate = targetBooking ? targetBooking.date : '';
 
+        const activeUserEmail = (currentUser && currentUser.email) ? currentUser.email : "未登入使用者";
+
         const confirmMsg = (borrowerName && bookingDate) 
-            ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預約嗎？` 
-            : '確定要刪除這筆預約嗎？';
+            ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預約嗎？\n(操作者：${activeUserEmail})` 
+            : `確定要刪除這筆預約嗎？\n(操作者：${activeUserEmail})`;
 
         if (!confirm(confirmMsg)) return;
 
@@ -1581,8 +1630,7 @@
             body: JSON.stringify({ 
                 action: 'batchDelete', 
                 ids: idsArray,
-                idToken: googleUserToken,
-                userEmail: googleUserEmail
+                deletedUser: activeUserEmail
             })
         })
         .then(res => res.json())
@@ -1603,9 +1651,6 @@
 
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
-
-        await ensureAuth();
-
         const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
         const classroom = document.getElementById('classroom').value;
@@ -1645,7 +1690,10 @@
         submitBtn.disabled = true;
         submitBtn.textContent = '登記中...';
 
+        // 🟢 強制使用 formatSafeDate 確保手機版與電腦版日期格式 100% 統一
         const safeDate = formatSafeDate(date);
+
+        const activeUserEmail = (currentUser && currentUser.email) ? currentUser.email : "未登入使用者";
 
         const newBookingObj = {
             id: Date.now(),
@@ -1653,7 +1701,7 @@
             classroom,
             date: safeDate,
             periods: selectedPeriods,
-            operator: googleUserEmail
+            createdUser: activeUserEmail
         };
 
         bookings.push(newBookingObj);
@@ -1670,12 +1718,7 @@
         alert('🎉 恭喜您，教室登記成功！');
 
         try {
-            const payload = { 
-                action: 'create', 
-                ...newBookingObj,
-                idToken: googleUserToken,
-                userEmail: googleUserEmail
-            };
+            const payload = { action: 'create', ...newBookingObj };
             fetch(GAS_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(payload) 
@@ -1726,6 +1769,7 @@
     handleClassroomOrDateChange();
     startSmartPolling();
 
+    // 💡 手動同步觸發函式（含純白 SVG 與旋轉動畫）
     async function manualSync() {
         const btn = document.getElementById('manualSyncBtn');
         if (!btn || btn.disabled) return;
@@ -1736,17 +1780,23 @@
                 <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
             </svg>`;
 
+        // 1. 啟用旋轉動畫與鎖定按鈕
         btn.disabled = true;
         btn.classList.add('loading');
         btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
 
         try {
+            // 2. 向伺服器抓取資料
             await loadBookingsFromServer();
+            
+            // 3. 顯示成功圖示
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
+            
         } catch (error) {
             console.error("手動同步失敗:", error);
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✕</span> <span>失敗</span>`;
         } finally {
+            // 4. 1.2 秒後恢復預設膠囊狀態
             setTimeout(() => {
                 btn.classList.remove('loading');
                 btn.innerHTML = `${svgIcon} <span>同步資料</span>`;
