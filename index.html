@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國立鳳新高級中學 輔導室 教室借用</title>
-<!-- 💡 強制升級版號，突破 Chrome 快取障礙 -->
     <link rel="manifest" href="manifest-v2.json?v=2026_v14">
-<!-- 💡 強制讓所有瀏覽器下載最新版 Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="app-logo.png?v=2026">
     <link rel="icon" type="image/png" sizes="16x16" href="app-logo.png?v=2026">
     <link rel="shortcut icon" href="app-logo.png?v=2026" type="image/png">
     <link rel="apple-touch-icon" href="app-logo.png?v=2026">
     
-    <!-- 🔑 引入 Google Identity Services API -->
+    <!-- Google Identity Services SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         :root {
-            /* Warm Summer Palette 經典配色 */
             --palette-yellow: #F3A953; 
             --palette-pink: #d65a6d;   
             --palette-teal: #0891b2;   
@@ -50,7 +47,7 @@
             line-height: 1.6;
         }
 
-        /* 💡 登入提示欄 (半透明膠囊風格) */
+        /* 頂部半透明 Google 登入狀態列 */
         .auth-banner {
             background: rgba(15, 76, 92, 0.85);
             backdrop-filter: blur(8px);
@@ -98,12 +95,10 @@
             transform: scale(1.05);
         }
 
-        /* 讓所有日期與時間欄位呈現可點擊的手勢 */
         input[type="date"], input[type="time"] {
             cursor: pointer;
         }
 
-        /* 🏆 頂部標題區 */
         header {
             background-color: var(--palette-blue-2);
             padding: 40px 20px;
@@ -153,7 +148,6 @@
             padding: 0 20px;
         }
 
-        /* 卡片設計 */
         .card {
             background: var(--white);
             border-radius: 20px;
@@ -435,7 +429,7 @@
         }
 
         .table-responsive { overflow-x: auto; border-radius: 15px; border: 1px solid #e2e8f0; width: 100%; }
-        table { width: 100%; border-collapse: collapse; min-width: 750px; background-color: var(--white); }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; background-color: var(--white); }
         th { background: #f8fafc; padding: 15px; text-align: left; font-size: 15px; color: var(--palette-blue-2); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
@@ -641,10 +635,10 @@
 </head>
 <body>
 
-<!-- 💡 頂部半透明 Google 登入提示欄 -->
+<!-- Google 登入提示列 -->
 <div class="auth-banner" id="authBanner">
     <div id="authContent" style="display: flex; align-items: center; gap: 10px;">
-        <span>🔒 請登入 Google 帳號以啟用完整的登記與刪除紀錄功能</span>
+        <span>🔒 請登入 Google 帳號以進行後台備份與操作紀錄</span>
         <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
     </div>
 </div>
@@ -814,7 +808,6 @@
                         <th>教室空間</th>
                         <th>借用節次</th>
                         <th>借用登記人</th>
-                        <th>登記操作人</th>
                         <th>資料操作</th>
                     </tr>
                 </thead>
@@ -828,9 +821,8 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyiufjroGApGR2_VKtwVu4FvL8E9JxbummKBPxKW3eNhVlZ2BAqt58zT4D9C0Kc-SQN8A/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
-    let currentUser = null; // 記錄目前登入的 Google 用戶
+    let currentUser = null; 
 
-    // JWT token 解碼器
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
         var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -841,9 +833,7 @@
         return JSON.parse(jsonPayload);
     }
 
-    // 初始化 Google 登入功能
     function initGoogleAuth() {
-        // 先檢測本地快取是否有登入資訊（關機/關閉網頁後仍有效）
         const savedUser = localStorage.getItem('google_user_session');
         if (savedUser) {
             try {
@@ -873,7 +863,6 @@
             email: payload.email,
             picture: payload.picture
         };
-        // 儲存於 localStorage，實現無縫永久登入
         localStorage.setItem('google_user_session', JSON.stringify(currentUser));
         updateAuthUI();
     }
@@ -904,7 +893,7 @@
             `;
         } else {
             authContent.innerHTML = `
-                <span>🔒 請登入 Google 帳號以啟用完整的登記與刪除紀錄功能</span>
+                <span>🔒 請登入 Google 帳號以進行後台備份與操作紀錄</span>
                 <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
             `;
         }
@@ -1508,6 +1497,7 @@
         });
     }
 
+    // 💡 渲染表格：已移除「登記操作人」欄位
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
@@ -1527,7 +1517,7 @@
         }
 
         if (displayBookings.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
             return;
         }
 
@@ -1591,13 +1581,13 @@
                 <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
                 <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
                 <td><b>${b.borrower}</b></td>
-                <td><span style="color:var(--text-muted);font-size:13px;">${b.operator}</span></td>
                 <td><button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
+    // 💡 刪除資料：會帶上目前登入者的資訊 deletedBy
     function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
         
@@ -1629,7 +1619,7 @@
             body: JSON.stringify({ 
                 action: 'batchDelete', 
                 ids: idsArray,
-                deletedBy: currentUser ? currentUser.name : "匿名使用者"
+                deletedBy: currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者"
             })
         })
         .then(res => res.json())
@@ -1648,6 +1638,7 @@
         });
     }
 
+    // 💡 提交借用：會在背景帶上目前登入者的資訊 operator
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1690,7 +1681,7 @@
         submitBtn.textContent = '登記中...';
 
         const safeDate = formatSafeDate(date);
-        const operatorName = currentUser ? currentUser.name : "未登入使用者";
+        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
         const newBookingObj = {
             id: Date.now(),
