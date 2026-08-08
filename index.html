@@ -1027,22 +1027,35 @@
     }
 
     function updateAuthUI() {
-        const authContent = document.getElementById('authContent');
-        if (currentUser) {
-            authContent.innerHTML = `
-                <div class="user-status">
-                    <span class="user-name">鳳新高中特教行政助理</span>
-                    <span class="user-account">5223@fhsh.khc.edu.tw</span>
-                </div>
-                <button class="btn-auth" onclick="logoutGoogle()">登出</button>
-            `;
-        } else {
-            authContent.innerHTML = `
-                <span>🔒 請登入 Google 帳號</span>
-                <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
-            `;
+    const authContent = document.getElementById('authContent');
+    if (currentUser) {
+        authContent.innerHTML = `
+            <div class="user-status">
+                <span class="user-name">鳳新高中特教行政助理</span>
+                <span class="user-account">5223@fhsh.khc.edu.tw</span>
+            </div>
+            <button class="btn-auth" onclick="logoutGoogle()">登出</button>
+        `;
+
+        // 💡 關鍵新增：登入成功後，自動將登入者姓名帶入「借用人」輸入框
+        const borrowerIn = document.getElementById('borrower');
+        if (borrowerIn && currentUser.name) {
+            borrowerIn.value = currentUser.name;
+        }
+
+    } else {
+        authContent.innerHTML = `
+            <span>🔒 請登入 Google 帳號</span>
+            <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
+        `;
+
+        // 💡 關鍵新增：登出時，清空借用人欄位
+        const borrowerIn = document.getElementById('borrower');
+        if (borrowerIn) {
+            borrowerIn.value = '';
         }
     }
+}
 
     const periodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
@@ -1333,6 +1346,12 @@
         document.getElementById('classroom').value = room;
         document.getElementById('date').value = chosenDate;
 
+        // 💡 新增：若有登入者姓名，自動填入借用人欄位
+    if (currentUser && currentUser.name) {
+        const borrowerIn = document.getElementById('borrower');
+        borrowerIn.value = currentUser.name;
+    }
+        
         const roomBookings = bookings.filter(b => b.classroom === room && b.date === chosenDate);
         const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
 
