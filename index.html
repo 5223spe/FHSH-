@@ -150,6 +150,15 @@
             font-weight: 500;
         }
 
+        /* 電腦版 / 手機版標題控制 */
+        .mobile-title {
+            display: none;
+        }
+
+        .desktop-title {
+            display: inline;
+        }
+
         .br-mobile {
             display: none;
         }
@@ -463,38 +472,78 @@
             justify-content: center;
         }
 
+        /* 📱 手機版 RWD 設計 */
         @media (max-width: 768px) {
             html, body {
                 max-width: 100vw;
                 overflow-x: hidden;
             }
 
-            .auth-banner {
-                margin-bottom: 10px;
-            }
-
             header {
-                padding: 16px 12px 20px 12px !important; 
+                padding: 12px 10px 16px 10px !important; 
                 border-bottom: 4px solid var(--palette-yellow) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
             }
 
+            /* 手機版顯示專用標題 */
+            .desktop-title {
+                display: none !important;
+            }
+            
+            .mobile-title {
+                display: inline !important;
+            }
+
+            /* 【第一行】帳號 + 登出鍵 */
+            .auth-banner {
+                margin-bottom: 8px !important;
+                width: 100% !important;
+            }
+
+            .auth-container {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .user-name {
+                display: none !important;
+            }
+          
+            .user-account {
+                display: inline-block !important;
+                font-size: 12px !important;
+                word-break: break-all;
+            }
+
+            /* 【第二行】鳳新輔導室 教室借用 */
             .header-logo-group {
                 margin-bottom: 4px !important;
+                width: 100% !important;
             }
 
             header h1 {
                 font-size: 26px !important;
-                line-height: 1.6 !important;
+                line-height: 1.3 !important;
+                white-space: nowrap !important;
+                margin: 0 !important;
             }
 
+            /* 【第三行】智慧教室借用系統｜即時看板 */
             header p {
-                font-size: 14px !important;
-                letter-spacing: 2px !important;
-                margin-top: 4px !important;
+                font-size: 13px !important;
+                letter-spacing: 1px !important;
+                margin: 2px 0 0 0 !important;
+                white-space: nowrap !important;
             }
 
             .br-mobile {
-                display: block !important;
+                display: none !important;
             }
 
             .container {
@@ -700,27 +749,12 @@
           from { transform: scale(0.8); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
-
-        /* 手機版設定：當螢幕寬度小於或等於 768px 時 */
-@media screen and (max-width: 768px) {
-  /* 隱藏使用者名稱 */
-  .user-name {
-    display: none !important;
-  }
-  
-  /* 強制顯示 Gmail 帳號並調整手機版大小與斷詞 */
-  .user-account {
-    display: inline-block !important;
-    font-size: 11px;
-    word-break: break-all; /* 防止 Gmail 太長超出畫面 */
-  }
-}
     </style>
 </head>
 <body>
 
 <header>
-    <!-- 已移至藍色背景頂部正中央的使用者狀態區塊 -->
+    <!-- 第一行：帳號 + 登出鍵 -->
     <div class="auth-banner" id="authBanner">
         <div id="authContent" class="auth-container">
             <span>🔒 請登入 Google 帳號</span>
@@ -728,9 +762,15 @@
         </div>
     </div>
 
+    <!-- 第二行：標題 (電腦版與手機版分別控制顯示) -->
     <div class="header-logo-group">
-        <h1>國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</h1>
+        <h1>
+            <span class="desktop-title">國立鳳新高級中學<br class="br-mobile"> 輔導室 教室借用</span>
+            <span class="mobile-title">鳳新輔導室 教室借用</span>
+        </h1>
     </div>
+
+    <!-- 第三行：智慧教室借用系統｜即時看板 -->
     <p>智慧教室借用系統 ｜ 即時看板</p>
 </header>
 
