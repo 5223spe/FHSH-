@@ -953,13 +953,10 @@
 </div>
 
 <script>
-    // 💡 改為動態變數，初始為空物件，後續會由 GAS 雲端資料填入
-    let emailToNameMap = {};
-
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzlThP3Hx9CcvT-tc_4IT5AVfaka-UZDKQfBUrKYdaOnlGHxsi5N0FSZVUmsTGgzad0ew/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
-    let currentUser = null;
+    let currentUser = null; 
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -1032,38 +1029,18 @@
     function updateAuthUI() {
         const authContent = document.getElementById('authContent');
         if (currentUser) {
-            // 比對對照表名稱
-            const matchedName = emailToNameMap[currentUser.email];
-            const displayName = matchedName || currentUser.name;
-
             authContent.innerHTML = `
                 <div class="user-status">
-                    <span class="user-name">${displayName}</span>
-                    <span class="user-account">${currentUser.email}</span>
+                    <span class="user-name">鳳新高中特教行政助理</span>
+                    <span class="user-account">5223@fhsh.khc.edu.tw</span>
                 </div>
                 <button class="btn-auth" onclick="logoutGoogle()">登出</button>
             `;
-
-            // 只有有對照到名字時預先填入，找不到則保持空白
-            const borrowerIn = document.getElementById('borrower');
-            if (borrowerIn) {
-                if (matchedName) {
-                    borrowerIn.value = matchedName;
-                    borrowerIn.setAttribute('readonly', 'true');
-                } else {
-                    borrowerIn.value = '';
-                }
-            }
-
         } else {
             authContent.innerHTML = `
                 <span>🔒 請登入 Google 帳號</span>
                 <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
             `;
-            const borrowerIn = document.getElementById('borrower');
-            if (borrowerIn) {
-                borrowerIn.value = '';
-            }
         }
     }
 
@@ -1181,25 +1158,17 @@
             teacherListData = teachersSource;
         }
 
-        // 💡 新增：讀取來自 GAS 的 Email 對照表並更新 UI
-        if (rawData.teacherEmailMap) {
-            emailToNameMap = rawData.teacherEmailMap;
-            updateAuthUI(); // 確保對照表載入後更新頂部顯示與姓名自動填入
-        }
-
         renderTable();
         updateDashboard();
         handleClassroomOrDateChange();
+    }
 
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
         const borrowerIn = document.getElementById('borrower');
         if (!dropdown || !borrowerIn) return;
 
-        const isReadonly = borrowerIn.hasAttribute('readonly');
-        const searchKey = isReadonly ? '' : filterText.toLowerCase();
-
-        const filtered = teacherListData.filter(t => t.toLowerCase().includes(searchKey));
+        const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
         let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
         itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
