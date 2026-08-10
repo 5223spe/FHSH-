@@ -1192,6 +1192,7 @@ function autoSetBorrowerName() {
         const borrowerIn = document.getElementById('borrower');
         if (!dropdown || !borrowerIn) return;
 
+        // 如果點擊時 filterText 為空，則會列出全部教師選單
         const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
         let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
         itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
@@ -1224,7 +1225,10 @@ function autoSetBorrowerName() {
                 const classroomDropdown = document.getElementById('classroomDropdown');
                 if (classroomDropdown) classroomDropdown.style.display = 'none';
                 
-                showTeacherDropdown(this.getAttribute('readonly') ? '' : this.value.trim());
+                // 💡 修改關鍵：點擊或獲得焦點時，如果處於唯讀(選單)狀態，傳入 '' 以展開所有教師選項；
+                // 只有在切換為手動輸入模式（非 readonly）時才進行即時關鍵字搜尋。
+                const isReadonly = this.hasAttribute('readonly');
+                showTeacherDropdown(isReadonly ? '' : this.value.trim());
             });
         });
 
