@@ -996,19 +996,21 @@
     };
 
     function handleCredentialResponse(response) {
-        const payload = parseJwt(response.credential);
-        currentUser = {
-            name: payload.name,
-            email: payload.email,
-            picture: payload.picture
-        };
-        
-        localStorage.setItem('google_user_session', JSON.stringify(currentUser));
-        updateAuthUI();
+    const payload = parseJwt(response.credential);
+    currentUser = {
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture
+    };
 
-        const modal = document.getElementById("loginModal");
-        if (modal) modal.style.display = "none";
-    }
+    localStorage.setItem('google_user_session', JSON.stringify(currentUser));
+    updateAuthUI();
+
+    autoSetBorrowerName(); // 👈 補上這一行
+
+    const modal = document.getElementById("loginModal");
+    if (modal) modal.style.display = "none";
+}
 
     function promptGoogleLogin() {
         if (window.google) {
@@ -1070,6 +1072,7 @@
     ];
 
     let teacherListData = [];
+    let teacherEmailMap = {}; //
     let bookings = [];
     let pollingTimer = null;
     let pendingDeletedIds = new Set();
@@ -1131,37 +1134,58 @@
     }
 
     function applyDataToUI(rawData) {
-        let bookingSource = [];
-        if (rawData.bookings) {
-            bookingSource = rawData.bookings;
-        } else if (Array.isArray(rawData)) {
-            bookingSource = rawData;
-        } else if (rawData.data && Array.isArray(rawData.data)) {
-            bookingSource = rawData.data;
-        }
-        
-        bookings = bookingSource
-            .filter(b => !pendingDeletedIds.has(b.id))
-            .map(b => {
-                b.date = formatSafeDate(b.date);
-                return b;
-            });
-
-        let teachersSource = [];
-        if (rawData.teachers && Array.isArray(rawData.teachers)) {
-            teachersSource = rawData.teachers;
-        } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
-            teachersSource = rawData.teachersList;
-        }
-
-        if (teachersSource.length > 0) {
-            teacherListData = teachersSource;
-        }
-
-        renderTable();
-        updateDashboard();
-        handleClassroomOrDateChange();
+    let bookingSource = [];
+    if (rawData.bookings) {
+        bookingSource = rawData.bookings;
+    } else if (Array.isArray(rawData)) {
+        bookingSource = rawData;
+    } else if (rawData.data && Array.isArray(rawData.data)) {
+        bookingSource = rawData.data;
     }
+
+    bookings = bookingSource
+        .filter(b => !pendingDeletedIds.has(b.id))
+        .map(b => {
+            b.date = formatSafeDate(b.date);
+            return b;
+        });
+
+    let teachersSource = [];
+    if (rawData.teachers && Array.isArray(rawData.teachers)) {
+        teachersSource = rawData.teachers;
+    } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
+        teachersSource = rawData.teachersList;
+    }
+
+    if (teachersSource.length > 0) {
+        teacherListData = teachersSource;
+    }
+
+    // 👈 1. 新增：接收後端傳來的 Email 對映表
+    if (rawData.teacherEmailMap) {
+        teacherEmailMap = rawData.teacherEmailMap;
+    }
+
+    // 👈 2. 新增：預帶借用人姓名
+    autoSetBorrowerName();
+
+    renderTable();
+    updateDashboard();
+    handleClassroomOrDateChange();
+}
+
+// 👈 3. 新增此輔助函式 (直接接在 applyDataToUI 下方即可)
+function autoSetBorrowerName() {
+    const borrowerInput = document.getElementById('borrower');
+    if (!borrowerInput) return;
+
+    if (currentUser && currentUser.email) {
+        const userEmail = currentUser.email.toLowerCase().trim();
+        if (teacherEmailMap[userEmail]) {
+            borrowerInput.value = teacherEmailMap[userEmail];
+        }
+    }
+}
 
     function showTeacherDropdown(filterText = '') {
         const dropdown = document.getElementById('teacherDropdown');
