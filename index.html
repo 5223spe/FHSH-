@@ -1020,71 +1020,6 @@
         }
     }
 
-    // 1. 下拉選單渲染函式
-function renderTeacherDropdown(filterKeyword = '') {
-    const dropdownList = document.getElementById('teacherDropdownList'); // 💡 請確認此 ID 與你 HTML 中的選單容器 ID 一致
-    if (!dropdownList) return;
-
-    dropdownList.innerHTML = '';
-
-    // 💡 關鍵修正：若 filterKeyword 為空 (點擊/聚焦時)，顯示全部 teacherListData；只有手動打字時才過濾
-    const filteredTeachers = filterKeyword 
-        ? teacherListData.filter(name => name.toLowerCase().includes(filterKeyword.toLowerCase()))
-        : teacherListData;
-
-    if (filteredTeachers.length === 0) {
-        dropdownList.innerHTML = '<div class="dropdown-item disabled">無符合教師</div>';
-        return;
-    }
-
-    filteredTeachers.forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'dropdown-item';
-        item.textContent = name;
-        item.onclick = function() {
-            const borrowerInput = document.getElementById('borrower');
-            if (borrowerInput) borrowerInput.value = name;
-            dropdownList.style.display = 'none';
-        };
-        dropdownList.appendChild(item);
-    });
-
-    dropdownList.style.display = 'block';
-}
-
-// 2. 綁定 borrower 輸入框事件 (建議接在 autoSetBorrowerName 函式下方)
-function setupBorrowerDropdownEvents() {
-    const borrowerInput = document.getElementById('borrower');
-    if (!borrowerInput) return;
-
-    // 💡 聚焦或點擊時，傳入空字串 '' 以帶出「完整教師名單」
-    borrowerInput.addEventListener('focus', function() {
-        renderTeacherDropdown('');
-    });
-
-    borrowerInput.addEventListener('click', function() {
-        renderTeacherDropdown('');
-    });
-
-    // 💡 手動輸入內容時，才帶入關鍵字進行搜尋
-    borrowerInput.addEventListener('input', function(e) {
-        renderTeacherDropdown(e.target.value.trim());
-    });
-
-    // 點擊頁面其他地方時自動收起下拉選單
-    document.addEventListener('click', function(e) {
-        if (!borrowerInput.contains(e.target)) {
-            const dropdownList = document.getElementById('teacherDropdownList');
-            if (dropdownList) dropdownList.style.display = 'none';
-        }
-    });
-}
-
-// 3. 在網頁初始化 (DOM Ready) 時執行監聽器設定
-document.addEventListener('DOMContentLoaded', function() {
-    setupBorrowerDropdownEvents();
-});
-    
     function logoutGoogle() {
         currentUser = null;
         localStorage.removeItem('google_user_session');
@@ -1242,20 +1177,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // 👈 3. 新增此輔助函式 (直接接在 applyDataToUI 下方即可)
 function autoSetBorrowerName() {
     const borrowerInput = document.getElementById('borrower');
-    if (borrowerInput) {
-    // 💡 當點擊或聚焦輸入框時，顯示完整教師選單（不依據現有文字過濾）
-    borrowerInput.addEventListener('focus', function() {
-        renderTeacherDropdown(''); // 傳入空字串，以列出全部教師
-    });
+    if (!borrowerInput) return;
 
-    borrowerInput.addEventListener('click', function() {
-        renderTeacherDropdown(''); // 傳入空字串，以列出全部教師
-    });
-
-    // 💡 只有當使用者「手動打字/修改」時，才進行關鍵字過濾
-    borrowerInput.addEventListener('input', function(e) {
-        renderTeacherDropdown(e.target.value.trim());
-    });
+    if (currentUser && currentUser.email) {
+        const userEmail = currentUser.email.toLowerCase().trim();
+        if (teacherEmailMap[userEmail]) {
+            borrowerInput.value = teacherEmailMap[userEmail];
+        }
+    }
 }
 
     function showTeacherDropdown(filterText = '') {
