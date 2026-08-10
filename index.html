@@ -1920,11 +1920,6 @@ function autoSetBorrowerName() {
         handleClassroomOrDateChange();
     };
     
-    setInterval(() => {
-        document.getElementById('mapTime').value = get24HourTimeString();
-        updateDashboard();
-    }, 60000);
-
     function startSmartPolling() {
         if (pollingTimer) clearInterval(pollingTimer);
         const interval = document.hidden ? 60000 : 15000;
@@ -1942,7 +1937,6 @@ function autoSetBorrowerName() {
     renderTable();
     updateDashboard();
     handleClassroomOrDateChange();
-    startSmartPolling();
 
     async function manualSync() {
         const btn = document.getElementById('manualSyncBtn');
