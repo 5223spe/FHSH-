@@ -1109,33 +1109,39 @@
         return dateStr.replace(/\//g, '-').trim();
     }
 
-    // 💡 調整：新增 updateTeacherList 參數，預設為 true（全面更新）
-    async function loadBookingsFromServer(updateTeacherList = true) {
+    async function loadBookingsFromServer(forceRefresh = false) {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-        const cachedData = localStorage.getItem('cached_booking_data');
-        if (cachedData) {
-            try {
-                const parsedCache = JSON.parse(cachedData);
-                applyDataToUI(parsedCache, updateTeacherList);
-            } catch (e) {
-                console.log("快取解析失敗", e);
+        // 如果要求強制重新整理，移除快取的資料
+        if (forceRefresh) {
+            localStorage.removeItem('cached_booking_data');
+        } else {
+            const cachedData = localStorage.getItem('cached_booking_data');
+            if (cachedData) {
+                try {
+                    const parsedCache = JSON.parse(cachedData);
+                    applyDataToUI(parsedCache);
+                } catch (e) {
+                    console.log("快取解析失敗", e);
+                }
             }
         }
 
         try {
-            const response = await fetch(GAS_URL);
+            // 強制抓取時加上隨機時間戳參數，防護網頁與瀏覽器 HTTP 快取
+            const fetchUrl = forceRefresh ? `${GAS_URL}?nocache=${Date.now()}` : GAS_URL;
+            const response = await fetch(fetchUrl);
             const rawData = await response.json();
             
             localStorage.setItem('cached_booking_data', JSON.stringify(rawData));
-            applyDataToUI(rawData, updateTeacherList);
+            applyDataToUI(rawData);
         } catch (error) {
             console.error("無法從雲端載入資料:", error);
+            if (forceRefresh) throw error; // 拋出錯誤以利手動同步捕獲
         }
     }
 
-    // 💡 調整：根據 updateTeacherList 決定是否更新選單與自動預帶
-    function applyDataToUI(rawData, updateTeacherList = true) {
+    function applyDataToUI(rawData) {
         let bookingSource = [];
         if (rawData.bookings) {
             bookingSource = rawData.bookings;
@@ -1152,25 +1158,22 @@
                 return b;
             });
 
-        // 僅在 updateTeacherList === true 時更新選單相關資料
-        if (updateTeacherList) {
-            let teachersSource = [];
-            if (rawData.teachers && Array.isArray(rawData.teachers)) {
-                teachersSource = rawData.teachers;
-            } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
-                teachersSource = rawData.teachersList;
-            }
-
-            if (teachersSource.length > 0) {
-                teacherListData = teachersSource;
-            }
-
-            if (rawData.teacherEmailMap) {
-                teacherEmailMap = rawData.teacherEmailMap;
-            }
-
-            autoSetBorrowerName();
+        let teachersSource = [];
+        if (rawData.teachers && Array.isArray(rawData.teachers)) {
+            teachersSource = rawData.teachers;
+        } else if (rawData.teachersList && Array.isArray(rawData.teachersList)) {
+            teachersSource = rawData.teachersList;
         }
+
+        if (teachersSource.length > 0) {
+            teacherListData = teachersSource;
+        }
+
+        if (rawData.teacherEmailMap) {
+            teacherEmailMap = rawData.teacherEmailMap;
+        }
+
+        autoSetBorrowerName();
 
         renderTable();
         updateDashboard();
@@ -1810,12 +1813,10 @@
         .then(resData => {
             if (resData.status === 'success') {
                 idsArray.forEach(id => pendingDeletedIds.delete(id));
-                // 💡 刪除紀錄成功後：只拉取與更新看板和借用紀錄，不觸發選單更新
-                loadBookingsFromServer(false);
             } else {
                 idsArray.forEach(id => pendingDeletedIds.delete(id));
                 alert('⚠️ 雲端刪除失敗：' + resData.message + '，將重新同步資料。');
-                loadBookingsFromServer(false); 
+                loadBookingsFromServer(true); 
             }
         })
         .catch(error => {
@@ -1857,7 +1858,6 @@
 
         const safeDate = formatSafeDate(date);
 
-        // 前端即時重複預約檢測
         const hasConflict = bookings.some(b => 
             b.classroom === classroom && 
             b.date === safeDate && 
@@ -1898,11 +1898,10 @@
                 alert('🎉 恭喜您，教室登記成功！');
                 document.getElementById('bookingForm').reset();
                 document.getElementById('date').value = document.getElementById('mapDate').value;
-                // 💡 新增預約成功後：呼叫 loadBookingsFromServer(false)（只更新看板與紀錄，不觸發選單更新）
-                await loadBookingsFromServer(false);
+                await loadBookingsFromServer(true); // 預約成功後強制清快取並向雲端同步
             } else {
                 alert('❌ 登記失敗：' + resData.message);
-                await loadBookingsFromServer(false); 
+                await loadBookingsFromServer(true); 
             }
         } catch(error) {
             console.error("新增失敗:", error);
@@ -1922,14 +1921,12 @@
         handleClassroomOrDateChange();
     };
     
-    // 💡 5. 背景輪詢：呼叫 loadBookingsFromServer(false)
     function startSmartPolling() {
         if (pollingTimer) clearInterval(pollingTimer);
         const interval = document.hidden ? 60000 : 15000;
         pollingTimer = setInterval(() => loadBookingsFromServer(false), interval);
     }
 
-    // 💡 視窗切換 (Tab 返回與聚焦)：呼叫 loadBookingsFromServer(false)
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             loadBookingsFromServer(false); 
@@ -1937,13 +1934,11 @@
         startSmartPolling();
     });
 
-    // 💡 頁面初次載入：呼叫 loadBookingsFromServer(true) 做全面更新
-    loadBookingsFromServer(true);
+    loadBookingsFromServer(false);
     renderTable();
     updateDashboard();
     handleClassroomOrDateChange();
 
-    // 💡 按下「同步資料」按鈕：呼叫 loadBookingsFromServer(true) 做全面更新
     async function manualSync() {
         const btn = document.getElementById('manualSyncBtn');
         if (!btn || btn.disabled) return;
@@ -1959,6 +1954,7 @@
         btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
 
         try {
+            // 傳入 true，強制清除 LocalStorage 快取並加上防快取 URL 參數
             await loadBookingsFromServer(true);
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
         } catch (error) {
