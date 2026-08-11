@@ -1928,11 +1928,20 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            loadBookingsFromServer(false); 
-        }
-        startSmartPolling();
-    });
+    if (!document.hidden) {
+        // 1. 自動校正「目前系統時間」選單至現在時間
+        const now = new Date();
+        const curDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const curTimeStr = get24HourTimeString(now);
+        
+        document.getElementById('mapDate').value = curDateStr;
+        document.getElementById('mapTime').value = curTimeStr;
+
+        // 2. 強制從伺服器抓取最新資料（傳入 true 繞過舊快取）並更新畫面
+        loadBookingsFromServer(true);
+    }
+    startSmartPolling();
+});
 
     loadBookingsFromServer(false);
     renderTable();
