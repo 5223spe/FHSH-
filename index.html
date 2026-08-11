@@ -1927,22 +1927,47 @@
         pollingTimer = setInterval(() => loadBookingsFromServer(false), interval);
     }
 
-    document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        // 1. 自動校正「目前系統時間」選單至現在時間
+    // 封裝一個專門用來「校正時間 + 強制更新」的函式
+    function forceRefreshSystem() {
         const now = new Date();
         const curDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(now);
         
-        document.getElementById('mapDate').value = curDateStr;
-        document.getElementById('mapTime').value = curTimeStr;
+        // 1. 更新時間與日期輸入框
+        const mapDateEl = document.getElementById('mapDate');
+        const mapTimeEl = document.getElementById('mapTime');
+        if (mapDateEl) mapDateEl.value = curDateStr;
+        if (mapTimeEl) mapTimeEl.value = curTimeStr;
 
-        // 2. 強制從伺服器抓取最新資料（傳入 true 繞過舊快取）並更新畫面
+        // 2. 強制從雲端重新載入資料並更新看板
         loadBookingsFromServer(true);
     }
-    startSmartPolling();
-});
 
+    // 機制 A：當滑鼠點回這個桌面視窗 (Focus) 時，立刻強制更新
+    window.addEventListener('focus', () => {
+        forceRefreshSystem();
+    });
+
+    // 機制 B：同時保留 Visibility 變更監聽
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            forceRefreshSystem();
+        }
+        startSmartPolling();
+    });
+
+    // 機制 C：防休眠主動檢查 (每 10 秒檢查時間是否出現大幅跳變)
+    let lastCheckTimestamp = Date.now();
+    setInterval(() => {
+        const nowTs = Date.now();
+        // 如果發現兩次檢查時間間隔超過 20 秒，代表電腦休眠或視窗剛剛從凍結中醒來
+        if (nowTs - lastCheckTimestamp > 20000) {
+            forceRefreshSystem();
+        }
+        lastCheckTimestamp = nowTs;
+    }, 10000);
+
+    // 初次載入執行
     loadBookingsFromServer(false);
     renderTable();
     updateDashboard();
