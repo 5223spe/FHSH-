@@ -1131,11 +1131,10 @@
     document.getElementById('mapTime').value = timeStr;
 
     /* ==========================================
-       1. 修改：多日期陣列與渲染邏輯 (需求 1 & 2)
+       1. 修改：多日期陣列與渲染邏輯 (方案 A 核心調整)
        ========================================== */
 
-    // 移除原有的 addSelectedDate(todayStr); 避免一般進入頁面時預設顯示標籤
-    // 修改後的 renderSelectedDates：只有陣列有值時才渲染
+    // 移除預設將 todayStr 加進 selectedDatesList 的邏輯，實現「一開始未選」
     function renderSelectedDates() {
         const container = document.getElementById('selectedDatesContainer');
         if (!container) return;
@@ -1160,7 +1159,7 @@
     }
 
     /* ==========================================
-       2. 修改：新增日期時的衝突阻擋判斷 (需求 3)
+       2. 修改：新增日期時的衝突阻擋判斷
        ========================================== */
     function addSelectedDate(dateVal) {
         if (!dateVal) return;
@@ -1168,7 +1167,7 @@
         const classroom = document.getElementById('classroom').value;
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
-        // 【需求3判斷】若已選教室與節次，檢查該日期是否衝突
+        // 若已選教室與節次，檢查該日期是否衝突
         if (classroom && selectedPeriods.length > 0) {
             const hasConflict = selectedPeriods.some(p => 
                 bookings.some(b => b.classroom === classroom && b.date === dateVal && b.periods.includes(p))
@@ -1449,7 +1448,7 @@
     }
 
     /* ==========================================
-       3. 修改：快速借用邏輯 (需求 1)
+       3. 修改：快速借用邏輯
        ========================================== */
     function executeSmartBooking(room, evt) {
         const chosenDate = document.getElementById('mapDate').value; 
@@ -1458,7 +1457,7 @@
         
         document.getElementById('classroom').value = room;
         
-        // 【需求1】快速借用時自動選好當天，並產生標籤
+        // 快速借用時自動選好當天，並產生標籤
         selectedDatesList = [chosenDate];
         renderSelectedDates();
 
@@ -1479,9 +1478,8 @@
     }
 
     /* ==========================================
-       4. 新增：勾選節次時的反向衝突檢查 (需求 3 補強)
+       4. 新增：勾選節次時的反向衝突檢查
        ========================================== */
-    // 在 refreshCheckboxStates 後方加上勾選事件監聽，防止先選日期後選節次造成的衝突
     document.querySelectorAll('input[name="period"]').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const classroom = document.getElementById('classroom').value;
