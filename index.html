@@ -119,7 +119,7 @@
             transform: scale(1.03);
         }
 
-        input[type="date"], input[type="time"] {
+        input[type="date"], input[type="time"], input[type="month"] {
             cursor: pointer;
         }
 
@@ -490,7 +490,7 @@
         .btn-delete { background-color: var(--palette-pink); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
         .btn-clear-filter {
-            padding: 8px 12px;
+            padding: 6px 12px;
             background: #e2e8f0;
             color: var(--text-dark);
             border: none;
@@ -504,6 +504,36 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-clear-filter:hover {
+            background: #cbd5e1;
+        }
+
+        /* 紀錄清單 Tab 切換按鈕樣式 */
+        .tab-btn {
+            padding: 6px 14px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+        .tab-btn.active {
+            background: var(--palette-blue-2);
+            color: #ffffff;
+            border-color: var(--palette-blue-2);
+            box-shadow: 0 2px 6px rgba(15, 76, 92, 0.2);
         }
 
         /* 📱 手機版 RWD 設計 */
@@ -954,13 +984,26 @@
         </form>
     </div>
 
+    <!-- 最近借用紀錄清單區塊 (含 Tab 頁籤與月份選擇控制項) -->
     <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
             <h2 style="margin: 0;">最近借用紀錄清單</h2>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <label for="tableFilterDate" style="margin: 0; font-size: 14px; white-space: nowrap;">篩選特定日期：</label>
-                <input type="date" id="tableFilterDate" style="padding: 8px 12px; width: 150px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                <button type="button" class="btn-clear-filter" onclick="document.getElementById('tableFilterDate').value=''; renderTable();">清除篩選</button>
+            
+            <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當月紀錄</button>
+                <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
+                <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
+
+                <!-- 指定月份選擇器 (預設隱藏) -->
+                <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
+                    <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+                </div>
+
+                <!-- 單日篩選器 -->
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
+                    <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
+                    <button type="button" class="btn-clear-filter" onclick="clearTableFilters()">清除</button>
+                </div>
             </div>
         </div>
         <div class="table-responsive">
@@ -996,6 +1039,7 @@
 
     let currentUser = null; 
     let selectedDatesList = []; // 多日期儲存陣列
+    let currentTableTab = 'current'; // 表格篩選 Tab 狀態: 'current' | 'all' | 'custom'
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -1124,17 +1168,42 @@
 
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const timeStr = get24HourTimeString(now);
     
     document.getElementById('date').min = todayStr;
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
+    document.getElementById('tableFilterMonth').value = currentYearMonth;
 
     /* ==========================================
-       1. 修改：多日期陣列與渲染邏輯 (方案 A 核心調整)
+       Tab 與紀錄清單篩選控制邏輯
        ========================================== */
+    function switchTableTab(mode) {
+        currentTableTab = mode;
+        
+        document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
+        document.getElementById('tabAll').classList.toggle('active', mode === 'all');
+        document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
 
-    // 移除預設將 todayStr 加進 selectedDatesList 的邏輯，實現「一開始未選」
+        const monthWrapper = document.getElementById('monthPickerWrapper');
+        if (monthWrapper) {
+            monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
+        }
+
+        renderTable();
+    }
+
+    function handleSingleDateChange() {
+        renderTable();
+    }
+
+    function clearTableFilters() {
+        document.getElementById('tableFilterDate').value = '';
+        document.getElementById('tableFilterMonth').value = currentYearMonth;
+        switchTableTab('current');
+    }
+
     function renderSelectedDates() {
         const container = document.getElementById('selectedDatesContainer');
         if (!container) return;
@@ -1158,16 +1227,12 @@
         handleClassroomOrDateChange();
     }
 
-    /* ==========================================
-       2. 修改：新增日期時的衝突阻擋判斷
-       ========================================== */
     function addSelectedDate(dateVal) {
         if (!dateVal) return;
 
         const classroom = document.getElementById('classroom').value;
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
-        // 若已選教室與節次，檢查該日期是否衝突
         if (classroom && selectedPeriods.length > 0) {
             const hasConflict = selectedPeriods.some(p => 
                 bookings.some(b => b.classroom === classroom && b.date === dateVal && b.periods.includes(p))
@@ -1175,7 +1240,7 @@
 
             if (hasConflict) {
                 alert(`⚠️ 【${dateVal}】在「${classroom}」的選取節次中已被借用，無法選擇該日期！`);
-                document.getElementById('date').value = ''; // 清空日期輸入框
+                document.getElementById('date').value = ''; 
                 return;
             }
         }
@@ -1378,7 +1443,7 @@
         }
     });
 
-    document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
+    document.querySelectorAll('input[type="date"], input[type="time"], input[type="month"]').forEach(input => {
         input.addEventListener('click', function() {
             try {
                 if (typeof this.showPicker === 'function') {
@@ -1393,7 +1458,6 @@
     function refreshCheckboxStates(selectedRoom, selectedDatesArray, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         
-        // 綜合所有已選取日期的佔用時段
         const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && selectedDatesArray.includes(b.date)) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
@@ -1447,9 +1511,6 @@
         refreshCheckboxStates(room, selectedDatesList);
     }
 
-    /* ==========================================
-       3. 修改：快速借用邏輯
-       ========================================== */
     function executeSmartBooking(room, evt) {
         const chosenDate = document.getElementById('mapDate').value; 
         const chosenTime = document.getElementById('mapTime').value;
@@ -1457,7 +1518,6 @@
         
         document.getElementById('classroom').value = room;
         
-        // 快速借用時自動選好當天，並產生標籤
         selectedDatesList = [chosenDate];
         renderSelectedDates();
 
@@ -1477,9 +1537,6 @@
         }
     }
 
-    /* ==========================================
-       4. 新增：勾選節次時的反向衝突檢查
-       ========================================== */
     document.querySelectorAll('input[name="period"]').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const classroom = document.getElementById('classroom').value;
@@ -1487,7 +1544,6 @@
 
             const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
-            // 逐一檢查已選日期
             selectedDatesList = selectedDatesList.filter(d => {
                 const isConflicted = selectedPeriods.some(p => 
                     bookings.some(b => b.classroom === classroom && b.date === d && b.periods.includes(p))
@@ -1495,7 +1551,7 @@
 
                 if (isConflicted) {
                     alert(`⚠️ 日期【${d}】與剛勾選的節次產生衝突，已自動移除該日期！`);
-                    return false; // 移除衝突日期
+                    return false;
                 }
                 return true;
             });
@@ -1811,22 +1867,34 @@
         });
     }
 
+    // 重構：含當月/全部/指定月份過濾邏輯的表格渲染函式
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const nowTs = new Date();
-        const todayStr = `${nowTs.getFullYear()}-${String(nowTs.getMonth() + 1).padStart(2, '0')}-${String(nowTs.getDate()).padStart(2, '0')}`;
-
         const filterDateStr = document.getElementById('tableFilterDate').value; 
+        const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
         let displayBookings = [];
 
+        // 優先套用單日精確篩選
         if (filterDateStr) {
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
-            displayBookings = bookings.filter(b => b.date >= todayStr);
+            // 依據目前選取的 Tab 進行月份/全部過濾
+            if (currentTableTab === 'current') {
+                displayBookings = bookings.filter(b => b.date.startsWith(currentYearMonth));
+            } else if (currentTableTab === 'custom') {
+                if (filterMonthStr) {
+                    displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
+                } else {
+                    displayBookings = [...bookings];
+                }
+            } else {
+                // 全部紀錄
+                displayBookings = [...bookings];
+            }
         }
 
         if (displayBookings.length === 0) {
@@ -1985,7 +2053,6 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        // 多日期衝突檢查
         let conflictDetails = [];
         selectedDatesList.forEach(d => {
             const safeD = formatSafeDate(d);
@@ -2007,7 +2074,6 @@
 
         const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
-        // 逐一建立每個日期的預約請求
         let successCount = 0;
         let failCount = 0;
 
