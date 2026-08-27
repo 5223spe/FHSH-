@@ -892,9 +892,16 @@
             </div>
 
             <div class="form-group">
-                <label for="date">借用日期</label>
-                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onkeydown="return false;">
-            </div>
+    <label>借用日期（可多選）</label>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="date" id="multiDatePicker" onkeydown="return false;">
+        <button type="button" class="btn-sync" onclick="addSelectedDate()" style="padding: 8px 16px;">＋ 新增日期</button>
+    </div>
+    <!-- 顯示已選擇的日期標籤 -->
+    <div id="selectedDatesContainer" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; padding: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;">
+        <span style="color: #94a3b8; font-size: 13px;" id="noDateNotice">尚未選擇日期</span>
+    </div>
+</div>
 
             <div class="form-group">
                 <label>借用節次</label>
@@ -1347,6 +1354,57 @@
         });
     }
 
+    let selectedDates = [];
+
+function addSelectedDate() {
+    const datePicker = document.getElementById('multiDatePicker');
+    const val = datePicker.value;
+    if (!val) {
+        alert('請先選擇日期！');
+        return;
+    }
+
+    const curCheckDate = new Date();
+    const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
+    
+    if (val < todayFormatted) {
+        alert('❌ 無法選擇過去的日期！');
+        return;
+    }
+
+    if (selectedDates.includes(val)) {
+        alert('此日期已在選擇清單中！');
+        return;
+    }
+
+    selectedDates.push(val);
+    selectedDates.sort(); // 排序日期
+    renderDateTags();
+    datePicker.value = '';
+    handleClassroomOrDateChange(); // 更新節次可選狀態
+}
+
+function removeSelectedDate(dateStr) {
+    selectedDates = selectedDates.filter(d => d !== dateStr);
+    renderDateTags();
+    handleClassroomOrDateChange();
+}
+
+function renderDateTags() {
+    const container = document.getElementById('selectedDatesContainer');
+    if (selectedDates.length === 0) {
+        container.innerHTML = `<span style="color: #94a3b8; font-size: 13px;" id="noDateNotice">尚未選擇日期</span>`;
+        return;
+    }
+
+    container.innerHTML = selectedDates.map(d => `
+        <span style="background: var(--palette-blue-1); color: white; padding: 4px 10px; border-radius: 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+            ${d}
+            <b onclick="removeSelectedDate('${d}')" style="cursor: pointer; color: #fca5a5;">✕</b>
+        </span>
+    `).join('');
+}
+    
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
         const date = document.getElementById('date').value;
@@ -1826,88 +1884,86 @@
     }
 
     document.getElementById('bookingForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        const borrower = document.getElementById('borrower').value.trim();
-        const classroom = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const borrower = document.getElementById('borrower').value.trim();
+    const classroom = document.getElementById('classroom').value;
 
-        if (!borrower) {
-            alert('⚠️ 請選擇或輸入「借用人姓名」！');
-            document.getElementById('borrower').focus();
-            return;
-        }
+    if (!borrower) { alert('⚠️ 請選擇或輸入「借用人姓名」！'); return; }
+    if (!classroom) { alert('⚠️ 請選擇「借用教室」！'); return; }
+    if (selectedDates.length === 0) { alert('⚠️ 請至少選擇一個「借用日期」！'); return; }
 
-        if (!classroom) {
-            alert('⚠️ 請選擇「借用教室」！');
-            showClassroomDropdown();
-            return;
-        }
+    const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+    if (selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        const curCheckDate = new Date();
-        const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
-        if (date < todayFormatted) {
-            alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
-            document.getElementById('date').value = todayFormatted;
-            handleClassroomOrDateChange();
-            return;
-        }
-
-        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
-
-        const safeDate = formatSafeDate(date);
-
+    // 1. 檢查所有日期是否包含衝突
+    let conflictDates = [];
+    selectedDates.forEach(d => {
+        const safeDate = formatSafeDate(d);
         const hasConflict = bookings.some(b => 
             b.classroom === classroom && 
             b.date === safeDate && 
             b.periods.some(p => selectedPeriods.includes(p))
         );
+        if (hasConflict) conflictDates.push(d);
+    });
 
-        if (hasConflict) { 
-            alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); 
-            return; 
-        }
+    if (conflictDates.length > 0) {
+        alert(`❌ 以下日期存在預約衝突，請重新確認：\n${conflictDates.join('\n')}`);
+        return;
+    }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = '登記中...';
+    submitBtn.disabled = true;
+    submitBtn.textContent = `批次登記中 (0/${selectedDates.length})...`;
 
-        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
+    const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
-        const newBookingObj = {
-            id: Date.now(),
-            borrower,
-            classroom,
-            date: safeDate,
-            periods: selectedPeriods,
-            operator: operatorName
-        };
+    // 2. 逐一建立 Promise 批次發送至 GAS 後端
+    try {
+        let successCount = 0;
+        
+        for (let i = 0; i < selectedDates.length; i++) {
+            const dateStr = selectedDates[i];
+            const safeDate = formatSafeDate(dateStr);
+            
+            const newBookingObj = {
+                action: 'create',
+                id: Date.now() + i, // 加上索引避免 ID 重複
+                borrower,
+                classroom,
+                date: safeDate,
+                periods: selectedPeriods,
+                operator: operatorName
+            };
 
-        submitBtn.disabled = false;
-        submitBtn.textContent = '確認提交借用登記';
-
-        try {
-            const payload = { action: 'create', ...newBookingObj };
             const res = await fetch(GAS_URL, { 
                 method: 'POST', 
-                body: JSON.stringify(payload) 
+                body: JSON.stringify(newBookingObj) 
             });
             const resData = await res.json();
-
+            
             if (resData.status === 'success') {
-                alert('🎉 恭喜您，教室登記成功！');
-                document.getElementById('bookingForm').reset();
-                document.getElementById('date').value = document.getElementById('mapDate').value;
-                await loadBookingsFromServer(true); // 預約成功後強制清快取並向雲端同步
-            } else {
-                alert('❌ 登記失敗：' + resData.message);
-                await loadBookingsFromServer(true); 
+                successCount++;
+                submitBtn.textContent = `批次登記中 (${successCount}/${selectedDates.length})...`;
             }
-        } catch(error) {
-            console.error("新增失敗:", error);
-            alert('⚠️ 連線失敗，請檢查網路後重試！');
         }
-    };
+
+        alert(`🎉 成功完成 ${successCount} 天的教室登記！`);
+        
+        // 重置表單與日期選擇
+        document.getElementById('bookingForm').reset();
+        selectedDates = [];
+        renderDateTags();
+        await loadBookingsFromServer(true);
+
+    } catch(error) {
+        console.error("新增失敗:", error);
+        alert('⚠️ 連線失敗，請檢查網路後重試！');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '確認提交借用登記';
+    }
+};
 
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
