@@ -1150,14 +1150,31 @@
     }
 
     function renderSelectedDates() {
-        const container = document.getElementById('selectedDatesContainer');
-        container.innerHTML = selectedDatesList.map(d => `
-            <div class="date-tag">
-                📅 ${d}
-                <span class="remove-tag" onclick="removeSelectedDate('${d}')">×</span>
-            </div>
-        `).join('');
+    const container = document.getElementById('selectedDatesContainer'); // 替換為您的標籤容器 ID
+    if (!container) return;
+
+    // 清空現有標籤
+    container.innerHTML = '';
+
+    // 【核心邏輯】只有當選擇的日期「超過 1 個」時才顯示標籤
+    if (selectedDates.length <= 1) {
+        container.style.display = 'none'; // 可選：直接隱藏容器
+        return;
     }
+
+    // 當日期多於 1 個時，顯示容器並渲染標籤
+    container.style.display = 'flex'; 
+
+    selectedDates.forEach(dateStr => {
+        const tag = document.createElement('div');
+        tag.className = 'date-tag'; // 您的藍色標籤 CSS class
+        tag.innerHTML = `
+            <span>🗓️ ${dateStr}</span>
+            <span class="remove-btn" onclick="removeDate('${dateStr}')">&times;</span>
+        `;
+        container.appendChild(tag);
+    });
+}
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
