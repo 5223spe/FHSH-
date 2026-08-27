@@ -324,6 +324,40 @@
             transition: all 0.3s;
         }
 
+        /* 多日選取容器與標籤樣式 */
+        .multi-date-picker-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .selected-dates-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 20px;
+        }
+
+        .date-tag {
+            background: #e0f2fe;
+            color: var(--palette-blue-2);
+            border: 1px solid #7dd3fc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .date-tag span.remove-tag {
+            cursor: pointer;
+            color: var(--danger);
+            font-weight: bold;
+            margin-left: 2px;
+        }
+
         .borrower-wrapper {
             position: relative;
             width: 100%;
@@ -891,9 +925,13 @@
                 </div>
             </div>
 
+            <!-- 改良為直觀的多日期點選區塊，維持原有結構位置 -->
             <div class="form-group">
-                <label for="date">借用日期</label>
-                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onkeydown="return false;">
+                <label for="date">借用日期 (可連續點選新增多個日期)</label>
+                <div class="multi-date-picker-wrapper">
+                    <div class="selected-dates-tags" id="selectedDatesContainer"></div>
+                    <input type="date" id="date" onchange="addSelectedDate(this.value)" onkeydown="return false;">
+                </div>
             </div>
 
             <div class="form-group">
@@ -957,6 +995,7 @@
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
     let currentUser = null; 
+    let selectedDatesList = []; // 多日期儲存陣列
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -1087,10 +1126,38 @@
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const timeStr = get24HourTimeString(now);
     
-    document.getElementById('date').value = todayStr;
     document.getElementById('date').min = todayStr;
     document.getElementById('mapDate').value = todayStr;
     document.getElementById('mapTime').value = timeStr;
+
+    // 預設將今天加入多日選取清單
+    addSelectedDate(todayStr);
+
+    function addSelectedDate(dateVal) {
+        if (!dateVal) return;
+        if (!selectedDatesList.includes(dateVal)) {
+            selectedDatesList.push(dateVal);
+            selectedDatesList.sort();
+            renderSelectedDates();
+            handleClassroomOrDateChange();
+        }
+    }
+
+    function removeSelectedDate(dateVal) {
+        selectedDatesList = selectedDatesList.filter(d => d !== dateVal);
+        renderSelectedDates();
+        handleClassroomOrDateChange();
+    }
+
+    function renderSelectedDates() {
+        const container = document.getElementById('selectedDatesContainer');
+        container.innerHTML = selectedDatesList.map(d => `
+            <div class="date-tag">
+                📅 ${d}
+                <span class="remove-tag" onclick="removeSelectedDate('${d}')">×</span>
+            </div>
+        `).join('');
+    }
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
@@ -1112,7 +1179,6 @@
     async function loadBookingsFromServer(forceRefresh = false) {
         if (!GAS_URL || GAS_URL.includes("請填入")) return;
 
-        // 如果要求強制重新整理，移除快取的資料
         if (forceRefresh) {
             localStorage.removeItem('cached_booking_data');
         } else {
@@ -1128,7 +1194,6 @@
         }
 
         try {
-            // 強制抓取時加上隨機時間戳參數，防護網頁與瀏覽器 HTTP 快取
             const fetchUrl = forceRefresh ? `${GAS_URL}?nocache=${Date.now()}` : GAS_URL;
             const response = await fetch(fetchUrl);
             const rawData = await response.json();
@@ -1137,7 +1202,7 @@
             applyDataToUI(rawData);
         } catch (error) {
             console.error("無法從雲端載入資料:", error);
-            if (forceRefresh) throw error; // 拋出錯誤以利手動同步捕獲
+            if (forceRefresh) throw error; 
         }
     }
 
@@ -1296,10 +1361,11 @@
         });
     });
     
-    function refreshCheckboxStates(selectedRoom, selectedDate, currentPeriodToAutoCheck = "") {
+    function refreshCheckboxStates(selectedRoom, selectedDatesArray, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         
-        const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && b.date === selectedDate) : [];
+        // 綜合所有已選取日期的佔用時段
+        const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && selectedDatesArray.includes(b.date)) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
 
@@ -1307,8 +1373,8 @@
         const curDateStr = `${nowTime.getFullYear()}-${String(nowTime.getMonth() + 1).padStart(2, '0')}-${String(nowTime.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(nowTime);
         
-        const isPastDate = selectedDate && (selectedDate < curDateStr);
-        const isTodaySelected = (selectedDate === curDateStr);
+        const isPastDate = selectedDatesArray.some(d => d < curDateStr);
+        const isTodaySelected = selectedDatesArray.includes(curDateStr);
 
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
@@ -1327,11 +1393,11 @@
                 if (label) {
                     label.classList.add('disabled-period');
                     if (isPastDate) {
-                        label.title = "過去日期無法借用";
+                        label.title = "包含過去日期無法借用";
                     } else if (isPastTime && !isOccupied) {
-                        label.title = "此節次時間已過，無法借用";
+                        label.title = "今日此節次時間已過，無法借用";
                     } else if (isOccupied) {
-                        label.title = "此節次已被預約";
+                        label.title = "選取日期中此節次已被預約";
                     }
                 }
             } else {
@@ -1349,10 +1415,7 @@
 
     function handleClassroomOrDateChange() {
         const room = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
-        if (date) {
-            refreshCheckboxStates(room, date);
-        }
+        refreshCheckboxStates(room, selectedDatesList);
     }
 
     function executeSmartBooking(room, evt) {
@@ -1361,15 +1424,17 @@
         const currentP = getCurrentPeriod(chosenTime);
         
         document.getElementById('classroom').value = room;
-        document.getElementById('date').value = chosenDate;
+        
+        selectedDatesList = [chosenDate];
+        renderSelectedDates();
 
         const roomBookings = bookings.filter(b => b.classroom === room && b.date === chosenDate);
         const isOccupiedNow = roomBookings.some(b => b.periods.includes(currentP));
 
         if (isOccupiedNow) {
-            refreshCheckboxStates(room, chosenDate, "");
+            refreshCheckboxStates(room, selectedDatesList, "");
         } else {
-            refreshCheckboxStates(room, chosenDate, currentP);
+            refreshCheckboxStates(room, selectedDatesList, currentP);
         }
 
         document.getElementById('booking-form-area').scrollIntoView({ behavior: 'smooth' });
@@ -1830,7 +1895,6 @@
         const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
         const classroom = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
 
         if (!borrower) {
             alert('⚠️ 請選擇或輸入「借用人姓名」！');
@@ -1844,68 +1908,91 @@
             return;
         }
 
+        if (selectedDatesList.length === 0) {
+            alert('⚠️ 請至少選擇一個借用日期！');
+            return;
+        }
+
         const curCheckDate = new Date();
         const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
-        if (date < todayFormatted) {
-            alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
-            document.getElementById('date').value = todayFormatted;
-            handleClassroomOrDateChange();
+        
+        const hasPastDate = selectedDatesList.some(d => d < todayFormatted);
+        if (hasPastDate) {
+            alert('❌ 選擇的日期中包含過去的日期！請重新調整。');
             return;
         }
 
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        const safeDate = formatSafeDate(date);
+        // 多日期衝突檢查
+        let conflictDetails = [];
+        selectedDatesList.forEach(d => {
+            const safeD = formatSafeDate(d);
+            selectedPeriods.forEach(p => {
+                const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
+                if (isConflicted) {
+                    conflictDetails.push(`${safeD} (${p})`);
+                }
+            });
+        });
 
-        const hasConflict = bookings.some(b => 
-            b.classroom === classroom && 
-            b.date === safeDate && 
-            b.periods.some(p => selectedPeriods.includes(p))
-        );
-
-        if (hasConflict) { 
-            alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); 
+        if (conflictDetails.length > 0) { 
+            alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
             return; 
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = '登記中...';
+        submitBtn.textContent = '批次登記中...';
 
         const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
-        const newBookingObj = {
-            id: Date.now(),
-            borrower,
-            classroom,
-            date: safeDate,
-            periods: selectedPeriods,
-            operator: operatorName
-        };
+        // 逐一建立每個日期的預約請求
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const targetDate of selectedDatesList) {
+            const safeDate = formatSafeDate(targetDate);
+            const newBookingObj = {
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                borrower,
+                classroom,
+                date: safeDate,
+                periods: selectedPeriods,
+                operator: operatorName
+            };
+
+            try {
+                const payload = { action: 'create', ...newBookingObj };
+                const res = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                const resData = await res.json();
+
+                if (resData.status === 'success') {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            } catch(error) {
+                console.error("新增失敗:", error);
+                failCount++;
+            }
+        }
 
         submitBtn.disabled = false;
         submitBtn.textContent = '確認提交借用登記';
 
-        try {
-            const payload = { action: 'create', ...newBookingObj };
-            const res = await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            });
-            const resData = await res.json();
-
-            if (resData.status === 'success') {
-                alert('🎉 恭喜您，教室登記成功！');
-                document.getElementById('bookingForm').reset();
-                document.getElementById('date').value = document.getElementById('mapDate').value;
-                await loadBookingsFromServer(true); // 預約成功後強制清快取並向雲端同步
-            } else {
-                alert('❌ 登記失敗：' + resData.message);
-                await loadBookingsFromServer(true); 
-            }
-        } catch(error) {
-            console.error("新增失敗:", error);
-            alert('⚠️ 連線失敗，請檢查網路後重試！');
+        if (failCount === 0) {
+            alert(`🎉 恭喜您，已成功完成 ${successCount} 個日期的教室登記！`);
+            document.getElementById('bookingForm').reset();
+            selectedDatesList = [document.getElementById('mapDate').value];
+            renderSelectedDates();
+            await loadBookingsFromServer(true);
+        } else {
+            alert(`⚠️ 登記完成：成功 ${successCount} 筆，失敗 ${failCount} 筆。請檢查紀錄與連線。`);
+            await loadBookingsFromServer(true);
         }
     };
 
@@ -1927,28 +2014,23 @@
         pollingTimer = setInterval(() => loadBookingsFromServer(false), interval);
     }
 
-    // 封裝一個專門用來「校正時間 + 強制更新」的函式
     function forceRefreshSystem() {
         const now = new Date();
         const curDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(now);
         
-        // 1. 更新時間與日期輸入框
         const mapDateEl = document.getElementById('mapDate');
         const mapTimeEl = document.getElementById('mapTime');
         if (mapDateEl) mapDateEl.value = curDateStr;
         if (mapTimeEl) mapTimeEl.value = curTimeStr;
 
-        // 2. 強制從雲端重新載入資料並更新看板
         loadBookingsFromServer(true);
     }
 
-    // 機制 A：當滑鼠點回這個桌面視窗 (Focus) 時，立刻強制更新
     window.addEventListener('focus', () => {
         forceRefreshSystem();
     });
 
-    // 機制 B：同時保留 Visibility 變更監聽
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             forceRefreshSystem();
@@ -1956,18 +2038,15 @@
         startSmartPolling();
     });
 
-    // 機制 C：防休眠主動檢查 (每 10 秒檢查時間是否出現大幅跳變)
     let lastCheckTimestamp = Date.now();
     setInterval(() => {
         const nowTs = Date.now();
-        // 如果發現兩次檢查時間間隔超過 20 秒，代表電腦休眠或視窗剛剛從凍結中醒來
         if (nowTs - lastCheckTimestamp > 20000) {
             forceRefreshSystem();
         }
         lastCheckTimestamp = nowTs;
     }, 10000);
 
-    // 初次載入執行
     loadBookingsFromServer(false);
     renderTable();
     updateDashboard();
@@ -1988,7 +2067,6 @@
         btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
 
         try {
-            // 傳入 true，強制清除 LocalStorage 快取並加上防快取 URL 參數
             await loadBookingsFromServer(true);
             btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
         } catch (error) {
