@@ -1595,7 +1595,7 @@
         });
     }
 
-    // 重構：實現「預設當月紀錄，且無選擇點選篩選區塊時不顯示過期清單」的邏輯
+    // 重構：實現「點選全部紀錄時，僅顯示日期未過（>= 今天）的紀錄」的邏輯
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
@@ -1616,7 +1616,7 @@
         } else {
             // 2. 依據 Tab 模式進行過濾
             if (currentTableTab === 'current') {
-                // 預設當月紀錄：過濾當月且【日期大於或等於今天】（不顯示已過期清單）
+                // 當月紀錄：過濾當月且日期大於或等於今天
                 displayBookings = bookings.filter(b => b.date.startsWith(currentYearMonth) && b.date >= curDateStr);
             } else if (currentTableTab === 'custom') {
                 if (filterMonthStr) {
@@ -1625,8 +1625,8 @@
                     displayBookings = [...bookings];
                 }
             } else {
-                // 全部紀錄
-                displayBookings = [...bookings];
+                // 全部紀錄：僅顯示日期還未過（大於等於今天）的紀錄
+                displayBookings = bookings.filter(b => b.date >= curDateStr);
             }
         }
 
