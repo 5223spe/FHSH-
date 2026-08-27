@@ -750,6 +750,26 @@
           from { transform: scale(0.8); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
+        .date-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    background: #fdfbf7;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    max-height: 180px;
+    overflow-y: auto;
+}
+.date-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.date-checkbox-item input { width: auto; margin: 0; }
+        
     </style>
 </head>
 <body>
@@ -892,9 +912,11 @@
             </div>
 
             <div class="form-group">
-                <label for="date">借用日期</label>
-                <input type="date" id="date" required onchange="handleClassroomOrDateChange()" onkeydown="return false;">
-            </div>
+    <label>借用日期 (可多選)</label>
+    <div class="date-checkbox-grid" id="dateContainer">
+        <!-- JS 動態生成未來 30 天日期供多選 -->
+    </div>
+</div>
 
             <div class="form-group">
                 <label>借用節次</label>
@@ -995,6 +1017,35 @@
         initGoogleAuth();
     };
 
+    function generateDateCheckboxes() {
+    const container = document.getElementById('dateContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const today = new Date();
+    // 生成未來 30 天的選項
+    for (let i = 0; i < 30; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+        const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+
+        const label = document.createElement('label');
+        label.className = 'date-checkbox-item';
+        label.innerHTML = `
+            <input type="checkbox" name="bookingDates" value="${dateStr}" onchange="handleClassroomOrDateChange()">
+            ${dateStr} (${dayOfWeek})
+        `;
+        container.appendChild(label);
+    }
+}
+
+// 在 window.onload 裡面呼叫 generateDateCheckboxes();
+    
     function handleCredentialResponse(response) {
         const payload = parseJwt(response.credential);
         currentUser = {
@@ -1826,88 +1877,65 @@
     }
 
     document.getElementById('bookingForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        const borrower = document.getElementById('borrower').value.trim();
-        const classroom = document.getElementById('classroom').value;
-        const date = document.getElementById('date').value;
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const borrower = document.getElementById('borrower').value.trim();
+    const classroom = document.getElementById('classroom').value;
 
-        if (!borrower) {
-            alert('⚠️ 請選擇或輸入「借用人姓名」！');
-            document.getElementById('borrower').focus();
-            return;
-        }
+    // 取得所有選中的日期
+    const selectedDates = Array.from(document.querySelectorAll('input[name="bookingDates"]:checked')).map(cb => cb.value);
+    const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
-        if (!classroom) {
-            alert('⚠️ 請選擇「借用教室」！');
-            showClassroomDropdown();
-            return;
-        }
+    if (!borrower) { alert('⚠️ 請選擇或輸入「借用人姓名」！'); return; }
+    if (!classroom) { alert('⚠️ 請選擇「借用教室」！'); return; }
+    if (selectedDates.length === 0) { alert('⚠️ 請至少選擇一個借用日期！'); return; }
+    if (selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        const curCheckDate = new Date();
-        const todayFormatted = `${curCheckDate.getFullYear()}-${String(curCheckDate.getMonth() + 1).padStart(2, '0')}-${String(curCheckDate.getDate()).padStart(2, '0')}`;
-        if (date < todayFormatted) {
-            alert('❌ 無法借用過去的日期！請重新選擇借用日期。');
-            document.getElementById('date').value = todayFormatted;
-            handleClassroomOrDateChange();
-            return;
-        }
-
-        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
-
+    // 檢查是否有任一日期時段發生衝突
+    for (let date of selectedDates) {
         const safeDate = formatSafeDate(date);
-
         const hasConflict = bookings.some(b => 
             b.classroom === classroom && 
             b.date === safeDate && 
             b.periods.some(p => selectedPeriods.includes(p))
         );
-
         if (hasConflict) { 
-            alert('❌ 預約衝突！此時段已被其他老師先一步借走囉！'); 
+            alert(`❌ 預約衝突！【${safeDate}】的此時段已被借走！`); 
             return; 
         }
+    }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = '登記中...';
+    submitBtn.disabled = true;
+    submitBtn.textContent = '批次登記中...';
 
-        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
+    const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
-        const newBookingObj = {
-            id: Date.now(),
-            borrower,
-            classroom,
-            date: safeDate,
-            periods: selectedPeriods,
-            operator: operatorName
-        };
+    try {
+        // 逐一發送新增請求至 GAS
+        for (let date of selectedDates) {
+            const payload = { 
+                action: 'create',
+                id: Date.now() + Math.floor(Math.random() * 1000), // 避免 ID 重複
+                borrower,
+                classroom,
+                date: formatSafeDate(date),
+                periods: selectedPeriods,
+                operator: operatorName
+            };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        }
 
+        alert('🎉 多日期教室登記成功！');
+        document.getElementById('bookingForm').reset();
+        await loadBookingsFromServer(true);
+    } catch(error) {
+        console.error("新增失敗:", error);
+        alert('⚠️ 連線失敗，請檢查網路後重試！');
+    } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = '確認提交借用登記';
-
-        try {
-            const payload = { action: 'create', ...newBookingObj };
-            const res = await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            });
-            const resData = await res.json();
-
-            if (resData.status === 'success') {
-                alert('🎉 恭喜您，教室登記成功！');
-                document.getElementById('bookingForm').reset();
-                document.getElementById('date').value = document.getElementById('mapDate').value;
-                await loadBookingsFromServer(true); // 預約成功後強制清快取並向雲端同步
-            } else {
-                alert('❌ 登記失敗：' + resData.message);
-                await loadBookingsFromServer(true); 
-            }
-        } catch(error) {
-            console.error("新增失敗:", error);
-            alert('⚠️ 連線失敗，請檢查網路後重試！');
-        }
-    };
+    }
+};
 
     document.getElementById('mapDate').onchange = updateDashboard;
     document.getElementById('mapTime').onchange = updateDashboard;
