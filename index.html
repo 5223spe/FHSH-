@@ -846,8 +846,8 @@
         if (currentUser) {
             authContent.innerHTML = `
                 <div class="user-status">
-                    <span class="user-name">鳳新高中特教行政助理</span>
-                    <span class="user-account">5223@fhsh.khc.edu.tw</span>
+                    <span class="user-name">${currentUser.name}</span>
+                    <span class="user-account">${currentUser.email}</span>
                 </div>
                 <button class="btn-auth" onclick="logoutGoogle()">登出</button>
             `;
