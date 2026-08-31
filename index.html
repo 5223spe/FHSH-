@@ -764,8 +764,15 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzlThP3Hx9CcvT-tc_4IT5AVfaka-UZDKQfBUrKYdaOnlGHxsi5N0FSZVUmsTGgzad0ew/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxKf-YpGlKXEEvskazUXWmXLTZU3GYu2aEha8t6_Nmzm_XoeRnn9m5-yARCg3htKiXmVg/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
+
+    // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
+    const TRUSTED_GROUP_EMAILS = [
+        "spe@fhsh.khc.edu.tw",
+        "11308@fhsh.khc.edu.tw",
+        "5223@fhsh.khc.edu.tw"
+    ];
 
     let currentUser = null; 
     let selectedDatesList = []; 
@@ -846,7 +853,7 @@
         if (currentUser) {
             authContent.innerHTML = `
                 <div class="user-status">
-                    <span class="user-name">${currentUser.name}</span>
+                    <span class="user-name">${currentUser.name || '使用者'}</span>
                     <span class="user-account">${currentUser.email}</span>
                 </div>
                 <button class="btn-auth" onclick="logoutGoogle()">登出</button>
@@ -1595,7 +1602,38 @@
         });
     }
 
-    // 重構：實現「點選全部紀錄時，僅顯示日期未過（>= 今天）的紀錄」的邏輯
+    // 💡 判斷當前登入者是否有權限刪除特定的預約資料
+    function canUserDeleteRecord(bookingRecord) {
+        if (!currentUser || !currentUser.email) return false;
+
+        const myEmail = currentUser.email.toLowerCase().trim();
+        const myName = teacherEmailMap[myEmail] || currentUser.name || "";
+
+        // 提取該筆紀錄的借用人姓名與操作者欄位
+        const borrowerName = bookingRecord.borrower || "";
+        const operatorInfo = bookingRecord.operator || "";
+
+        // 1. 檢查是否屬於信任的三帳號互刪情境
+        const isUserInGroup = TRUSTED_GROUP_EMAILS.includes(myEmail);
+        
+        if (isUserInGroup) {
+            // 檢查該筆紀錄的借用人 Email 或操作者 Email 是否也屬於群組成員
+            const isBorrowerInGroup = TRUSTED_GROUP_EMAILS.some(email => teacherEmailMap[email] === borrowerName);
+            const isOperatorInGroup = TRUSTED_GROUP_EMAILS.some(email => operatorInfo.includes(email));
+
+            if (isBorrowerInGroup || isOperatorInGroup) {
+                return true; // 當前使用者與資料建立/借用者都在群組內，允許互刪
+            }
+        }
+
+        // 2. 一般權限判斷：借用人是自己 或 幫忙登記的操作者是自己
+        const isMyBorrowing = (myName && borrowerName === myName);
+        const isMyOperation = operatorInfo.includes(myEmail);
+
+        return isMyBorrowing || isMyOperation;
+    }
+
+    // 重構：實現「點選全部紀錄時，僅顯示日期未過（>= 今天）的紀錄」的邏輯，並根據刪除權限切換按鈕顯示
     function renderTable() {
         const tbody = document.getElementById('recordTable');
         if (!tbody) return;
@@ -1690,12 +1728,18 @@
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
 
+            // 判斷權限：符合條件顯示刪除按鈕，否則顯示無權限提示
+            const hasPermission = canUserDeleteRecord(b);
+            const actionBtnHtml = hasPermission 
+                ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
+                : `<span style="color:#94a3b8; font-size:13px;">無權限刪除</span>`;
+
             tr.innerHTML = `
                 <td><b>${b.date}</b></td>
                 <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
                 <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
                 <td><b>${b.borrower}</b></td>
-                <td><button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button></td>
+                <td>${actionBtnHtml}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -1705,8 +1749,15 @@
         if (!idsArray || idsArray.length === 0) return;
         
         const targetBooking = bookings.find(b => idsArray.includes(b.id));
-        const borrowerName = targetBooking ? targetBooking.borrower : '';
-        const bookingDate = targetBooking ? targetBooking.date : '';
+        if (!targetBooking) return;
+
+        if (!canUserDeleteRecord(targetBooking)) {
+            alert('⚠️ 您無權限刪除此筆借用紀錄！只能刪除您本人登記或幫忙借用的資料。');
+            return;
+        }
+
+        const borrowerName = targetBooking.borrower || '';
+        const bookingDate = targetBooking.date || '';
 
         const confirmMsg = (borrowerName && bookingDate) 
             ? `確定要刪除【${bookingDate}】【${borrowerName}】的這筆預約嗎？` 
