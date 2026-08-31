@@ -1732,7 +1732,7 @@
             const hasPermission = canUserDeleteRecord(b);
             const actionBtnHtml = hasPermission 
                 ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
-                : `<span style="color:#94a3b8; font-size:13px;">無權限刪除</span>`;
+                : ``;
 
             tr.innerHTML = `
                 <td><b>${b.date}</b></td>
