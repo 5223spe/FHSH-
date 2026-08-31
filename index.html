@@ -962,6 +962,7 @@
         handleClassroomOrDateChange();
     }
 
+    // 1. 調整 addSelectedDate 函式 (點選新增日期時提示)
     function addSelectedDate(dateVal) {
         if (!dateVal) return;
 
@@ -969,12 +970,21 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
 
         if (classroom && selectedPeriods.length > 0) {
-            const hasConflict = selectedPeriods.some(p => 
-                bookings.some(b => b.classroom === classroom && b.date === dateVal && b.periods.includes(p))
+            // 找出所有發生衝突的詳細紀錄
+            const conflicts = bookings.filter(b => 
+                b.classroom === classroom && 
+                b.date === dateVal && 
+                b.periods.some(p => selectedPeriods.includes(p))
             );
 
-            if (hasConflict) {
-                alert(`⚠️ 【${dateVal}】在「${classroom}」的選取節次中已被借用，無法選擇該日期！`);
+            if (conflicts.length > 0) {
+                // 整理衝突資訊（顯示：節次 + 借用人）
+                const conflictMsg = conflicts.map(b => {
+                    const matchedPeriods = b.periods.filter(p => selectedPeriods.includes(p)).join('、');
+                    return `• ${matchedPeriods}：已被【${b.borrower}】借用`;
+                }).join('\n');
+
+                alert(`⚠️ 無法選擇【${dateVal}】！\n\n「${classroom}」在該日期的以下節次已被預約：\n${conflictMsg}`);
                 document.getElementById('date').value = ''; 
                 return;
             }
@@ -1272,24 +1282,36 @@
         }
     }
 
+    // 2. 調整節次 Checkbox 事件 (勾選節次時提示)
     document.querySelectorAll('input[name="period"]').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const classroom = document.getElementById('classroom').value;
             if (!classroom || selectedDatesList.length === 0) return;
 
             const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+            let removedConflictInfo = [];
 
             selectedDatesList = selectedDatesList.filter(d => {
-                const isConflicted = selectedPeriods.some(p => 
-                    bookings.some(b => b.classroom === classroom && b.date === d && b.periods.includes(p))
+                // 找出該日期是否有衝突
+                const conflicts = bookings.filter(b => 
+                    b.classroom === classroom && 
+                    b.date === d && 
+                    b.periods.some(p => selectedPeriods.includes(p))
                 );
 
-                if (isConflicted) {
-                    alert(`⚠️ 日期【${d}】與剛勾選的節次產生衝突，已自動移除該日期！`);
-                    return false;
+                if (conflicts.length > 0) {
+                    conflicts.forEach(b => {
+                        const matchedPeriods = b.periods.filter(p => selectedPeriods.includes(p)).join('、');
+                        removedConflictInfo.push(`📅 ${d} (${matchedPeriods}) - 借用人：${b.borrower}`);
+                    });
+                    return false; // 從 selectedDatesList 移除
                 }
                 return true;
             });
+
+            if (removedConflictInfo.length > 0) {
+                alert(`⚠️ 剛勾選的節次與以下日期產生衝突，已自動移除這些日期：\n\n${removedConflictInfo.join('\n')}`);
+            }
 
             renderSelectedDates();
         });
