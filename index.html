@@ -721,7 +721,7 @@
             
             <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <!-- 已依需求調整順序為：當月紀錄、指定月份、全部記錄 -->
-                <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當月紀錄</button>
+                <button type="button" class="tab-btn active" id="tabCurrentWeek" onclick="switchTableTab('week')">當周紀錄</button>
                 <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
                 <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
@@ -915,19 +915,20 @@
 
     /* Tab 與紀錄清單篩選控制邏輯 */
     function switchTableTab(mode) {
-        currentTableTab = mode;
-        
-        document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
-        document.getElementById('tabAll').classList.toggle('active', mode === 'all');
-        document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
+    currentTableTab = mode;
 
-        const monthWrapper = document.getElementById('monthPickerWrapper');
-        if (monthWrapper) {
-            monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
-        }
+    // 更新為當周按鈕的 ID
+    document.getElementById('tabCurrentWeek')?.classList.toggle('active', mode === 'week');
+    document.getElementById('tabAll')?.classList.toggle('active', mode === 'all');
+    document.getElementById('tabCustomMonth')?.classList.toggle('active', mode === 'custom');
 
-        renderTable();
+    const monthWrapper = document.getElementById('monthPickerWrapper');
+    if (monthWrapper) {
+        monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
     }
+
+    renderTable();
+}
 
     function handleSingleDateChange() {
         renderTable();
@@ -1675,10 +1676,10 @@
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
             // 2. 依據 Tab 模式進行過濾
-            if (currentTableTab === 'current') {
-                // 當月紀錄：過濾當月且日期大於或等於今天
-                displayBookings = bookings.filter(b => b.date.startsWith(currentYearMonth) && b.date >= curDateStr);
-            } else if (currentTableTab === 'custom') {
+            if (currentTableTab === 'week') {
+    const { start, end } = getWeekRange();
+    displayBookings = bookings.filter(b => b.date >= start && b.date <= end && b.date >= curDateStr);
+} else if (currentTableTab === 'custom') { {
                 if (filterMonthStr) {
                     displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
                 } else {
