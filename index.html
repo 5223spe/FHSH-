@@ -715,27 +715,29 @@
     </div>
 
     <!-- 最近借用紀錄清單區塊 -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="margin: 0;">最近借用紀錄清單</h2>
-            
-            <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
-                <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
-                <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h2 style="margin: 0;">最近借用紀錄清單</h2>
+        
+        <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <!-- 新增當天紀錄按鈕 -->
+            <button type="button" class="tab-btn" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
+            <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
+            <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
+            <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
-                <!-- 指定月份選擇器 (預設隱藏) -->
-                <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
-                    <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                </div>
+            <!-- 指定月份選擇器 (預設隱藏) -->
+            <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
+                <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+            </div>
 
-                <!-- 單日篩選器 -->
-                <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
-                    <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
-                    <button type="button" class="btn-clear-filter" onclick="clearTableFilters()">清除</button>
-                </div>
+            <!-- 單日篩選器 -->
+            <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
+                <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
+                <button type="button" class="btn-clear-filter" onclick="clearTableFilters()">清除</button>
             </div>
         </div>
+    </div>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -912,21 +914,24 @@
     document.getElementById('mapTime').value = timeStr;
     document.getElementById('tableFilterMonth').value = currentYearMonth;
 
-    /* Tab 與紀錄清單篩選控制邏輯 */
     function switchTableTab(mode) {
-        currentTableTab = mode;
-        
-        document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
-        document.getElementById('tabAll').classList.toggle('active', mode === 'all');
-        document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
+    currentTableTab = mode;
+    
+    // 切換頁籤按鈕的高亮狀態
+    const tabToday = document.getElementById('tabToday');
+    if (tabToday) tabToday.classList.toggle('active', mode === 'today');
+    
+    document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
+    document.getElementById('tabAll').classList.toggle('active', mode === 'all');
+    document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
 
-        const monthWrapper = document.getElementById('monthPickerWrapper');
-        if (monthWrapper) {
-            monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
-        }
-
-        renderTable();
+    const monthWrapper = document.getElementById('monthPickerWrapper');
+    if (monthWrapper) {
+        monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
     }
+
+    renderTable();
+}
 
     function handleSingleDateChange() {
         renderTable();
@@ -1648,49 +1653,51 @@
     }
 
     function renderTable() {
-        const tbody = document.getElementById('recordTable');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+    const tbody = document.getElementById('recordTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-        const filterDateStr = document.getElementById('tableFilterDate').value; 
-        const filterMonthStr = document.getElementById('tableFilterMonth').value; 
+    const filterDateStr = document.getElementById('tableFilterDate').value; 
+    const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
-        // 取得當前日期 (格式 YYYY-MM-DD)
-        const nowObj = new Date();
-        const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
+    // 取得當前日期 (格式 YYYY-MM-DD)
+    const nowObj = new Date();
+    const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
 
-        // 計算本週日 (Sunday) 到本週六 (Saturday) 的日期範圍
-        const dayOfWeek = nowObj.getDay(); // 0 (週日) ~ 6 (週六)
-        
-        const sundayObj = new Date(nowObj);
-        sundayObj.setDate(nowObj.getDate() - dayOfWeek);
-        const sundayStr = `${sundayObj.getFullYear()}-${String(sundayObj.getMonth() + 1).padStart(2, '0')}-${String(sundayObj.getDate()).padStart(2, '0')}`;
+    // 計算本週日到本週六的日期範圍
+    const dayOfWeek = nowObj.getDay();
+    const sundayObj = new Date(nowObj);
+    sundayObj.setDate(nowObj.getDate() - dayOfWeek);
+    const sundayStr = `${sundayObj.getFullYear()}-${String(sundayObj.getMonth() + 1).padStart(2, '0')}-${String(sundayObj.getDate()).padStart(2, '0')}`;
 
-        const saturdayObj = new Date(nowObj);
-        saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
-        const saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
+    const saturdayObj = new Date(nowObj);
+    saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
+    saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
 
-        let displayBookings = [];
+    let displayBookings = [];
 
-        // 1. 若有選擇「特定單日篩選」
-        if (filterDateStr) {
-            displayBookings = bookings.filter(b => b.date === filterDateStr);
-        } else {
-            // 2. 依據 Tab 模式進行過濾
-            if (currentTableTab === 'current') {
-                // 當週紀錄：僅顯示【當週】且【當日（含）以後】的紀錄 (即 >= 今天 且 <= 本週六)
-                displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
-            } else if (currentTableTab === 'custom') {
-                if (filterMonthStr) {
-                    displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
-                } else {
-                    displayBookings = [...bookings];
-                }
+    // 1. 若有選擇「特定單日篩選」
+    if (filterDateStr) {
+        displayBookings = bookings.filter(b => b.date === filterDateStr);
+    } else {
+        // 2. 依據 Tab 模式進行過濾
+        if (currentTableTab === 'today') {
+            // 當天紀錄：僅顯示今天的借用資料
+            displayBookings = bookings.filter(b => b.date === curDateStr);
+        } else if (currentTableTab === 'current') {
+            // 當週紀錄：顯示當週且當日（含）以後紀錄
+            displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
+        } else if (currentTableTab === 'custom') {
+            if (filterMonthStr) {
+                displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
             } else {
-                // 全部紀錄：僅顯示日期還未過（大於等於今天）的紀錄
-                displayBookings = bookings.filter(b => b.date >= curDateStr);
+                displayBookings = [...bookings];
             }
+        } else {
+            // 全部紀錄：顯示未來的紀錄
+            displayBookings = bookings.filter(b => b.date >= curDateStr);
         }
+    }
 
         if (displayBookings.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
