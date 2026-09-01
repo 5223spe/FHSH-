@@ -764,7 +764,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkAolQOiHVL2bX9dGYtMZW5D0xSToDEqGlIQsX0mKhLzRn__tmaWaUQwucNeqpBOkHSw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw4xi2WLf92Ysoeml_D6DlEW2Mi7KBj0pjjVe0E1saJJJ0QU42V2PMhT3QPKGTDg2oC4w/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
     // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
@@ -1830,6 +1830,7 @@
         });
     }
 
+    // 💡 最佳化提交防鎖邏輯
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1865,39 +1866,46 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        let conflictDetails = [];
-        selectedDatesList.forEach(d => {
-            const safeD = formatSafeDate(d);
-            selectedPeriods.forEach(p => {
-                const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
-                if (isConflicted) {
-                    conflictDetails.push(`${safeD} (${p})`);
-                }
-            });
-        });
-
-        if (conflictDetails.length > 0) { 
-            alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
-            return; 
-        }
-
+        // 1. 立即禁用提交按鈕，防範 UI 層級連點
         submitBtn.disabled = true;
-        submitBtn.textContent = '批次登記中...';
-
-        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
-
-        const items = selectedDatesList.map((targetDate, index) => {
-            return {
-                id: Date.now() + index + Math.floor(Math.random() * 1000),
-                borrower,
-                classroom,
-                date: formatSafeDate(targetDate),
-                periods: selectedPeriods,
-                operator: operatorName
-            };
-        });
+        submitBtn.textContent = '即時驗證與登記中...';
 
         try {
+            // 2. 提交前強制同步一次最新資料，確認沒有被其他人搶先
+            await loadBookingsFromServer(true);
+
+            let conflictDetails = [];
+            selectedDatesList.forEach(d => {
+                const safeD = formatSafeDate(d);
+                selectedPeriods.forEach(p => {
+                    const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
+                    if (isConflicted) {
+                        conflictDetails.push(`${safeD} (${p})`);
+                    }
+                });
+            });
+
+            if (conflictDetails.length > 0) { 
+                alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
+                submitBtn.disabled = false;
+                submitBtn.textContent = '確認提交借用登記';
+                return; 
+            }
+
+            // 3. 發送請求至後端
+            const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
+
+            const items = selectedDatesList.map((targetDate, index) => {
+                return {
+                    id: Date.now() + index + Math.floor(Math.random() * 1000),
+                    borrower,
+                    classroom,
+                    date: formatSafeDate(targetDate),
+                    periods: selectedPeriods,
+                    operator: operatorName
+                };
+            });
+
             const payload = { action: 'batchCreate', items: items };
             const res = await fetch(GAS_URL, { 
                 method: 'POST', 
