@@ -765,7 +765,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzZ-TaluV_4XKEnOIMpD4HB6eDyZvDc05q1cH9GZ7ggLVWY78Um1XxupYmrobjAy8uPlQ/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxraRDv23mcc7h-BMTurmPxBVp0L79MLzUSF_j1izPkTqwkvd3BFkzEYo3ef5sV5MOycQ/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
     // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
@@ -1835,7 +1835,7 @@
         });
     }
 
-    document.getElementById('bookingForm').onsubmit = async function(e) {
+   document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
@@ -1891,51 +1891,43 @@
 
         const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
-        let successCount = 0;
-        let failCount = 0;
-
-        for (const targetDate of selectedDatesList) {
-            const safeDate = formatSafeDate(targetDate);
-            const newBookingObj = {
-                id: Date.now() + Math.floor(Math.random() * 1000),
+        // 打包所有選擇的日期
+        const items = selectedDatesList.map((targetDate, index) => {
+            return {
+                id: Date.now() + index + Math.floor(Math.random() * 1000),
                 borrower,
                 classroom,
-                date: safeDate,
+                date: formatSafeDate(targetDate),
                 periods: selectedPeriods,
                 operator: operatorName
             };
+        });
 
-            try {
-                const payload = { action: 'create', ...newBookingObj };
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify(payload) 
-                });
-                const resData = await res.json();
+        try {
+            const payload = { action: 'batchCreate', items: items };
+            const res = await fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify(payload) 
+            });
+            const resData = await res.json();
 
-                if (resData.status === 'success') {
-                    successCount++;
-                } else {
-                    failCount++;
-                }
-            } catch(error) {
-                console.error("新增失敗:", error);
-                failCount++;
+            if (resData.status === 'success') {
+                alert(`🎉 恭喜您，已成功完成 ${items.length} 個日期的教室登記！`);
+                document.getElementById('bookingForm').reset();
+                selectedDatesList = [];
+                renderSelectedDates();
+                await loadBookingsFromServer(true);
+            } else {
+                alert(`⚠️ 登記失敗：${resData.message || '系統錯誤'}`);
+                await loadBookingsFromServer(true);
             }
-        }
-
-        submitBtn.disabled = false;
-        submitBtn.textContent = '確認提交借用登記';
-
-        if (failCount === 0) {
-            alert(`🎉 恭喜您，已成功完成 ${successCount} 個日期的教室登記！`);
-            document.getElementById('bookingForm').reset();
-            selectedDatesList = [];
-            renderSelectedDates();
+        } catch(error) {
+            console.error("批次新增失敗:", error);
+            alert(`⚠️ 登記失敗，連線異常，請檢查網路狀態。`);
             await loadBookingsFromServer(true);
-        } else {
-            alert(`⚠️ 登記完成：成功 ${successCount} 筆，失敗 ${failCount} 筆。請檢查紀錄與連線。`);
-            await loadBookingsFromServer(true);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '確認提交借用登記';
         }
     };
 
