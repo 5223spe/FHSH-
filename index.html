@@ -767,7 +767,6 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw4xi2WLf92Ysoeml_D6DlEW2Mi7KBj0pjjVe0E1saJJJ0QU42V2PMhT3QPKGTDg2oC4w/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
-    // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
     const TRUSTED_GROUP_EMAILS = [
         "spe@fhsh.khc.edu.tw",
         "11308@fhsh.khc.edu.tw",
@@ -997,21 +996,38 @@
         }
     }
 
+    // 修改處 1：簡化日期格式化邏輯，採用區域標準格式處理時差問題
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
-        let dateStr = String(dateInput);
-        if (dateStr.includes('T')) {
-            let d = new Date(dateStr);
-            if (isNaN(d.getTime())) return dateStr.split('T')[0];
-            if (d.getUTCHours() === 16 || dateStr.includes('16:00:00')) {
-                d.setUTCDate(d.getUTCDate() + 1);
-                return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+        let dt = new Date(dateInput);
+        if (isNaN(dt.getTime())) {
+            let str = String(dateInput).trim();
+            const match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+            if (match) {
+                return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
             }
-            let userOffset = d.getTimezoneOffset() * 60000;
-            let localDate = new Date(d.getTime() + Math.abs(userOffset));
-            return `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
+            return str;
         }
-        return dateStr.replace(/\//g, '-').trim();
+        // 使用 sv-SE (瑞典) 區域格式可直接取得 YYYY-MM-DD
+        return dt.toLocaleDateString('sv-SE');
+    }
+
+    function cleanSheetOldRows(rows) {
+        if (!Array.isArray(rows)) return [];
+        return rows.map(row => {
+            if (!row) return row;
+            let rawDate = row.date || row[0] || "";
+            let cleanedDate = formatSafeDate(rawDate);
+            
+            if (typeof row === 'object' && !Array.isArray(row)) {
+                return { ...row, date: cleanedDate };
+            } else if (Array.isArray(row)) {
+                let newRow = [...row];
+                newRow[0] = cleanedDate;
+                return newRow;
+            }
+            return row;
+        });
     }
 
     async function loadBookingsFromServer(forceRefresh = false) {
@@ -1054,8 +1070,10 @@
             bookingSource = rawData.data;
         }
 
+        bookingSource = cleanSheetOldRows(bookingSource);
+
         bookings = bookingSource
-            .filter(b => !pendingDeletedIds.has(b.id))
+            .filter(b => b && !pendingDeletedIds.has(b.id))
             .map(b => {
                 b.date = formatSafeDate(b.date);
                 return b;
@@ -1621,7 +1639,6 @@
         });
     }
 
-    // 💡 判斷當前登入者是否有權限刪除特定的預約資料
     function canUserDeleteRecord(bookingRecord) {
         if (!currentUser || !currentUser.email) return false;
 
@@ -1631,7 +1648,6 @@
         const borrowerName = bookingRecord.borrower || "";
         const operatorInfo = bookingRecord.operator || "";
 
-        // 1. 檢查是否屬於信任的三帳號互刪情境
         const isUserInGroup = TRUSTED_GROUP_EMAILS.includes(myEmail);
         
         if (isUserInGroup) {
@@ -1643,7 +1659,6 @@
             }
         }
 
-        // 2. 一般權限判斷：借用人是自己 或 幫忙登記的操作者是自己
         const isMyBorrowing = (myName && borrowerName === myName);
         const isMyOperation = operatorInfo.includes(myEmail);
 
@@ -1658,11 +1673,9 @@
         const filterDateStr = document.getElementById('tableFilterDate').value; 
         const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
-        // 取得當前日期 (格式 YYYY-MM-DD)
         const nowObj = new Date();
         const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
 
-        // 計算本週日到本週六的日期範圍
         const dayOfWeek = nowObj.getDay();
         const sundayObj = new Date(nowObj);
         sundayObj.setDate(nowObj.getDate() - dayOfWeek);
@@ -1673,16 +1686,12 @@
 
         let displayBookings = [];
 
-        // 1. 若有選擇「特定單日篩選」
         if (filterDateStr) {
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
-            // 2. 依據 Tab 模式進行過濾
             if (currentTableTab === 'today') {
-                // 當天紀錄：僅顯示今天的借用資料
                 displayBookings = bookings.filter(b => b.date === curDateStr);
             } else if (currentTableTab === 'current') {
-                // 當週紀錄：顯示當週且當日（含）以後紀錄
                 displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
             } else if (currentTableTab === 'custom') {
                 if (filterMonthStr) {
@@ -1691,7 +1700,6 @@
                     displayBookings = [...bookings];
                 }
             } else {
-                // 全部紀錄：顯示未來的紀錄
                 displayBookings = bookings.filter(b => b.date >= curDateStr);
             }
         }
@@ -1756,7 +1764,6 @@
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
 
-            // 判斷權限：符合條件顯示刪除按鈕，否則不顯示
             const hasPermission = canUserDeleteRecord(b);
             const actionBtnHtml = hasPermission 
                 ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
@@ -1830,7 +1837,7 @@
         });
     }
 
-    // 💡 最佳化提交防鎖邏輯
+    // 修改處 2：防止時間差衝突，二次驗證發現衝突時直接提示並終止發送
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1866,33 +1873,32 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
-        // 1. 立即禁用提交按鈕，防範 UI 層級連點
         submitBtn.disabled = true;
         submitBtn.textContent = '即時驗證與登記中...';
 
         try {
-            // 2. 提交前強制同步一次最新資料，確認沒有被其他人搶先
+            // 強制從 Server 重新拉取最新資料進行驗證
             await loadBookingsFromServer(true);
 
             let conflictDetails = [];
             selectedDatesList.forEach(d => {
                 const safeD = formatSafeDate(d);
                 selectedPeriods.forEach(p => {
-                    const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
-                    if (isConflicted) {
-                        conflictDetails.push(`${safeD} (${p})`);
+                    const matchedBooking = bookings.find(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
+                    if (matchedBooking) {
+                        conflictDetails.push(`• ${safeD} (${p})：已被【${matchedBooking.borrower}】借用`);
                     }
                 });
             });
 
+            // 抓到衝突立即中斷，不做 POST 提交，節省資源
             if (conflictDetails.length > 0) { 
-                alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
+                alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n\n${conflictDetails.join('\n')}\n\n已為您更新最新狀態，請調整後重新選擇。`); 
                 submitBtn.disabled = false;
                 submitBtn.textContent = '確認提交借用登記';
                 return; 
             }
 
-            // 3. 發送請求至後端
             const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
 
             const items = selectedDatesList.map((targetDate, index) => {
