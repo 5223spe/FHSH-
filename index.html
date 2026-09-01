@@ -721,8 +721,8 @@
         
         <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <!-- 新增當天紀錄按鈕 -->
-            <button type="button" class="tab-btn" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
-            <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
+            <button type="button" class="tab-btn active" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
+            <button type="button" class="tab-btn" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
             <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
             <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
@@ -777,7 +777,7 @@
 
     let currentUser = null; 
     let selectedDatesList = []; 
-    let currentTableTab = 'current'; 
+    let currentTableTab = 'today'; 
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -938,10 +938,12 @@
     }
 
     function clearTableFilters() {
-        document.getElementById('tableFilterDate').value = '';
-        document.getElementById('tableFilterMonth').value = currentYearMonth;
-        switchTableTab('current');
-    }
+    document.getElementById('tableFilterDate').value = '';
+    document.getElementById('tableFilterMonth').value = '';
+    
+    // 清除後回到當天紀錄頁籤
+    switchTableTab('today'); 
+}
 
     function renderSelectedDates() {
         const container = document.getElementById('selectedDatesContainer');
