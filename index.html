@@ -472,9 +472,19 @@
             .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
             .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
             .floor-grid-wrapper { padding: 8px !important; }
-            .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
+            .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: auto !important; grid-auto-rows: minmax(135px, auto) !important; grid-template-areas: none !important; gap: 8px !important; }
             .floor-grid > div:not(.room-card) { display: none !important; }
-            .room-card, .room-card.span-vertical { grid-row: auto !important; grid-column: auto !important; height: 100% !important; min-height: 0 !important; padding: 12px 6px !important; border-radius: 10px !important; }
+            
+            /* 修改處 1：讓卡片高度彈性伸長，確保內容完整展示不超出格子 */
+            .room-card, .room-card.span-vertical { 
+                grid-row: auto !important; 
+                grid-column: auto !important; 
+                height: auto !important; 
+                min-height: 135px !important; 
+                padding: 12px 6px !important; 
+                border-radius: 10px !important; 
+            }
+            
             .room-name { font-size: 18px !important; margin-bottom: 4px !important; }
             .room-info { font-size: 12px !important; }
             .status-badge { font-size: 11px !important; padding: 2px 10px !important; margin-bottom: 4px !important; }
@@ -996,7 +1006,6 @@
         }
     }
 
-    // 修改處 1：簡化日期格式化邏輯，採用區域標準格式處理時差問題
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
         let dt = new Date(dateInput);
@@ -1008,7 +1017,6 @@
             }
             return str;
         }
-        // 使用 sv-SE (瑞典) 區域格式可直接取得 YYYY-MM-DD
         return dt.toLocaleDateString('sv-SE');
     }
 
@@ -1343,6 +1351,30 @@
         return "";
     }
 
+    // 修改處 2：簡化節次範圍（例如：第一節～第七節）
+    function formatPeriodsRange(periodsArray) {
+        if (!periodsArray || periodsArray.length === 0) return '';
+        if (periodsArray.length === 1) return periodsArray[0];
+
+        const indexedPeriods = periodsArray.map(p => ({
+            name: p,
+            idx: periodsConfig.findIndex(item => item.name === p)
+        })).sort((a, b) => a.idx - b.idx);
+
+        let isConsecutive = true;
+        for (let i = 0; i < indexedPeriods.length - 1; i++) {
+            if (indexedPeriods[i + 1].idx !== indexedPeriods[i].idx + 1) {
+                isConsecutive = false;
+                break;
+            }
+        }
+
+        if (isConsecutive && indexedPeriods.length > 2) {
+            return `${indexedPeriods[0].name}～${indexedPeriods[indexedPeriods.length - 1].name}`;
+        }
+        return periodsArray.join('、');
+    }
+
     function updateDashboard() {
         const date = document.getElementById('mapDate').value;
         const time = document.getElementById('mapTime').value; 
@@ -1379,18 +1411,13 @@
             function generateUpcomingGridHtml(prefixText) {
                 if (upcomingList.length === 0) return '';
                 
-                const periodSpans = upcomingList.map((p, idx) => {
-                    const separator = (idx === upcomingList.length - 1) ? '' : '、';
-                    return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
-                }).join('');
+                const formattedRange = formatPeriodsRange(upcomingList);
                 
                 return `
                     <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
                         <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
                             <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
-                            <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
-                                ${periodSpans}
-                            </div>
+                            <span style="color:#e06666; font-size: 11px; font-weight: 500;">${formattedRange}</span>
                         </div>
                     </div>
                 `;
@@ -1421,16 +1448,13 @@
                     
                     const remainingUpcoming = upcomingList.filter(p => p !== "第一節");
                     if (remainingUpcoming.length > 0) {
-                        const remainingSpans = remainingUpcoming.map((p, idx) => {
-                            const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
-                            return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
-                        }).join('');
+                        const remainingRange = formatPeriodsRange(remainingUpcoming);
                         htmlContent += `
                             <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
                                 <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
                                     <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
                                         <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
-                                        ${remainingSpans}
+                                        <span style="color:#e06666; font-size: 11px; font-weight: 500;">${remainingRange}</span>
                                     </div>
                                 </div>
                             </div>`;
@@ -1579,16 +1603,13 @@
                         
                         const remainingUpcoming = upcomingList.filter(p => p !== nextP);
                         if (remainingUpcoming.length > 0) {
-                            const remainingSpans = remainingUpcoming.map((p, idx) => {
-                                const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
-                                return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
-                            }).join('');
+                            const remainingRange = formatPeriodsRange(remainingUpcoming);
                             htmlContent += `
                                 <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
                                     <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
                                         <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
                                             <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
-                                            ${remainingSpans}
+                                            <span style="color:#e06666; font-size: 11px; font-weight: 500;">${remainingRange}</span>
                                         </div>
                                     </div>
                                 </div>`;
@@ -1769,10 +1790,12 @@
                 ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
                 : ``;
 
+            const formattedTablePeriods = formatPeriodsRange(b.periods);
+
             tr.innerHTML = `
                 <td><b>${b.date}</b></td>
                 <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
-                <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
+                <td><span style="color:var(--palette-teal);font-weight:500;">${formattedTablePeriods}</span></td>
                 <td><b>${b.borrower}</b></td>
                 <td>${actionBtnHtml}</td>
             `;
@@ -1837,7 +1860,6 @@
         });
     }
 
-    // 修改處 2：防止時間差衝突，二次驗證發現衝突時直接提示並終止發送
     document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1877,7 +1899,6 @@
         submitBtn.textContent = '即時驗證與登記中...';
 
         try {
-            // 強制從 Server 重新拉取最新資料進行驗證
             await loadBookingsFromServer(true);
 
             let conflictDetails = [];
@@ -1891,7 +1912,6 @@
                 });
             });
 
-            // 抓到衝突立即中斷，不做 POST 提交，節省資源
             if (conflictDetails.length > 0) { 
                 alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n\n${conflictDetails.join('\n')}\n\n已為您更新最新狀態，請調整後重新選擇。`); 
                 submitBtn.disabled = false;
