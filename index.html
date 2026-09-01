@@ -721,7 +721,7 @@
             
             <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <!-- 已依需求調整順序為：當月紀錄、指定月份、全部記錄 -->
-                <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當月紀錄</button>
+                <button type="button" class="tab-btn active" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
                 <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
                 <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
@@ -1655,117 +1655,128 @@
         return isMyBorrowing || isMyOperation;
     }
 
-    // 重構：實現「點選全部紀錄時，僅顯示日期未過（>= 今天）的紀錄」的邏輯，並根據刪除權限切換按鈕顯示
-    function renderTable() {
-        const tbody = document.getElementById('recordTable');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+    // 重構：實現「點選當週紀錄時，僅顯示當週當日（含）以後紀錄」的邏輯，並根據刪除權限切換按鈕顯示
+function renderTable() {
+    const tbody = document.getElementById('recordTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-        const filterDateStr = document.getElementById('tableFilterDate').value; 
-        const filterMonthStr = document.getElementById('tableFilterMonth').value; 
+    const filterDateStr = document.getElementById('tableFilterDate').value; 
+    const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
-        // 取得當前日期 (格式 YYYY-MM-DD)，用於判斷過期
-        const nowObj = new Date();
-        const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
+    // 取得當前日期 (格式 YYYY-MM-DD)
+    const nowObj = new Date();
+    const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
 
-        let displayBookings = [];
+    // 計算本週日 (Sunday) 到本週六 (Saturday) 的日期範圍
+    const dayOfWeek = nowObj.getDay(); // 0 (週日) ~ 6 (週六)
+    
+    const sundayObj = new Date(nowObj);
+    sundayObj.setDate(nowObj.getDate() - dayOfWeek);
+    const sundayStr = `${sundayObj.getFullYear()}-${String(sundayObj.getMonth() + 1).padStart(2, '0')}-${String(sundayObj.getDate()).padStart(2, '0')}`;
 
-        // 1. 若有選擇「特定單日篩選」
-        if (filterDateStr) {
-            displayBookings = bookings.filter(b => b.date === filterDateStr);
+    const saturdayObj = new Date(nowObj);
+    saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
+    const saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
+
+    let displayBookings = [];
+
+    // 1. 若有選擇「特定單日篩選」
+    if (filterDateStr) {
+        displayBookings = bookings.filter(b => b.date === filterDateStr);
+    } else {
+        // 2. 依據 Tab 模式進行過濾
+        if (currentTableTab === 'current') {
+            // 當週紀錄：僅顯示【當週】且【當日（含）以後】的紀錄 (即 >= 今天 且 <= 本週六)
+            displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
+        } else if (currentTableTab === 'custom') {
+            if (filterMonthStr) {
+                displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
+            } else {
+                displayBookings = [...bookings];
+            }
         } else {
-            // 2. 依據 Tab 模式進行過濾
-            if (currentTableTab === 'current') {
-                // 當月紀錄：過濾當月且日期大於或等於今天
-                displayBookings = bookings.filter(b => b.date.startsWith(currentYearMonth) && b.date >= curDateStr);
-            } else if (currentTableTab === 'custom') {
-                if (filterMonthStr) {
-                    displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
-                } else {
-                    displayBookings = [...bookings];
-                }
-            } else {
-                // 全部紀錄：僅顯示日期還未過（大於等於今天）的紀錄
-                displayBookings = bookings.filter(b => b.date >= curDateStr);
-            }
+            // 全部紀錄：僅顯示日期還未過（大於等於今天）的紀錄
+            displayBookings = bookings.filter(b => b.date >= curDateStr);
         }
-
-        if (displayBookings.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
-            return;
-        }
-
-        const mergedMap = {};
-        displayBookings.forEach(b => {
-            const key = `${b.date}_${b.classroom}_${b.borrower}`;
-            
-            if (!mergedMap[key]) {
-                mergedMap[key] = {
-                    date: b.date,
-                    classroom: b.classroom,
-                    borrower: b.borrower,
-                    operator: b.operator || "未紀錄",
-                    periods: [...b.periods],
-                    ids: [b.id]
-                };
-            } else {
-                b.periods.forEach(p => {
-                    if (!mergedMap[key].periods.includes(p)) {
-                        mergedMap[key].periods.push(p);
-                    }
-                });
-                mergedMap[key].ids.push(b.id);
-            }
-        });
-
-        let mergedList = Object.values(mergedMap);
-
-        mergedList.sort((a, b) => {
-            if (a.date !== b.date) {
-                return new Date(a.date) - new Date(b.date);
-            }
-            
-            const getMinPeriodIdx = (periods) => {
-                if (!periods || periods.length === 0) return 999;
-                const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
-                const validIndexes = indexes.filter(idx => idx !== -1);
-                return validIndexes.length > 0 ? Math.min(...validIndexes) : 999;
-            };
-            
-            const aMinIdx = getMinPeriodIdx(a.periods);
-            const bMinIdx = getMinPeriodIdx(b.periods);
-            
-            if (aMinIdx !== bMinIdx) {
-                return aMinIdx - bMinIdx;
-            }
-            
-            return a.classroom.localeCompare(b.classroom);
-        });
-
-        mergedList.forEach(b => {
-            b.periods.sort((x, y) => {
-                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
-            });
-
-            const tr = document.createElement('tr');
-            const idsString = JSON.stringify(b.ids);
-
-            // 判斷權限：符合條件顯示刪除按鈕，否則顯示無權限提示
-            const hasPermission = canUserDeleteRecord(b);
-            const actionBtnHtml = hasPermission 
-                ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
-                : ``;
-
-            tr.innerHTML = `
-                <td><b>${b.date}</b></td>
-                <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
-                <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
-                <td><b>${b.borrower}</b></td>
-                <td>${actionBtnHtml}</td>
-            `;
-            tbody.appendChild(tr);
-        });
     }
+
+    if (displayBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
+        return;
+    }
+
+    const mergedMap = {};
+    displayBookings.forEach(b => {
+        const key = `${b.date}_${b.classroom}_${b.borrower}`;
+        
+        if (!mergedMap[key]) {
+            mergedMap[key] = {
+                date: b.date,
+                classroom: b.classroom,
+                borrower: b.borrower,
+                operator: b.operator || "未紀錄",
+                periods: [...b.periods],
+                ids: [b.id]
+            };
+        } else {
+            b.periods.forEach(p => {
+                if (!mergedMap[key].periods.includes(p)) {
+                    mergedMap[key].periods.push(p);
+                }
+            });
+            mergedMap[key].ids.push(b.id);
+        }
+    });
+
+    let mergedList = Object.values(mergedMap);
+
+    mergedList.sort((a, b) => {
+        if (a.date !== b.date) {
+            return new Date(a.date) - new Date(b.date);
+        }
+        
+        const getMinPeriodIdx = (periods) => {
+            if (!periods || periods.length === 0) return 999;
+            const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
+            const validIndexes = indexes.filter(idx => idx !== -1);
+            return validIndexes.length > 0 ? Math.min(...validIndexes) : 999;
+        };
+        
+        const aMinIdx = getMinPeriodIdx(a.periods);
+        const bMinIdx = getMinPeriodIdx(b.periods);
+        
+        if (aMinIdx !== bMinIdx) {
+            return aMinIdx - bMinIdx;
+        }
+        
+        return a.classroom.localeCompare(b.classroom);
+    });
+
+    mergedList.forEach(b => {
+        b.periods.sort((x, y) => {
+            return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
+        });
+
+        const tr = document.createElement('tr');
+        const idsString = JSON.stringify(b.ids);
+
+        // 判斷權限：符合條件顯示刪除按鈕，否則顯示無權限提示
+        const hasPermission = canUserDeleteRecord(b);
+        const actionBtnHtml = hasPermission 
+            ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
+            : ``;
+
+        tr.innerHTML = `
+            <td><b>${b.date}</b></td>
+            <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
+            <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
+            <td><b>${b.borrower}</b></td>
+            <td>${actionBtnHtml}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
     function deleteMergedGroup(idsArray) {
         if (!idsArray || idsArray.length === 0) return;
