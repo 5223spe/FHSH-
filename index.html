@@ -475,7 +475,6 @@
             .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: auto !important; grid-auto-rows: minmax(135px, auto) !important; grid-template-areas: none !important; gap: 8px !important; }
             .floor-grid > div:not(.room-card) { display: none !important; }
             
-            /* 修改處 1：讓卡片高度彈性伸長，確保內容完整展示不超出格子 */
             .room-card, .room-card.span-vertical { 
                 grid-row: auto !important; 
                 grid-column: auto !important; 
@@ -774,7 +773,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw4xi2WLf92Ysoeml_D6DlEW2Mi7KBj0pjjVe0E1saJJJ0QU42V2PMhT3QPKGTDg2oC4w/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw0OLO2cuKuiMZidEZ9VBOMvY5L9s8fMEoWXAOJo0DvyC56NDKY9cP4hLQn8k3uwAxcfg/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
     const TRUSTED_GROUP_EMAILS = [
@@ -1351,7 +1350,7 @@
         return "";
     }
 
-    // 修改處 2：簡化節次範圍（例如：第一節～第七節）
+    // 格式化節次範圍（單節/兩節直接顯示或以頓號連結，三節以上連續才顯示範圍符號～）
     function formatPeriodsRange(periodsArray) {
         if (!periodsArray || periodsArray.length === 0) return '';
         if (periodsArray.length === 1) return periodsArray[0];
