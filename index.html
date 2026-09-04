@@ -755,20 +755,6 @@
     </div>
 </div>
 
-<!-- 1. 訪客密碼驗證彈窗 -->
-<div id="guestPasswordModal" class="modal-backdrop" style="display: none; z-index: 100000;">
-  <div class="modal-card">
-    <div class="modal-icon">🔑</div>
-    <h2>訪客身份驗證</h2>
-    <p>第一次進入系統，請輸入通關密碼：</p>
-    <div style="margin-bottom: 15px;">
-      <input type="password" id="guestPasswordInput" placeholder="請輸入密碼" style="width: 100%; padding: 10px; text-align: center; font-size: 16px;">
-    </div>
-    <button class="btn-auth" style="width: 100%; padding: 10px; font-size: 16px;" onclick="verifyGuestPassword()">確認提交</button>
-  </div>
-</div>
-
-<!-- 2. Google 登入彈窗 -->
 <div id="loginModal" class="modal-backdrop" style="display: none;">
   <div class="modal-card">
     <div class="modal-icon">🔒</div>
@@ -779,36 +765,6 @@
 </div>
 
 <script>
-    // --- 訪客密碼驗證機制 ---
-    const GUEST_SECRET_PASS = "fhsh2026"; 
-    const GUEST_AUTH_KEY = "guest_auth_verified";
-
-    function verifyGuestPassword() {
-        const inputPass = document.getElementById('guestPasswordInput').value.trim();
-        if (inputPass === GUEST_SECRET_PASS) {
-            localStorage.setItem(GUEST_AUTH_KEY, "true");
-            document.getElementById('guestPasswordModal').style.display = "none";
-            alert("驗證成功，歡迎使用！");
-            
-            // 訪客驗證成功後，續行檢查 Google 登入狀態
-            checkGoogleLoginState();
-        } else {
-            alert("❌ 密碼錯誤，請重新輸入！");
-        }
-    }
-
-    function checkGuestAuth() {
-        const isVerified = localStorage.getItem(GUEST_AUTH_KEY);
-        if (!isVerified) {
-            document.getElementById('guestPasswordModal').style.display = "flex";
-            return false;
-        } else {
-            document.getElementById('guestPasswordModal').style.display = "none";
-            return true;
-        }
-    }
-
-    // --- 系統原始邏輯 ---
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxraRDv23mcc7h-BMTurmPxBVp0L79MLzUSF_j1izPkTqwkvd3BFkzEYo3ef5sV5MOycQ/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
@@ -833,19 +789,6 @@
         return JSON.parse(jsonPayload);
     }
 
-    function checkGoogleLoginState() {
-        const savedUser = localStorage.getItem('google_user_session');
-        const modal = document.getElementById("loginModal");
-
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            updateAuthUI();
-            if (modal) modal.style.display = "none";
-        } else {
-            if (modal) modal.style.display = "flex";
-        }
-    }
-
     function initGoogleAuth() {
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
@@ -857,9 +800,15 @@
             google.accounts.id.renderButton(modalBtn, { theme: "filled_blue", size: "large", width: 250 });
         }
 
-        // 先進行訪客驗證，過關後才續行檢查 Google 登入
-        if (checkGuestAuth()) {
-            checkGoogleLoginState();
+        const savedUser = localStorage.getItem('google_user_session');
+        const modal = document.getElementById("loginModal");
+
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            updateAuthUI();
+            if (modal) modal.style.display = "none";
+        } else {
+            if (modal) modal.style.display = "flex";
         }
     }
 
