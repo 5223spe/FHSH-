@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+[source: 1]<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -697,16 +697,16 @@
             <div class="form-group">
                 <label>借用節次</label>
                 <div class="checkbox-grid">
-                    <label class="checkbox-item" id="lbl-第一節"><input type="checkbox" name="period" value="第一節"> 第一節 (08:10-09:00)</label>
-                    <label class="checkbox-item" id="lbl-第二節"><input type="checkbox" name="period" value="第二節"> 第二節 (09:10-10:00)</label>
-                    <label class="checkbox-item" id="lbl-第三節"><input type="checkbox" name="period" value="第三節"> 第三節 (10:10-11:00)</label>
-                    <label class="checkbox-item" id="lbl-第四節"><input type="checkbox" name="period" value="第四節"> 第四節 (11:10-12:00)</label>
-                    <label class="checkbox-item" id="lbl-用餐"><input type="checkbox" name="period" value="用餐"> 用餐 (12:10-12:35)</label>
-                    <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 (12:35-13:10)</label>
-                    <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 (13:15-14:05)</label>
-                    <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> <span id="txt-第六節">第六節 (14:15-15:05)</span></label>
-                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> <span id="txt-第七節">第七節 (15:25-16:15)</span></label>
-                    <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 (16:25-17:15)</label>
+                    <label class="checkbox-item" id="lbl-第一節"><input type="checkbox" name="period" value="第一節"> 第一節 <span id="text-第一節">(08:10-09:00)</span></label>
+                    <label class="checkbox-item" id="lbl-第二節"><input type="checkbox" name="period" value="第二節"> 第二節 <span id="text-第二節">(09:10-10:00)</span></label>
+                    <label class="checkbox-item" id="lbl-第三節"><input type="checkbox" name="period" value="第三節"> 第三節 <span id="text-第三節">(10:10-11:00)</span></label>
+                    <label class="checkbox-item" id="lbl-第四節"><input type="checkbox" name="period" value="第四節"> 第四節 <span id="text-第四節">(11:10-12:00)</span></label>
+                    <label class="checkbox-item" id="lbl-用餐"><input type="checkbox" name="period" value="用餐"> 用餐 <span id="text-用餐">(12:10-12:35)</span></label>
+                    <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 <span id="text-午休">(12:35-13:10)</span></label>
+                    <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 <span id="text-第五節">(13:15-14:05)</span></label>
+                    <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> 第六節 <span id="text-第六節">(14:15-15:05)</span></label>
+                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第七節 <span id="text-第七節">(15:25-16:15)</span></label>
+                    <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 <span id="text-第八節">(16:25-17:15)</span></label>
                 </div>
             </div>
 
@@ -867,31 +867,54 @@
         }
     }
 
-    // 💡 依據傳入日期（預設今日）動態取得時段配置，若為星期五則修改第六、七節時間
-    function getPeriodsConfigByDate(dateStr = "") {
-        let isFriday = false;
-        if (dateStr) {
-            const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                isFriday = (d.getDay() === 5);
-            }
+    // 預設 (週一至週四) 節次設定
+    const defaultPeriodsConfig = [
+        { name: "第一節", start: "08:10", end: "09:00" },
+        { name: "第二節", start: "09:10", end: "10:00" },
+        { name: "第三節", start: "10:10", end: "11:00" },
+        { name: "第四節", start: "11:10", end: "12:00" },
+        { name: "用餐",   start: "12:10", end: "12:35" },
+        { name: "午休",   start: "12:35", end: "13:10" },
+        { name: "第五節", start: "13:15", end: "14:05" },
+        { name: "第六節", start: "14:15", end: "15:05" },
+        { name: "第七節", start: "15:25", end: "16:15" },
+        { name: "第八節", start: "16:25", end: "17:15" }
+    ];
+
+    // 星期五專用節次設定
+    const fridayPeriodsConfig = [
+        { name: "第一節", start: "08:10", end: "09:00" },
+        { name: "第二節", start: "09:10", end: "10:00" },
+        { name: "第三節", start: "10:10", end: "11:00" },
+        { name: "第四節", start: "11:10", end: "12:00" },
+        { name: "用餐",   start: "12:10", end: "12:35" },
+        { name: "午休",   start: "12:35", end: "13:10" },
+        { name: "第五節", start: "13:15", end: "14:05" },
+        { name: "第六節", start: "14:25", end: "15:15" }, // 星期五第六節
+        { name: "第七節", start: "15:25", end: "16:15" }, // 星期五第七節
+        { name: "第八節", start: "16:25", end: "17:15" }
+    ];
+
+    let periodsConfig = [...defaultPeriodsConfig];
+
+    // 根據傳入的日期動態更新節次時間與 UI 顯示
+    function updatePeriodsConfigByDate(dateStr) {
+        if (!dateStr) {
+            periodsConfig = [...defaultPeriodsConfig];
         } else {
-            isFriday = (new Date().getDay() === 5);
+            const d = new Date(dateStr.replace(/-/g, '/'));
+            if (d.getDay() === 5) { // 5 代表星期五
+                periodsConfig = [...fridayPeriodsConfig];
+            } else {
+                periodsConfig = [...defaultPeriodsConfig];
+            }
         }
 
-        return [
-            { name: "第一節", start: "08:10", end: "09:00" },
-            { name: "第二節", start: "09:10", end: "10:00" },
-            { name: "第三節", start: "10:10", end: "11:00" },
-            { name: "第四節", start: "11:10", end: "12:00" },
-            { name: "用餐",   start: "12:10", end: "12:35" },
-            { name: "午休",   start: "12:35", end: "13:10" },
-            { name: "第五節", start: "13:15", end: "14:05" },
-            { name: "第六節", start: isFriday ? "14:25" : "14:15", end: isFriday ? "15:15" : "15:05" },
-            { name: "第七節", start: "15:25", end: "16:15" },
-            { name: "第八節", start: "16:25", end: "17:15" }
-        ];
+        // 更新介面上的文字顯示
+        periodsConfig.forEach(p => {
+            const txt = document.getElementById(`text-${p.name}`);
+            if (txt) txt.textContent = `(${p.start}-${p.end})`;
+        });
     }
 
     const classroomListData = [
@@ -1216,20 +1239,10 @@
             }
         });
     });
-    
+
     function refreshCheckboxStates(selectedRoom, selectedDatesArray, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         
-        // 💡 更新表單的第六節文字，若選取的日期包含星期五則切換標示
-        const txt6 = document.getElementById('txt-第六節');
-        if (txt6) {
-            const hasFriday = selectedDatesArray.some(d => {
-                const parts = d.split('-');
-                return parts.length === 3 && new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getDay() === 5;
-            });
-            txt6.textContent = hasFriday ? "第六節 (14:25-15:15)" : "第六節 (14:15-15:05)";
-        }
-
         const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && selectedDatesArray.includes(b.date)) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
@@ -1241,13 +1254,9 @@
         const isPastDate = selectedDatesArray.some(d => d < curDateStr);
         const isTodaySelected = selectedDatesArray.includes(curDateStr);
 
-        // 取得主要參考日期的時段表
-        const refDate = selectedDatesArray.length > 0 ? selectedDatesArray[0] : curDateStr;
-        const currentPeriodsConfig = getPeriodsConfigByDate(refDate);
-
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
-            const periodInfo = currentPeriodsConfig.find(p => p.name === cb.value);
+            const periodInfo = periodsConfig.find(p => p.name === cb.value);
             
             const isOccupied = allOccupiedPeriods.includes(cb.value);
 
@@ -1283,6 +1292,13 @@
     }
 
     function handleClassroomOrDateChange() {
+        if (selectedDatesList.length > 0) {
+            updatePeriodsConfigByDate(selectedDatesList[0]);
+        } else {
+            const mapDateVal = document.getElementById('mapDate').value;
+            updatePeriodsConfigByDate(mapDateVal);
+        }
+
         const room = document.getElementById('classroom').value;
         refreshCheckboxStates(room, selectedDatesList);
     }
@@ -1290,7 +1306,9 @@
     function executeSmartBooking(room, evt) {
         const chosenDate = document.getElementById('mapDate').value; 
         const chosenTime = document.getElementById('mapTime').value;
-        const currentP = getCurrentPeriod(chosenTime, chosenDate);
+        
+        updatePeriodsConfigByDate(chosenDate);
+        const currentP = getCurrentPeriod(chosenTime);
         
         document.getElementById('classroom').value = room;
         
@@ -1346,12 +1364,11 @@
         });
     });
 
-    function getCurrentPeriod(time, dateStr = "") {
-        const activeConfig = getPeriodsConfigByDate(dateStr);
-        const found = activeConfig.find(p => time >= p.start && time <= p.end);
+    function getCurrentPeriod(time) {
+        const found = periodsConfig.find(p => time >= p.start && time <= p.end);
         if (found) return found.name;
 
-        const nextPeriod = activeConfig.find(p => time < p.start);
+        const nextPeriod = periodsConfig.find(p => time < p.start);
         if (nextPeriod) {
             return nextPeriod.name; 
         }
@@ -1362,18 +1379,18 @@
         const date = document.getElementById('mapDate').value;
         const time = document.getElementById('mapTime').value; 
         
-        const activeConfig = getPeriodsConfigByDate(date);
-        
-        let currentPeriodIdx = activeConfig.findIndex(p => time >= p.start && time <= p.end);
+        updatePeriodsConfigByDate(date);
+
+        let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
         let isBreakTime = false;
 
         if (currentPeriodIdx === -1) {
             isBreakTime = true;
-            currentPeriodIdx = activeConfig.findIndex(p => time < p.start);
+            currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
             if (currentPeriodIdx === -1) currentPeriodIdx = 10;
         }
 
-        const currentP = getCurrentPeriod(time, date);
+        const currentP = getCurrentPeriod(time);
         const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
 
         rooms.forEach(room => {
@@ -1388,7 +1405,7 @@
             const allReservedPeriods = [];
             roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
 
-            const upcomingList = activeConfig.filter((p, idx) => {
+            const upcomingList = periodsConfig.filter((p, idx) => {
                 const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
                 return isAfterCurrent && allReservedPeriods.includes(p.name);
             }).map(p => p.name);
@@ -1457,9 +1474,10 @@
                 }
             }
 
-            // 💡 動態依據當日第六節結束與第七節開始時間判斷下課與交接狀態
-            const p6Obj = activeConfig.find(p => p.name === "第六節");
-            const p7Obj = activeConfig.find(p => p.name === "第七節");
+            const p6Obj = periodsConfig.find(p => p.name === "第六節");
+            const p7Obj = periodsConfig.find(p => p.name === "第七節");
+            const p8Obj = periodsConfig.find(p => p.name === "第八節");
+
             if (p6Obj && p7Obj && time >= p6Obj.end && time < p7Obj.start) {
                 const p6Booking = roomBookings.find(b => b.periods.includes("第六節"));
                 const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
@@ -1497,7 +1515,7 @@
                 }
             }
 
-            if (time >= "16:15" && time < "16:25") {
+            if (p7Obj && p8Obj && time >= p7Obj.end && time < p8Obj.start) {
                 const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
                 const p8Booking = roomBookings.find(b => b.periods.includes("第八節"));
 
@@ -1532,7 +1550,7 @@
                 }
             }
 
-            if (time >= "17:15" && time < "17:25") {
+            if (p8Obj && time >= p8Obj.end && time < "17:25") {
                 const eighthBooking = roomBookings.find(b => b.periods.includes("第八節"));
                 if (eighthBooking) {
                     card.className = isVertical ? 'room-card span-vertical clearing' : 'room-card clearing';
@@ -1561,8 +1579,8 @@
             }
 
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
-                const prevPeriodObj = activeConfig[currentPeriodIdx - 1]; 
-                const nextPeriodObj = activeConfig[currentPeriodIdx];     
+                const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
+                const nextPeriodObj = periodsConfig[currentPeriodIdx];     
                 
                 const prevP = prevPeriodObj ? prevPeriodObj.name : null;
                 const nextP = nextPeriodObj ? nextPeriodObj.name : null;
@@ -1770,17 +1788,15 @@
                 return new Date(a.date) - new Date(b.date);
             }
             
-            const getMinPeriodIdx = (record) => {
-                const periods = record.periods;
+            const getMinPeriodIdx = (periods) => {
                 if (!periods || periods.length === 0) return 999;
-                const activeConfig = getPeriodsConfigByDate(record.date);
-                const indexes = periods.map(name => activeConfig.findIndex(p => p.name === name));
+                const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
                 const validIndexes = indexes.filter(idx => idx !== -1);
                 return validIndexes.length > 0 ? Math.min(...validIndexes) : 999;
             };
             
-            const aMinIdx = getMinPeriodIdx(a);
-            const bMinIdx = getMinPeriodIdx(b);
+            const aMinIdx = getMinPeriodIdx(a.periods);
+            const bMinIdx = getMinPeriodIdx(b.periods);
             
             if (aMinIdx !== bMinIdx) {
                 return aMinIdx - bMinIdx;
@@ -1790,9 +1806,8 @@
         });
 
         mergedList.forEach(b => {
-            const activeConfig = getPeriodsConfigByDate(b.date);
             b.periods.sort((x, y) => {
-                return activeConfig.findIndex(p => p.name === x) - activeConfig.findIndex(p => p.name === y);
+                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
             });
 
             const tr = document.createElement('tr');
