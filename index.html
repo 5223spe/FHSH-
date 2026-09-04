@@ -472,18 +472,9 @@
             .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
             .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
             .floor-grid-wrapper { padding: 8px !important; }
-            .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: auto !important; grid-auto-rows: minmax(135px, auto) !important; grid-template-areas: none !important; gap: 8px !important; }
+            .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
             .floor-grid > div:not(.room-card) { display: none !important; }
-            
-            .room-card, .room-card.span-vertical { 
-                grid-row: auto !important; 
-                grid-column: auto !important; 
-                height: auto !important; 
-                min-height: 135px !important; 
-                padding: 12px 6px !important; 
-                border-radius: 10px !important; 
-            }
-            
+            .room-card, .room-card.span-vertical { grid-row: auto !important; grid-column: auto !important; height: 100% !important; min-height: 0 !important; padding: 12px 6px !important; border-radius: 10px !important; }
             .room-name { font-size: 18px !important; margin-bottom: 4px !important; }
             .room-info { font-size: 12px !important; }
             .status-badge { font-size: 11px !important; padding: 2px 10px !important; margin-bottom: 4px !important; }
@@ -713,8 +704,8 @@
                     <label class="checkbox-item" id="lbl-用餐"><input type="checkbox" name="period" value="用餐"> 用餐 (12:10-12:35)</label>
                     <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 (12:35-13:10)</label>
                     <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 (13:15-14:05)</label>
-                    <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> 第六節 (14:15-15:05)</label>
-                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第七節 (15:25-16:15)</label>
+                    <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> <span id="txt-第六節">第六節 (14:15-15:05)</span></label>
+                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> <span id="txt-第七節">第七節 (15:25-16:15)</span></label>
                     <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 (16:25-17:15)</label>
                 </div>
             </div>
@@ -724,28 +715,29 @@
     </div>
 
     <!-- 最近借用紀錄清單區塊 -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="margin: 0;">最近借用紀錄清單</h2>
-            
-            <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="tab-btn active" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
-                <button type="button" class="tab-btn" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
-                <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
-                <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h2 style="margin: 0;">最近借用紀錄清單</h2>
+        
+        <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <!-- 新增當天紀錄按鈕 -->
+            <button type="button" class="tab-btn active" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
+            <button type="button" class="tab-btn" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
+            <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
+            <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
-                <!-- 指定月份選擇器 (預設隱藏) -->
-                <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
-                    <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-                </div>
+            <!-- 指定月份選擇器 (預設隱藏) -->
+            <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
+                <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+            </div>
 
-                <!-- 單日篩選器 -->
-                <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
-                    <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
-                    <button type="button" class="btn-clear-filter" onclick="clearTableFilters()">清除</button>
-                </div>
+            <!-- 單日篩選器 -->
+            <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
+                <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
+                <button type="button" class="btn-clear-filter" onclick="clearTableFilters()">清除</button>
             </div>
         </div>
+    </div>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -773,9 +765,10 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw0OLO2cuKuiMZidEZ9VBOMvY5L9s8fMEoWXAOJo0DvyC56NDKY9cP4hLQn8k3uwAxcfg/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxraRDv23mcc7h-BMTurmPxBVp0L79MLzUSF_j1izPkTqwkvd3BFkzEYo3ef5sV5MOycQ/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
+    // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
     const TRUSTED_GROUP_EMAILS = [
         "spe@fhsh.khc.edu.tw",
         "11308@fhsh.khc.edu.tw",
@@ -874,18 +867,32 @@
         }
     }
 
-    const periodsConfig = [
-        { name: "第一節", start: "08:10", end: "09:00" },
-        { name: "第二節", start: "09:10", end: "10:00" },
-        { name: "第三節", start: "10:10", end: "11:00" },
-        { name: "第四節", start: "11:10", end: "12:00" },
-        { name: "用餐",   start: "12:10", end: "12:35" },
-        { name: "午休",   start: "12:35", end: "13:10" },
-        { name: "第五節", start: "13:15", end: "14:05" },
-        { name: "第六節", start: "14:15", end: "15:05" },
-        { name: "第七節", start: "15:25", end: "16:15" },
-        { name: "第八節", start: "16:25", end: "17:15" }
-    ];
+    // 💡 依據傳入日期（預設今日）動態取得時段配置，若為星期五則修改第六、七節時間
+    function getPeriodsConfigByDate(dateStr = "") {
+        let isFriday = false;
+        if (dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                isFriday = (d.getDay() === 5);
+            }
+        } else {
+            isFriday = (new Date().getDay() === 5);
+        }
+
+        return [
+            { name: "第一節", start: "08:10", end: "09:00" },
+            { name: "第二節", start: "09:10", end: "10:00" },
+            { name: "第三節", start: "10:10", end: "11:00" },
+            { name: "第四節", start: "11:10", end: "12:00" },
+            { name: "用餐",   start: "12:10", end: "12:35" },
+            { name: "午休",   start: "12:35", end: "13:10" },
+            { name: "第五節", start: "13:15", end: "14:05" },
+            { name: "第六節", start: isFriday ? "14:25" : "14:15", end: isFriday ? "15:15" : "15:05" },
+            { name: "第七節", start: "15:25", end: "16:15" },
+            { name: "第八節", start: "16:25", end: "17:15" }
+        ];
+    }
 
     const classroomListData = [
         "前個諮",
@@ -922,32 +929,35 @@
     document.getElementById('tableFilterMonth').value = currentYearMonth;
 
     function switchTableTab(mode) {
-        currentTableTab = mode;
-        
-        const tabToday = document.getElementById('tabToday');
-        if (tabToday) tabToday.classList.toggle('active', mode === 'today');
-        
-        document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
-        document.getElementById('tabAll').classList.toggle('active', mode === 'all');
-        document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
+    currentTableTab = mode;
+    
+    // 切換頁籤按鈕的高亮狀態
+    const tabToday = document.getElementById('tabToday');
+    if (tabToday) tabToday.classList.toggle('active', mode === 'today');
+    
+    document.getElementById('tabCurrentMonth').classList.toggle('active', mode === 'current');
+    document.getElementById('tabAll').classList.toggle('active', mode === 'all');
+    document.getElementById('tabCustomMonth').classList.toggle('active', mode === 'custom');
 
-        const monthWrapper = document.getElementById('monthPickerWrapper');
-        if (monthWrapper) {
-            monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
-        }
-
-        renderTable();
+    const monthWrapper = document.getElementById('monthPickerWrapper');
+    if (monthWrapper) {
+        monthWrapper.style.display = (mode === 'custom') ? 'inline-flex' : 'none';
     }
+
+    renderTable();
+}
 
     function handleSingleDateChange() {
         renderTable();
     }
 
     function clearTableFilters() {
-        document.getElementById('tableFilterDate').value = '';
-        document.getElementById('tableFilterMonth').value = '';
-        switchTableTab('today'); 
-    }
+    document.getElementById('tableFilterDate').value = '';
+    document.getElementById('tableFilterMonth').value = '';
+    
+    // 清除後回到當天紀錄頁籤
+    switchTableTab('today'); 
+}
 
     function renderSelectedDates() {
         const container = document.getElementById('selectedDatesContainer');
@@ -1007,34 +1017,19 @@
 
     function formatSafeDate(dateInput) {
         if (!dateInput) return "";
-        let dt = new Date(dateInput);
-        if (isNaN(dt.getTime())) {
-            let str = String(dateInput).trim();
-            const match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-            if (match) {
-                return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+        let dateStr = String(dateInput);
+        if (dateStr.includes('T')) {
+            let d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr.split('T')[0];
+            if (d.getUTCHours() === 16 || dateStr.includes('16:00:00')) {
+                d.setUTCDate(d.getUTCDate() + 1);
+                return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
             }
-            return str;
+            let userOffset = d.getTimezoneOffset() * 60000;
+            let localDate = new Date(d.getTime() + Math.abs(userOffset));
+            return `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
         }
-        return dt.toLocaleDateString('sv-SE');
-    }
-
-    function cleanSheetOldRows(rows) {
-        if (!Array.isArray(rows)) return [];
-        return rows.map(row => {
-            if (!row) return row;
-            let rawDate = row.date || row[0] || "";
-            let cleanedDate = formatSafeDate(rawDate);
-            
-            if (typeof row === 'object' && !Array.isArray(row)) {
-                return { ...row, date: cleanedDate };
-            } else if (Array.isArray(row)) {
-                let newRow = [...row];
-                newRow[0] = cleanedDate;
-                return newRow;
-            }
-            return row;
-        });
+        return dateStr.replace(/\//g, '-').trim();
     }
 
     async function loadBookingsFromServer(forceRefresh = false) {
@@ -1077,10 +1072,8 @@
             bookingSource = rawData.data;
         }
 
-        bookingSource = cleanSheetOldRows(bookingSource);
-
         bookings = bookingSource
-            .filter(b => b && !pendingDeletedIds.has(b.id))
+            .filter(b => !pendingDeletedIds.has(b.id))
             .map(b => {
                 b.date = formatSafeDate(b.date);
                 return b;
@@ -1227,6 +1220,16 @@
     function refreshCheckboxStates(selectedRoom, selectedDatesArray, currentPeriodToAutoCheck = "") {
         const checkboxes = document.querySelectorAll('input[name="period"]');
         
+        // 💡 更新表單的第六節文字，若選取的日期包含星期五則切換標示
+        const txt6 = document.getElementById('txt-第六節');
+        if (txt6) {
+            const hasFriday = selectedDatesArray.some(d => {
+                const parts = d.split('-');
+                return parts.length === 3 && new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getDay() === 5;
+            });
+            txt6.textContent = hasFriday ? "第六節 (14:25-15:15)" : "第六節 (14:15-15:05)";
+        }
+
         const activeBookings = selectedRoom ? bookings.filter(b => b.classroom === selectedRoom && selectedDatesArray.includes(b.date)) : [];
         const allOccupiedPeriods = [];
         activeBookings.forEach(b => allOccupiedPeriods.push(...b.periods));
@@ -1238,9 +1241,13 @@
         const isPastDate = selectedDatesArray.some(d => d < curDateStr);
         const isTodaySelected = selectedDatesArray.includes(curDateStr);
 
+        // 取得主要參考日期的時段表
+        const refDate = selectedDatesArray.length > 0 ? selectedDatesArray[0] : curDateStr;
+        const currentPeriodsConfig = getPeriodsConfigByDate(refDate);
+
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
-            const periodInfo = periodsConfig.find(p => p.name === cb.value);
+            const periodInfo = currentPeriodsConfig.find(p => p.name === cb.value);
             
             const isOccupied = allOccupiedPeriods.includes(cb.value);
 
@@ -1283,7 +1290,7 @@
     function executeSmartBooking(room, evt) {
         const chosenDate = document.getElementById('mapDate').value; 
         const chosenTime = document.getElementById('mapTime').value;
-        const currentP = getCurrentPeriod(chosenTime);
+        const currentP = getCurrentPeriod(chosenTime, chosenDate);
         
         document.getElementById('classroom').value = room;
         
@@ -1339,55 +1346,34 @@
         });
     });
 
-    function getCurrentPeriod(time) {
-        const found = periodsConfig.find(p => time >= p.start && time <= p.end);
+    function getCurrentPeriod(time, dateStr = "") {
+        const activeConfig = getPeriodsConfigByDate(dateStr);
+        const found = activeConfig.find(p => time >= p.start && time <= p.end);
         if (found) return found.name;
 
-        const nextPeriod = periodsConfig.find(p => time < p.start);
+        const nextPeriod = activeConfig.find(p => time < p.start);
         if (nextPeriod) {
             return nextPeriod.name; 
         }
         return "";
     }
 
-    // 格式化節次範圍（單節/兩節直接顯示或以頓號連結，三節以上連續才顯示範圍符號～）
-    function formatPeriodsRange(periodsArray) {
-        if (!periodsArray || periodsArray.length === 0) return '';
-        if (periodsArray.length === 1) return periodsArray[0];
-
-        const indexedPeriods = periodsArray.map(p => ({
-            name: p,
-            idx: periodsConfig.findIndex(item => item.name === p)
-        })).sort((a, b) => a.idx - b.idx);
-
-        let isConsecutive = true;
-        for (let i = 0; i < indexedPeriods.length - 1; i++) {
-            if (indexedPeriods[i + 1].idx !== indexedPeriods[i].idx + 1) {
-                isConsecutive = false;
-                break;
-            }
-        }
-
-        if (isConsecutive && indexedPeriods.length > 2) {
-            return `${indexedPeriods[0].name}～${indexedPeriods[indexedPeriods.length - 1].name}`;
-        }
-        return periodsArray.join('、');
-    }
-
     function updateDashboard() {
         const date = document.getElementById('mapDate').value;
         const time = document.getElementById('mapTime').value; 
         
-        let currentPeriodIdx = periodsConfig.findIndex(p => time >= p.start && time <= p.end);
+        const activeConfig = getPeriodsConfigByDate(date);
+        
+        let currentPeriodIdx = activeConfig.findIndex(p => time >= p.start && time <= p.end);
         let isBreakTime = false;
 
         if (currentPeriodIdx === -1) {
             isBreakTime = true;
-            currentPeriodIdx = periodsConfig.findIndex(p => time < p.start);
+            currentPeriodIdx = activeConfig.findIndex(p => time < p.start);
             if (currentPeriodIdx === -1) currentPeriodIdx = 10;
         }
 
-        const currentP = getCurrentPeriod(time);
+        const currentP = getCurrentPeriod(time, date);
         const rooms = ['前小向', '後小向', '向圓', '團輔室', '前個諮', '後個諮', '6F潛能教室', '6F資藝教室', '6F Z空間'];
 
         rooms.forEach(room => {
@@ -1402,7 +1388,7 @@
             const allReservedPeriods = [];
             roomBookings.forEach(b => allReservedPeriods.push(...b.periods));
 
-            const upcomingList = periodsConfig.filter((p, idx) => {
+            const upcomingList = activeConfig.filter((p, idx) => {
                 const isAfterCurrent = !isBreakTime ? (idx > currentPeriodIdx) : (idx >= currentPeriodIdx);
                 return isAfterCurrent && allReservedPeriods.includes(p.name);
             }).map(p => p.name);
@@ -1410,13 +1396,18 @@
             function generateUpcomingGridHtml(prefixText) {
                 if (upcomingList.length === 0) return '';
                 
-                const formattedRange = formatPeriodsRange(upcomingList);
+                const periodSpans = upcomingList.map((p, idx) => {
+                    const separator = (idx === upcomingList.length - 1) ? '' : '、';
+                    return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                }).join('');
                 
                 return `
                     <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top: 4px; line-height: 1.4; font-size: 11px; width: 100%;">
                         <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%;">
                             <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500; flex-shrink: 0;">${prefixText}</span>
-                            <span style="color:#e06666; font-size: 11px; font-weight: 500;">${formattedRange}</span>
+                            <div style="display: inline-flex; flex-wrap: wrap; justify-content: center;">
+                                ${periodSpans}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1447,13 +1438,16 @@
                     
                     const remainingUpcoming = upcomingList.filter(p => p !== "第一節");
                     if (remainingUpcoming.length > 0) {
-                        const remainingRange = formatPeriodsRange(remainingUpcoming);
+                        const remainingSpans = remainingUpcoming.map((p, idx) => {
+                            const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
+                            return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                        }).join('');
                         htmlContent += `
                             <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
                                 <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
                                     <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
                                         <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
-                                        <span style="color:#e06666; font-size: 11px; font-weight: 500;">${remainingRange}</span>
+                                        ${remainingSpans}
                                     </div>
                                 </div>
                             </div>`;
@@ -1463,7 +1457,10 @@
                 }
             }
 
-            if (time >= "15:05" && time < "15:25") {
+            // 💡 動態依據當日第六節結束與第七節開始時間判斷下課與交接狀態
+            const p6Obj = activeConfig.find(p => p.name === "第六節");
+            const p7Obj = activeConfig.find(p => p.name === "第七節");
+            if (p6Obj && p7Obj && time >= p6Obj.end && time < p7Obj.start) {
                 const p6Booking = roomBookings.find(b => b.periods.includes("第六節"));
                 const p7Booking = roomBookings.find(b => b.periods.includes("第七節"));
 
@@ -1564,8 +1561,8 @@
             }
 
             if (isBreakTime && currentPeriodIdx >= 0 && currentPeriodIdx < 8) {
-                const prevPeriodObj = periodsConfig[currentPeriodIdx - 1]; 
-                const nextPeriodObj = periodsConfig[currentPeriodIdx];     
+                const prevPeriodObj = activeConfig[currentPeriodIdx - 1]; 
+                const nextPeriodObj = activeConfig[currentPeriodIdx];     
                 
                 const prevP = prevPeriodObj ? prevPeriodObj.name : null;
                 const nextP = nextPeriodObj ? nextPeriodObj.name : null;
@@ -1602,13 +1599,16 @@
                         
                         const remainingUpcoming = upcomingList.filter(p => p !== nextP);
                         if (remainingUpcoming.length > 0) {
-                            const remainingRange = formatPeriodsRange(remainingUpcoming);
+                            const remainingSpans = remainingUpcoming.map((p, idx) => {
+                                const separator = (idx === remainingUpcoming.length - 1) ? '' : '、';
+                                return `<span style="color:#e06666; white-space:nowrap; font-size: 11px; font-weight: 500;">${p}${separator}</span>`;
+                            }).join('');
                             htmlContent += `
                                 <div style="margin-top:4px;border-top:1px dashed #fcdede;padding-top:2px;">
                                     <div style="display: flex; justify-content: center; align-items: center; text-align: center; line-height: 1.4; font-size: 11px; width: 100%;">
                                         <div style="display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center;">
                                             <span style="white-space: nowrap; color: var(--palette-teal); font-weight: 500;">⏳ 後續：</span>
-                                            <span style="color:#e06666; font-size: 11px; font-weight: 500;">${remainingRange}</span>
+                                            ${remainingSpans}
                                         </div>
                                     </div>
                                 </div>`;
@@ -1659,6 +1659,7 @@
         });
     }
 
+    // 💡 判斷當前登入者是否有權限刪除特定的預約資料
     function canUserDeleteRecord(bookingRecord) {
         if (!currentUser || !currentUser.email) return false;
 
@@ -1668,6 +1669,7 @@
         const borrowerName = bookingRecord.borrower || "";
         const operatorInfo = bookingRecord.operator || "";
 
+        // 1. 檢查是否屬於信任的三帳號互刪情境
         const isUserInGroup = TRUSTED_GROUP_EMAILS.includes(myEmail);
         
         if (isUserInGroup) {
@@ -1679,6 +1681,7 @@
             }
         }
 
+        // 2. 一般權限判斷：借用人是自己 或 幫忙登記的操作者是自己
         const isMyBorrowing = (myName && borrowerName === myName);
         const isMyOperation = operatorInfo.includes(myEmail);
 
@@ -1686,43 +1689,51 @@
     }
 
     function renderTable() {
-        const tbody = document.getElementById('recordTable');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+    const tbody = document.getElementById('recordTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-        const filterDateStr = document.getElementById('tableFilterDate').value; 
-        const filterMonthStr = document.getElementById('tableFilterMonth').value; 
+    const filterDateStr = document.getElementById('tableFilterDate').value; 
+    const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
-        const nowObj = new Date();
-        const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
+    // 取得當前日期 (格式 YYYY-MM-DD)
+    const nowObj = new Date();
+    const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
 
-        const dayOfWeek = nowObj.getDay();
-        const sundayObj = new Date(nowObj);
-        sundayObj.setDate(nowObj.getDate() - dayOfWeek);
+    // 計算本週日到本週六的日期範圍
+    const dayOfWeek = nowObj.getDay();
+    const sundayObj = new Date(nowObj);
+    sundayObj.setDate(nowObj.getDate() - dayOfWeek);
+    const sundayStr = `${sundayObj.getFullYear()}-${String(sundayObj.getMonth() + 1).padStart(2, '0')}-${String(sundayObj.getDate()).padStart(2, '0')}`;
 
-        const saturdayObj = new Date(nowObj);
-        saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
-        const saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
+    const saturdayObj = new Date(nowObj);
+    saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
+    saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
 
-        let displayBookings = [];
+    let displayBookings = [];
 
-        if (filterDateStr) {
-            displayBookings = bookings.filter(b => b.date === filterDateStr);
-        } else {
-            if (currentTableTab === 'today') {
-                displayBookings = bookings.filter(b => b.date === curDateStr);
-            } else if (currentTableTab === 'current') {
-                displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
-            } else if (currentTableTab === 'custom') {
-                if (filterMonthStr) {
-                    displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
-                } else {
-                    displayBookings = [...bookings];
-                }
+    // 1. 若有選擇「特定單日篩選」
+    if (filterDateStr) {
+        displayBookings = bookings.filter(b => b.date === filterDateStr);
+    } else {
+        // 2. 依據 Tab 模式進行過濾
+        if (currentTableTab === 'today') {
+            // 當天紀錄：僅顯示今天的借用資料
+            displayBookings = bookings.filter(b => b.date === curDateStr);
+        } else if (currentTableTab === 'current') {
+            // 當週紀錄：顯示當週且當日（含）以後紀錄
+            displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
+        } else if (currentTableTab === 'custom') {
+            if (filterMonthStr) {
+                displayBookings = bookings.filter(b => b.date.startsWith(filterMonthStr));
             } else {
-                displayBookings = bookings.filter(b => b.date >= curDateStr);
+                displayBookings = [...bookings];
             }
+        } else {
+            // 全部紀錄：顯示未來的紀錄
+            displayBookings = bookings.filter(b => b.date >= curDateStr);
         }
+    }
 
         if (displayBookings.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">目前無符合條件的預約登記紀錄。</td></tr>`;
@@ -1759,15 +1770,17 @@
                 return new Date(a.date) - new Date(b.date);
             }
             
-            const getMinPeriodIdx = (periods) => {
+            const getMinPeriodIdx = (record) => {
+                const periods = record.periods;
                 if (!periods || periods.length === 0) return 999;
-                const indexes = periods.map(name => periodsConfig.findIndex(p => p.name === name));
+                const activeConfig = getPeriodsConfigByDate(record.date);
+                const indexes = periods.map(name => activeConfig.findIndex(p => p.name === name));
                 const validIndexes = indexes.filter(idx => idx !== -1);
                 return validIndexes.length > 0 ? Math.min(...validIndexes) : 999;
             };
             
-            const aMinIdx = getMinPeriodIdx(a.periods);
-            const bMinIdx = getMinPeriodIdx(b.periods);
+            const aMinIdx = getMinPeriodIdx(a);
+            const bMinIdx = getMinPeriodIdx(b);
             
             if (aMinIdx !== bMinIdx) {
                 return aMinIdx - bMinIdx;
@@ -1777,24 +1790,24 @@
         });
 
         mergedList.forEach(b => {
+            const activeConfig = getPeriodsConfigByDate(b.date);
             b.periods.sort((x, y) => {
-                return periodsConfig.findIndex(p => p.name === x) - periodsConfig.findIndex(p => p.name === y);
+                return activeConfig.findIndex(p => p.name === x) - activeConfig.findIndex(p => p.name === y);
             });
 
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
 
+            // 判斷權限：符合條件顯示刪除按鈕，否則不顯示
             const hasPermission = canUserDeleteRecord(b);
             const actionBtnHtml = hasPermission 
                 ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
                 : ``;
 
-            const formattedTablePeriods = formatPeriodsRange(b.periods);
-
             tr.innerHTML = `
                 <td><b>${b.date}</b></td>
                 <td style="color:var(--palette-blue-2);font-weight:700;">${b.classroom}</td>
-                <td><span style="color:var(--palette-teal);font-weight:500;">${formattedTablePeriods}</span></td>
+                <td><span style="color:var(--palette-teal);font-weight:500;">${b.periods.join(', ')}</span></td>
                 <td><b>${b.borrower}</b></td>
                 <td>${actionBtnHtml}</td>
             `;
@@ -1859,7 +1872,7 @@
         });
     }
 
-    document.getElementById('bookingForm').onsubmit = async function(e) {
+   document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
@@ -1894,43 +1907,40 @@
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
         if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
 
+        let conflictDetails = [];
+        selectedDatesList.forEach(d => {
+            const safeD = formatSafeDate(d);
+            selectedPeriods.forEach(p => {
+                const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
+                if (isConflicted) {
+                    conflictDetails.push(`${safeD} (${p})`);
+                }
+            });
+        });
+
+        if (conflictDetails.length > 0) { 
+            alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
+            return; 
+        }
+
         submitBtn.disabled = true;
-        submitBtn.textContent = '即時驗證與登記中...';
+        submitBtn.textContent = '批次登記中...';
+
+        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
+
+        // 打包所有選擇的日期
+        const items = selectedDatesList.map((targetDate, index) => {
+            return {
+                id: Date.now() + index + Math.floor(Math.random() * 1000),
+                borrower,
+                classroom,
+                date: formatSafeDate(targetDate),
+                periods: selectedPeriods,
+                operator: operatorName
+            };
+        });
 
         try {
-            await loadBookingsFromServer(true);
-
-            let conflictDetails = [];
-            selectedDatesList.forEach(d => {
-                const safeD = formatSafeDate(d);
-                selectedPeriods.forEach(p => {
-                    const matchedBooking = bookings.find(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
-                    if (matchedBooking) {
-                        conflictDetails.push(`• ${safeD} (${p})：已被【${matchedBooking.borrower}】借用`);
-                    }
-                });
-            });
-
-            if (conflictDetails.length > 0) { 
-                alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n\n${conflictDetails.join('\n')}\n\n已為您更新最新狀態，請調整後重新選擇。`); 
-                submitBtn.disabled = false;
-                submitBtn.textContent = '確認提交借用登記';
-                return; 
-            }
-
-            const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
-
-            const items = selectedDatesList.map((targetDate, index) => {
-                return {
-                    id: Date.now() + index + Math.floor(Math.random() * 1000),
-                    borrower,
-                    classroom,
-                    date: formatSafeDate(targetDate),
-                    periods: selectedPeriods,
-                    operator: operatorName
-                };
-            });
-
             const payload = { action: 'batchCreate', items: items };
             const res = await fetch(GAS_URL, { 
                 method: 'POST', 
