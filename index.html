@@ -873,6 +873,19 @@
     }
 
     function loginAsGuest() {
+        const isVerified = localStorage.getItem('guest_pwd_verified');
+        if (isVerified !== 'true') {
+            const pwd = prompt("請輸入訪客登入密碼：");
+            if (pwd === "fhsh0127") {
+                localStorage.setItem('guest_pwd_verified', 'true');
+            } else if (pwd !== null) {
+                alert("❌ 密碼錯誤，無法以訪客身分登入！");
+                return;
+            } else {
+                return;
+            }
+        }
+
         currentUser = {
             name: "訪客",
             email: "guest@fhsh.khc.edu.tw",
