@@ -116,6 +116,23 @@
             transform: scale(1.03);
         }
 
+        .btn-guest {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .btn-guest:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         input[type="date"], input[type="time"], input[type="month"] {
             cursor: pointer;
         }
@@ -545,8 +562,27 @@
 
         .modal-icon { font-size: 48px; margin-bottom: 12px; }
         .modal-card h2 { margin: 0 0 10px 0; color: #1f2937; font-size: 22px; }
-        .modal-card p { color: #4b5563; font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
-        #modalGoogleBtn { display: flex; justify-content: center; }
+        .modal-card p { color: #4b5563; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+        #modalGoogleBtn { display: flex; justify-content: center; margin-bottom: 15px; }
+
+        .btn-guest-modal {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-guest-modal:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+
         @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
@@ -555,8 +591,9 @@
 <header>
     <div class="auth-banner" id="authBanner">
         <div id="authContent" class="auth-container">
-            <span>🔒 請登入 Google 帳號</span>
-            <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
+            <span>🔒 請登入帳號以使用完整功能</span>
+            <button class="btn-auth" onclick="promptGoogleLogin()">Google 登入</button>
+            <button class="btn-guest" onclick="loginAsGuest()">訪客身分繼續</button>
         </div>
     </div>
 
@@ -758,9 +795,10 @@
 <div id="loginModal" class="modal-backdrop" style="display: none;">
   <div class="modal-card">
     <div class="modal-icon">🔒</div>
-    <h2>請先登入系統</h2>
-    <p>為了記錄借用與管理權限，第一次使用請先完成 Google 帳號登入。</p>
+    <h2>請選擇身分進入系統</h2>
+    <p>你可以使用 Google 帳號登入（推薦教職員使用）或直接以訪客身分進行預約與瀏覽。</p>
     <div id="modalGoogleBtn"></div>
+    <button class="btn-guest-modal" onclick="loginAsGuest()">以訪客身分繼續 👤</button>
   </div>
 </div>
 
@@ -821,13 +859,34 @@
         currentUser = {
             name: payload.name,
             email: payload.email,
-            picture: payload.picture
+            picture: payload.picture,
+            isGuest: false
         };
 
         localStorage.setItem('google_user_session', JSON.stringify(currentUser));
         updateAuthUI();
 
         autoSetBorrowerName();
+
+        const modal = document.getElementById("loginModal");
+        if (modal) modal.style.display = "none";
+    }
+
+    function loginAsGuest() {
+        currentUser = {
+            name: "訪客",
+            email: "guest@fhsh.khc.edu.tw",
+            isGuest: true
+        };
+
+        localStorage.setItem('google_user_session', JSON.stringify(currentUser));
+        updateAuthUI();
+
+        const borrowerInput = document.getElementById('borrower');
+        if (borrowerInput) {
+            borrowerInput.value = "";
+            borrowerInput.removeAttribute('readonly');
+        }
 
         const modal = document.getElementById("loginModal");
         if (modal) modal.style.display = "none";
@@ -852,17 +911,28 @@
     function updateAuthUI() {
         const authContent = document.getElementById('authContent');
         if (currentUser) {
-            authContent.innerHTML = `
-                <div class="user-status">
-                    <span class="user-name">${currentUser.name || '使用者'}</span>
-                    <span class="user-account">${currentUser.email}</span>
-                </div>
-                <button class="btn-auth" onclick="logoutGoogle()">登出</button>
-            `;
+            if (currentUser.isGuest) {
+                authContent.innerHTML = `
+                    <div class="user-status">
+                        <span class="user-name">👤 訪客身份</span>
+                    </div>
+                    <button class="btn-auth" onclick="promptGoogleLogin()">切換 Google 登入</button>
+                    <button class="btn-guest" onclick="logoutGoogle()">重新選擇</button>
+                `;
+            } else {
+                authContent.innerHTML = `
+                    <div class="user-status">
+                        <span class="user-name">${currentUser.name || '使用者'}</span>
+                        <span class="user-account">${currentUser.email}</span>
+                    </div>
+                    <button class="btn-auth" onclick="logoutGoogle()">登出</button>
+                `;
+            }
         } else {
             authContent.innerHTML = `
-                <span>🔒 請登入 Google 帳號</span>
-                <button class="btn-auth" onclick="promptGoogleLogin()">立即登入</button>
+                <span>🔒 請選擇身分</span>
+                <button class="btn-auth" onclick="promptGoogleLogin()">Google 登入</button>
+                <button class="btn-guest" onclick="loginAsGuest()">訪客身分繼續</button>
             `;
         }
     }
@@ -1128,11 +1198,16 @@
         const borrowerInput = document.getElementById('borrower');
         if (!borrowerInput) return;
 
-        if (currentUser && currentUser.email) {
+        if (currentUser && currentUser.email && !currentUser.isGuest) {
             const userEmail = currentUser.email.toLowerCase().trim();
             if (teacherEmailMap[userEmail]) {
                 borrowerInput.value = teacherEmailMap[userEmail];
+                borrowerInput.setAttribute('readonly', 'true');
+            } else {
+                borrowerInput.removeAttribute('readonly');
             }
+        } else {
+            borrowerInput.removeAttribute('readonly');
         }
     }
 
@@ -1679,7 +1754,15 @@
 
     // 💡 判斷當前登入者是否有權限刪除特定的預約資料
     function canUserDeleteRecord(bookingRecord) {
-        if (!currentUser || !currentUser.email) return false;
+        if (!currentUser) return false;
+
+        // 若為訪客身份，不開放透過 Google Email 比對刪除權限（除非該預約的操作人記錄標示為訪客）
+        if (currentUser.isGuest) {
+            const operatorInfo = bookingRecord.operator || "";
+            return operatorInfo.includes("訪客");
+        }
+
+        if (!currentUser.email) return false;
 
         const myEmail = currentUser.email.toLowerCase().trim();
         const myName = teacherEmailMap[myEmail] || currentUser.name || "";
@@ -1863,12 +1946,14 @@
         updateDashboard();
         handleClassroomOrDateChange();
 
+        const deletedByInfo = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
+
         fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify({ 
                 action: 'batchDelete', 
                 ids: idsArray,
-                deletedBy: currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者"
+                deletedBy: deletedByInfo
             })
         })
         .then(res => res.json())
@@ -1941,12 +2026,12 @@
         submitBtn.disabled = true;
         submitBtn.textContent = '批次登記中...';
 
-        const operatorName = currentUser ? `${currentUser.name} (${currentUser.email})` : "未登入使用者";
+        const operatorName = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
 
         // 打包所有選擇的日期
         const items = selectedDatesList.map((targetDate, index) => {
             return {
-                id: Date.now() + index + Math.floor(Math.random() * 1000),
+                id: Date.now() + index + Math.floor(Math.floor(Math.random() * 1000)),
                 borrower,
                 classroom,
                 date: formatSafeDate(targetDate),
@@ -1991,7 +2076,7 @@
         if (originalFormReset) originalFormReset.call(this);
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
-        if (borrowerInput) borrowerInput.setAttribute('readonly', 'true');
+        if (borrowerInput && (!currentUser || currentUser.isGuest)) borrowerInput.removeAttribute('readonly');
         selectedDatesList = [];
         renderSelectedDates();
         handleClassroomOrDateChange();
