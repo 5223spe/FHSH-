@@ -794,7 +794,8 @@
 
     let currentUser = null; 
     let selectedDatesList = []; 
-    let currentTableTab = 'today'; 
+    let currentTableTab = 'today';
+    let isManualBorrowerSelected = false; 
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -1193,51 +1194,57 @@
     }
 
     function autoSetBorrowerName() {
-        const borrowerInput = document.getElementById('borrower');
-        if (!borrowerInput) return;
+    const borrowerInput = document.getElementById('borrower');
+    if (!borrowerInput) return;
 
-        if (currentUser && currentUser.email && !currentUser.isGuest) {
-            const userEmail = currentUser.email.toLowerCase().trim();
-            if (teacherEmailMap[userEmail]) {
-                borrowerInput.value = teacherEmailMap[userEmail];
-                borrowerInput.setAttribute('readonly', 'true');
-            } else {
-                borrowerInput.removeAttribute('readonly');
-            }
+    // 💡 若已手動選擇過其他教師，則保持手動選擇的姓名，不自動覆蓋
+    if (isManualBorrowerSelected) return;
+
+    if (currentUser && currentUser.email && !currentUser.isGuest) {
+        const userEmail = currentUser.email.toLowerCase().trim();
+        if (teacherEmailMap[userEmail]) {
+            borrowerInput.value = teacherEmailMap[userEmail];
+            borrowerInput.setAttribute('readonly', 'true');
         } else {
             borrowerInput.removeAttribute('readonly');
         }
+    } else {
+        borrowerInput.removeAttribute('readonly');
     }
+}
 
     function showTeacherDropdown(filterText = '') {
-        const dropdown = document.getElementById('teacherDropdown');
-        const borrowerIn = document.getElementById('borrower');
-        if (!dropdown || !borrowerIn) return;
+    const dropdown = document.getElementById('teacherDropdown');
+    const borrowerIn = document.getElementById('borrower');
+    if (!dropdown || !borrowerIn) return;
 
-        const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
-        let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
-        itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
+    const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
+    let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
+    itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
-        dropdown.innerHTML = itemsHtml;
-        dropdown.style.display = 'block';
+    dropdown.innerHTML = itemsHtml;
+    dropdown.style.display = 'block';
 
-        dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-            item.onclick = function(e) {
-                e.stopPropagation();
-                const action = this.getAttribute('data-action');
-                if (action === 'manual') {
-                    borrowerIn.removeAttribute('readonly');
-                    borrowerIn.value = '';
-                    borrowerIn.focus();
-                } else {
-                    borrowerIn.setAttribute('readonly', 'true');
-                    borrowerIn.value = this.getAttribute('data-value');
-                }
-                dropdown.style.display = 'none';
-            };
-        });
-    }
+    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.onclick = function(e) {
+            e.stopPropagation();
+            
+            // 💡 只要點擊了下拉選單的任何項目，就標記為手動指定
+            isManualBorrowerSelected = true;
 
+            const action = this.getAttribute('data-action');
+            if (action === 'manual') {
+                borrowerIn.removeAttribute('readonly');
+                borrowerIn.value = '';
+                borrowerIn.focus();
+            } else {
+                borrowerIn.setAttribute('readonly', 'true');
+                borrowerIn.value = this.getAttribute('data-value');
+            }
+            dropdown.style.display = 'none';
+        };
+    });
+}
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
         ['click', 'focus'].forEach(eventType => {
@@ -1807,7 +1814,7 @@
 
         const saturdayObj = new Date(nowObj);
         saturdayObj.setDate(nowObj.getDate() + (6 - dayOfWeek));
-        saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
+        const saturdayStr = `${saturdayObj.getFullYear()}-${String(saturdayObj.getMonth() + 1).padStart(2, '0')}-${String(saturdayObj.getDate()).padStart(2, '0')}`;
 
         let displayBookings = [];
 
