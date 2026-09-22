@@ -449,6 +449,15 @@
             box-shadow: 0 2px 6px rgba(15, 76, 92, 0.2);
         }
 
+        /* 週期性預約 Toggle UI 樣式 */
+        .switch input:checked + .slider { background-color: #2196F3; }
+        .switch input:checked + .slider:before { transform: translateX(20px); }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white;
+            transition: .3s; border-radius: 50%;
+        }
+
         @media (max-width: 768px) {
             html, body { max-width: 100vw; overflow-x: hidden; }
             header { padding: 20px 10px 24px 10px !important; border-bottom: 4px solid var(--palette-yellow) !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
@@ -703,6 +712,42 @@
                 </div>
             </div>
 
+            <!-- 週期性預約開關 -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
+                        <input type="checkbox" id="recurringToggle" onchange="toggleRecurringMode(this.checked)" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
+                    </label>
+                    <span style="font-weight: bold; font-size: 16px; color: var(--palette-blue-2);">週期性預約</span>
+                </div>
+            </div>
+
+            <!-- 週期性預約面板 (預設隱藏) -->
+            <div id="recurringPanel" style="display: none; background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 14px; color: #64748b;">重複頻率</label>
+                    <select id="recurringFrequency" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+                        <option value="weekly">每週相同時段</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 140px;">
+                        <label style="font-size: 14px; color: #64748b;">開始日期</label>
+                        <input type="date" id="startDate" onkeydown="return false;">
+                    </div>
+                    <div style="flex: 1; min-width: 140px;">
+                        <label style="font-size: 14px; color: #64748b;">結束日期</label>
+                        <input type="date" id="endDate" onkeydown="return false;">
+                    </div>
+                </div>
+                
+                <button type="button" onclick="generateRecurringDates()" style="width: 100%; margin-top: 12px; background: var(--palette-teal); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    🔄 自動生成週期日期膠囊
+                </button>
+            </div>
+
             <div class="form-group">
                 <label for="date">借用日期 (可點選新增多個日期)</label>
                 <div class="multi-date-picker-wrapper">
@@ -732,28 +777,25 @@
     </div>
 
     <!-- 最近借用紀錄清單區塊 -->
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-        <h2 style="margin: 0;">最近借用紀錄清單</h2>
-        
-        <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <!-- 當天紀錄按鈕 -->
-            <button type="button" class="tab-btn active" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
-            <button type="button" class="tab-btn" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
-            <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
-            <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0;">最近借用紀錄清單</h2>
+            
+            <div class="filter-tab-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="tab-btn active" id="tabToday" onclick="switchTableTab('today')">當天紀錄</button>
+                <button type="button" class="tab-btn" id="tabCurrentMonth" onclick="switchTableTab('current')">當週紀錄</button>
+                <button type="button" class="tab-btn" id="tabCustomMonth" onclick="switchTableTab('custom')">指定月份</button>
+                <button type="button" class="tab-btn" id="tabAll" onclick="switchTableTab('all')">全部紀錄</button>
 
-            <!-- 指定月份選擇器 (預設隱藏) -->
-            <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
-                <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
-            </div>
+                <div id="monthPickerWrapper" style="display: none; align-items: center; gap: 6px;">
+                    <input type="month" id="tableFilterMonth" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="renderTable()" onkeydown="return false;">
+                </div>
 
-            <!-- 單日篩選器 -->
-            <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
-                <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
+                    <input type="date" id="tableFilterDate" placeholder="篩選特定日期" style="padding: 6px 10px; width: 140px; font-size: 14px;" onchange="handleSingleDateChange()" onkeydown="return false;">
+                </div>
             </div>
         </div>
-    </div>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -785,7 +827,6 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxraRDv23mcc7h-BMTurmPxBVp0L79MLzUSF_j1izPkTqwkvd3BFkzEYo3ef5sV5MOycQ/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
-    // 💡 設定可互相替對方刪除預約的 3 個帳號 Email (全小寫)
     const TRUSTED_GROUP_EMAILS = [
         "spe@fhsh.khc.edu.tw",
         "11308@fhsh.khc.edu.tw",
@@ -794,8 +835,8 @@
 
     let currentUser = null; 
     let selectedDatesList = []; 
-    let currentTableTab = 'today';
-    let isManualBorrowerSelected = false; 
+    let currentTableTab = 'today'; 
+    let isManualBorrowerSelected = false;
 
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -930,7 +971,6 @@
         }
     }
 
-    // 預設 (週一至週四) 節次設定
     const defaultPeriodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
         { name: "第二節", start: "09:10", end: "10:00" },
@@ -944,7 +984,6 @@
         { name: "第八節", start: "16:25", end: "17:15" }
     ];
 
-    // 星期五專用節次設定
     const fridayPeriodsConfig = [
         { name: "第一節", start: "08:10", end: "09:00" },
         { name: "第二節", start: "09:10", end: "10:00" },
@@ -953,27 +992,25 @@
         { name: "用餐",   start: "12:10", end: "12:35" },
         { name: "午休",   start: "12:35", end: "13:10" },
         { name: "第五節", start: "13:15", end: "14:05" },
-        { name: "第六節", start: "14:25", end: "15:15" }, // 星期五第六節
-        { name: "第七節", start: "15:25", end: "16:15" }, // 星期五第七節
+        { name: "第六節", start: "14:25", end: "15:15" },
+        { name: "第七節", start: "15:25", end: "16:15" },
         { name: "第八節", start: "16:25", end: "17:15" }
     ];
 
     let periodsConfig = [...defaultPeriodsConfig];
 
-    // 根據傳入的日期動態更新節次時間與 UI 顯示
     function updatePeriodsConfigByDate(dateStr) {
         if (!dateStr) {
             periodsConfig = [...defaultPeriodsConfig];
         } else {
             const d = new Date(dateStr.replace(/-/g, '/'));
-            if (d.getDay() === 5) { // 5 代表星期五
+            if (d.getDay() === 5) {
                 periodsConfig = [...fridayPeriodsConfig];
             } else {
                 periodsConfig = [...defaultPeriodsConfig];
             }
         }
 
-        // 更新介面上的文字顯示
         periodsConfig.forEach(p => {
             const txt = document.getElementById(`text-${p.name}`);
             if (txt) txt.textContent = `(${p.start}-${p.end})`;
@@ -1016,11 +1053,8 @@
 
     function switchTableTab(mode) {
         currentTableTab = mode;
-        
-        // 選擇分頁時，自動清空單日日曆
         document.getElementById('tableFilterDate').value = '';
         
-        // 切換頁籤按鈕的高亮狀態
         const tabToday = document.getElementById('tabToday');
         if (tabToday) tabToday.classList.toggle('active', mode === 'today');
         
@@ -1039,7 +1073,6 @@
     function handleSingleDateChange() {
         const filterDateStr = document.getElementById('tableFilterDate').value;
         if (filterDateStr) {
-            // 當點選日曆指定日期時，取消所有頁籤的 active 高亮
             document.getElementById('tabToday').classList.remove('active');
             document.getElementById('tabCurrentMonth').classList.remove('active');
             document.getElementById('tabCustomMonth').classList.remove('active');
@@ -1104,6 +1137,79 @@
             selectedDatesList.sort();
             renderSelectedDates();
             handleClassroomOrDateChange();
+        }
+    }
+
+    /* 周期性預約功能控制邏輯 */
+    function toggleRecurringMode(isRecurring) {
+        const panel = document.getElementById('recurringPanel');
+        if (panel) panel.style.display = isRecurring ? 'block' : 'none';
+        
+        if (isRecurring) {
+            document.getElementById('startDate').value = todayStr;
+            document.getElementById('startDate').min = todayStr;
+            document.getElementById('endDate').min = todayStr;
+        }
+    }
+
+    function generateRecurringDates() {
+        const startVal = document.getElementById('startDate').value;
+        const endVal = document.getElementById('endDate').value;
+
+        if (!startVal || !endVal) {
+            alert('⚠️ 請先選擇「開始日期」與「結束日期」！');
+            return;
+        }
+
+        let startD = new Date(startVal.replace(/-/g, '/'));
+        let endD = new Date(endVal.replace(/-/g, '/'));
+
+        if (startD > endD) {
+            alert('❌ 開始日期不可晚於結束日期！');
+            return;
+        }
+
+        const classroom = document.getElementById('classroom').value;
+        const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
+
+        let generatedDates = [];
+        let conflictCount = 0;
+        let curr = new Date(startD);
+
+        while (curr <= endD) {
+            const yyyy = curr.getFullYear();
+            const mm = String(curr.getMonth() + 1).padStart(2, '0');
+            const dd = String(curr.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+
+            let hasConflict = false;
+            if (classroom && selectedPeriods.length > 0) {
+                hasConflict = bookings.some(b => 
+                    b.classroom === classroom && 
+                    b.date === dateStr && 
+                    b.periods.some(p => selectedPeriods.includes(p))
+                );
+            }
+
+            if (hasConflict) {
+                conflictCount++;
+            } else {
+                if (!selectedDatesList.includes(dateStr)) {
+                    selectedDatesList.push(dateStr);
+                }
+            }
+
+            curr.setDate(curr.getDate() + 7);
+        }
+
+        selectedDatesList.sort();
+        renderSelectedDates();
+        handleClassroomOrDateChange();
+
+        if (conflictCount > 0) {
+            alert(`⚠️ 自動生成完畢！其中有 ${conflictCount} 個週期的時段因已被預約，已自動排除。`);
+        } else {
+            alert(`🎉 已成功生成 ${selectedDatesList.length} 個週期的預約日期！您可以點擊日期膠囊上的 × 來移除不需要借用的個別日期。`);
         }
     }
 
@@ -1194,57 +1300,55 @@
     }
 
     function autoSetBorrowerName() {
-    const borrowerInput = document.getElementById('borrower');
-    if (!borrowerInput) return;
+        const borrowerInput = document.getElementById('borrower');
+        if (!borrowerInput) return;
 
-    // 💡 若已手動選擇過其他教師，則保持手動選擇的姓名，不自動覆蓋
-    if (isManualBorrowerSelected) return;
+        if (isManualBorrowerSelected) return;
 
-    if (currentUser && currentUser.email && !currentUser.isGuest) {
-        const userEmail = currentUser.email.toLowerCase().trim();
-        if (teacherEmailMap[userEmail]) {
-            borrowerInput.value = teacherEmailMap[userEmail];
-            borrowerInput.setAttribute('readonly', 'true');
+        if (currentUser && currentUser.email && !currentUser.isGuest) {
+            const userEmail = currentUser.email.toLowerCase().trim();
+            if (teacherEmailMap[userEmail]) {
+                borrowerInput.value = teacherEmailMap[userEmail];
+                borrowerInput.setAttribute('readonly', 'true');
+            } else {
+                borrowerInput.removeAttribute('readonly');
+            }
         } else {
             borrowerInput.removeAttribute('readonly');
         }
-    } else {
-        borrowerInput.removeAttribute('readonly');
     }
-}
 
     function showTeacherDropdown(filterText = '') {
-    const dropdown = document.getElementById('teacherDropdown');
-    const borrowerIn = document.getElementById('borrower');
-    if (!dropdown || !borrowerIn) return;
+        const dropdown = document.getElementById('teacherDropdown');
+        const borrowerIn = document.getElementById('borrower');
+        if (!dropdown || !borrowerIn) return;
 
-    const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
-    let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
-    itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
+        const filtered = teacherListData.filter(t => t.toLowerCase().includes(filterText.toLowerCase()));
+        let itemsHtml = filtered.map(t => `<div class="custom-dropdown-item" data-value="${t}">${t}</div>`).join('');
+        itemsHtml += `<div class="custom-dropdown-item manual-option" data-action="manual">✏️ 手動輸入其他姓名</div>`;
 
-    dropdown.innerHTML = itemsHtml;
-    dropdown.style.display = 'block';
+        dropdown.innerHTML = itemsHtml;
+        dropdown.style.display = 'block';
 
-    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-        item.onclick = function(e) {
-            e.stopPropagation();
-            
-            // 💡 只要點擊了下拉選單的任何項目，就標記為手動指定
-            isManualBorrowerSelected = true;
+        dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+            item.onclick = function(e) {
+                e.stopPropagation();
+                isManualBorrowerSelected = true;
 
-            const action = this.getAttribute('data-action');
-            if (action === 'manual') {
-                borrowerIn.removeAttribute('readonly');
-                borrowerIn.value = '';
-                borrowerIn.focus();
-            } else {
-                borrowerIn.setAttribute('readonly', 'true');
-                borrowerIn.value = this.getAttribute('data-value');
-            }
-            dropdown.style.display = 'none';
-        };
-    });
-}
+                const action = this.getAttribute('data-action');
+                if (action === 'manual') {
+                    borrowerIn.removeAttribute('readonly');
+                    borrowerIn.value = '';
+                    borrowerIn.focus();
+                } else {
+                    borrowerIn.setAttribute('readonly', 'true');
+                    borrowerIn.value = this.getAttribute('data-value');
+                }
+                dropdown.style.display = 'none';
+            };
+        });
+    }
+
     const borrowerInput = document.getElementById('borrower');
     if (borrowerInput) {
         ['click', 'focus'].forEach(eventType => {
@@ -1757,11 +1861,9 @@
         });
     }
 
-    // 💡 判斷當前登入者是否有權限刪除特定的預約資料
     function canUserDeleteRecord(bookingRecord) {
         if (!currentUser) return false;
 
-        // 若為訪客身份，不開放透過 Google Email 比對刪除權限（除非該預約的操作人記錄標示為訪客）
         if (currentUser.isGuest) {
             const operatorInfo = bookingRecord.operator || "";
             return operatorInfo.includes("訪客");
@@ -1775,7 +1877,6 @@
         const borrowerName = bookingRecord.borrower || "";
         const operatorInfo = bookingRecord.operator || "";
 
-        // 1. 檢查是否屬於信任的三帳號互刪情境
         const isUserInGroup = TRUSTED_GROUP_EMAILS.includes(myEmail);
         
         if (isUserInGroup) {
@@ -1787,7 +1888,6 @@
             }
         }
 
-        // 2. 一般權限判斷：借用人是自己 或 幫忙登記的操作者是自己
         const isMyBorrowing = (myName && borrowerName === myName);
         const isMyOperation = operatorInfo.includes(myEmail);
 
@@ -1802,11 +1902,9 @@
         const filterDateStr = document.getElementById('tableFilterDate').value; 
         const filterMonthStr = document.getElementById('tableFilterMonth').value; 
 
-        // 取得當前日期 (格式 YYYY-MM-DD)
         const nowObj = new Date();
         const curDateStr = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
 
-        // 計算本週日到本週六的日期範圍
         const dayOfWeek = nowObj.getDay();
         const sundayObj = new Date(nowObj);
         sundayObj.setDate(nowObj.getDate() - dayOfWeek);
@@ -1818,16 +1916,12 @@
 
         let displayBookings = [];
 
-        // 1. 若有選擇「特定單日篩選」
         if (filterDateStr) {
             displayBookings = bookings.filter(b => b.date === filterDateStr);
         } else {
-            // 2. 依據 Tab 模式進行過濾
             if (currentTableTab === 'today') {
-                // 當天紀錄：僅顯示今天的借用資料
                 displayBookings = bookings.filter(b => b.date === curDateStr);
             } else if (currentTableTab === 'current') {
-                // 當週紀錄：顯示當週且當日（含）以後紀錄
                 displayBookings = bookings.filter(b => b.date >= curDateStr && b.date <= saturdayStr);
             } else if (currentTableTab === 'custom') {
                 if (filterMonthStr) {
@@ -1836,7 +1930,6 @@
                     displayBookings = [...bookings];
                 }
             } else {
-                // 全部紀錄：顯示未來的紀錄
                 displayBookings = bookings.filter(b => b.date >= curDateStr);
             }
         }
@@ -1901,7 +1994,6 @@
             const tr = document.createElement('tr');
             const idsString = JSON.stringify(b.ids);
 
-            // 判斷權限：符合條件顯示刪除按鈕，否則不顯示
             const hasPermission = canUserDeleteRecord(b);
             const actionBtnHtml = hasPermission 
                 ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
@@ -1977,7 +2069,7 @@
         });
     }
 
-   document.getElementById('bookingForm').onsubmit = async function(e) {
+    document.getElementById('bookingForm').onsubmit = async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
         const borrower = document.getElementById('borrower').value.trim();
@@ -2033,7 +2125,6 @@
 
         const operatorName = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
 
-        // 打包所有選擇的日期
         const items = selectedDatesList.map((targetDate, index) => {
             return {
                 id: Date.now() + index + Math.floor(Math.floor(Math.random() * 1000)),
@@ -2082,6 +2173,14 @@
         const filterInput = document.getElementById('tableFilterDate');
         if (filterInput) filterInput.value = '';
         if (borrowerInput && (!currentUser || currentUser.isGuest)) borrowerInput.removeAttribute('readonly');
+        
+        // 重置週期性預約面板
+        const recurringToggle = document.getElementById('recurringToggle');
+        if (recurringToggle) {
+            recurringToggle.checked = false;
+            toggleRecurringMode(false);
+        }
+
         selectedDatesList = [];
         renderSelectedDates();
         handleClassroomOrDateChange();
