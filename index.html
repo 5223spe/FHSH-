@@ -724,35 +724,37 @@
                         <span style="font-weight: bold; font-size: 15px; color: var(--palette-blue-2);">週期性預約</span>
                     </div>
                 </div>
-                <div class="multi-date-picker-wrapper">
+
+                <!-- 單日選擇區塊 (預設顯示) -->
+                <div id="singleDateArea" class="multi-date-picker-wrapper">
                     <div class="selected-dates-tags" id="selectedDatesContainer"></div>
                     <input type="date" id="date" onchange="addSelectedDate(this.value)" onkeydown="return false;">
                 </div>
-            </div>
 
-            <!-- 步驟 1：替換 HTML 結構 (允許點選與自訂設定) -->
-            <div id="recurringPanel" style="display: none; background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label style="font-size: 14px; color: #64748b;">重複頻率</label>
-                    <select id="recurringFrequency">
-                        <option value="weekly">每週相同時段</option>
-                    </select>
-                </div>
-                
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 140px;">
-                        <label style="font-size: 14px; color: #64748b;">開始日期</label>
-                        <input type="date" id="startDate" onkeydown="return false;">
+                <!-- 週期性預約面板 (開啟時覆蓋取代 singleDateArea) -->
+                <div id="recurringPanel" style="display: none; background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 8px;">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size: 14px; color: #64748b;">重複頻率</label>
+                        <select id="recurringFrequency" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+                            <option value="weekly">每週相同時段</option>
+                        </select>
                     </div>
-                    <div style="flex: 1; min-width: 140px;">
-                        <label style="font-size: 14px; color: #64748b;">結束日期</label>
-                        <input type="date" id="endDate" onkeydown="return false;">
+                    
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 140px;">
+                            <label style="font-size: 14px; color: #64748b;">開始日期</label>
+                            <input type="date" id="startDate" onkeydown="return false;">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <label style="font-size: 14px; color: #64748b;">結束日期</label>
+                            <input type="date" id="endDate" onkeydown="return false;">
+                        </div>
                     </div>
+                    
+                    <button type="button" onclick="generateRecurringDates()" style="width: 100%; margin-top: 12px; background: var(--palette-teal); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        🔄 自動生成週期日期膠囊
+                    </button>
                 </div>
-                
-                <button type="button" onclick="generateRecurringDates()" style="width: 100%; margin-top: 12px; background: var(--palette-teal); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                    🔄 自動生成週期日期膠囊
-                </button>
             </div>
 
             <div class="form-group">
@@ -1139,25 +1141,20 @@
         }
     }
 
-    /* 步驟 2：更新 JavaScript 切換邏輯 (允許點選與彈性設置) */
+    /* 周期性預約功能控制邏輯：切換顯示區域 */
     function toggleRecurringMode(isRecurring) {
+        const singleArea = document.getElementById('singleDateArea');
         const panel = document.getElementById('recurringPanel');
-        const freqSelect = document.getElementById('recurringFrequency');
-        
-        if (panel) panel.style.display = isRecurring ? 'block' : 'none';
         
         if (isRecurring) {
-            // 允許下拉選單點選選取
-            if (freqSelect) {
-                freqSelect.removeAttribute('disabled');
-                freqSelect.style.backgroundColor = '#ffffff';
-                freqSelect.style.cursor = 'pointer';
-            }
-
-            // 帶入預設起始/結束日期
+            if (singleArea) singleArea.style.display = 'none';
+            if (panel) panel.style.display = 'block';
             document.getElementById('startDate').value = todayStr;
             document.getElementById('startDate').min = todayStr;
             document.getElementById('endDate').min = todayStr;
+        } else {
+            if (panel) panel.style.display = 'none';
+            if (singleArea) singleArea.style.display = 'flex';
         }
     }
 
@@ -1215,10 +1212,17 @@
         renderSelectedDates();
         handleClassroomOrDateChange();
 
+        /* 切換關閉週期開關，並切換回原本的單日選擇介面 */
+        const recurringToggle = document.getElementById('recurringToggle');
+        if (recurringToggle) {
+            recurringToggle.checked = false;
+        }
+        toggleRecurringMode(false);
+
         if (conflictCount > 0) {
-            alert(`⚠️ 自動生成完畢！其中有 ${conflictCount} 個週期的時段因已被預約，已自動排除。`);
+            alert(`⚠️ 自動生成完畢！其中有 ${conflictCount} 個週期的時段因已被預約，已自動排除。已自動切換回單日選取介面供您彈性增刪。`);
         } else {
-            alert(`🎉 已成功生成 ${selectedDatesList.length} 個週期的預約日期！您可以點擊日期膠囊上的 × 來移除不需要借用的個別日期。`);
+            alert(`🎉 已成功生成 ${selectedDatesList.length} 個週期的預約日期！已自動切換回單日選取介面，您可以點擊膠囊上的 × 刪除特定日期，或補點選其他特別日期。`);
         }
     }
 
