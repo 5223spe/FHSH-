@@ -1469,9 +1469,6 @@
         const nowTime = new Date();
         const curDateStr = `${nowTime.getFullYear()}-${String(nowTime.getMonth() + 1).padStart(2, '0')}-${String(nowTime.getDate()).padStart(2, '0')}`;
         const curTimeStr = get24HourTimeString(nowTime);
-        
-        const isPastDate = selectedDatesArray.some(d => d < curDateStr);
-        const isTodaySelected = selectedDatesArray.includes(curDateStr);
 
         checkboxes.forEach(cb => {
             const label = document.getElementById(`lbl-${cb.value}`);
@@ -1480,18 +1477,17 @@
             const isOccupied = allOccupiedPeriods.includes(cb.value);
 
             let isPastTime = false;
-            if (isTodaySelected && periodInfo && curTimeStr > periodInfo.end) {
+            // 當選取的日期陣列包含今天，且目前系統時間已超過該節次的結束時間時，標記為過去時段
+            if (selectedDatesArray.includes(curDateStr) && periodInfo && curTimeStr > periodInfo.end) {
                 isPastTime = true;
             }
 
-            if (isPastDate || isOccupied || isPastTime) {
+            if (isOccupied || isPastTime) {
                 cb.checked = false;
                 cb.disabled = true;
                 if (label) {
                     label.classList.add('disabled-period');
-                    if (isPastDate) {
-                        label.title = "包含過去日期無法借用";
-                    } else if (isPastTime && !isOccupied) {
+                    if (isPastTime && !isOccupied) {
                         label.title = "今日此節次時間已過，無法借用";
                     } else if (isOccupied) {
                         label.title = "選取日期中此節次已被預約";
@@ -2223,7 +2219,7 @@
     
     function startSmartPolling() {
         if (pollingTimer) clearInterval(pollingTimer);
-        const interval = document.hidden ? 60000 : 15000;
+        const interval = document.getElementById ? 60000 : 15000;
         pollingTimer = setInterval(() => loadBookingsFromServer(false), interval);
     }
 
