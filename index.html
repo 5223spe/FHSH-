@@ -712,14 +712,21 @@
                 </div>
             </div>
 
-            <!-- 週期性預約開關 -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
-                        <input type="checkbox" id="recurringToggle" onchange="toggleRecurringMode(this.checked)" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
-                    </label>
-                    <span style="font-weight: bold; font-size: 16px; color: var(--palette-blue-2);">週期性預約</span>
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label for="date" style="margin-bottom: 0;">借用日期 (可點選新增多個日期)</label>
+                    <!-- 週期性預約開關移至標籤右側 -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
+                            <input type="checkbox" id="recurringToggle" onchange="toggleRecurringMode(this.checked)" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
+                        </label>
+                        <span style="font-weight: bold; font-size: 15px; color: var(--palette-blue-2);">週期性預約</span>
+                    </div>
+                </div>
+                <div class="multi-date-picker-wrapper">
+                    <div class="selected-dates-tags" id="selectedDatesContainer"></div>
+                    <input type="date" id="date" onchange="addSelectedDate(this.value)" onkeydown="return false;">
                 </div>
             </div>
 
@@ -746,14 +753,6 @@
                 <button type="button" onclick="generateRecurringDates()" style="width: 100%; margin-top: 12px; background: var(--palette-teal); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
                     🔄 自動生成週期日期膠囊
                 </button>
-            </div>
-
-            <div class="form-group">
-                <label for="date">借用日期 (可點選新增多個日期)</label>
-                <div class="multi-date-picker-wrapper">
-                    <div class="selected-dates-tags" id="selectedDatesContainer"></div>
-                    <input type="date" id="date" onchange="addSelectedDate(this.value)" onkeydown="return false;">
-                </div>
             </div>
 
             <div class="form-group">
