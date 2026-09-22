@@ -730,11 +730,11 @@
                 </div>
             </div>
 
-            <!-- 週期性預約面板 (預設隱藏) -->
+            <!-- 步驟 1：替換 HTML 結構 (允許點選與自訂設定) -->
             <div id="recurringPanel" style="display: none; background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label style="font-size: 14px; color: #64748b;">重複頻率</label>
-                    <select id="recurringFrequency" disabled style="background-color: #f1f5f9; cursor: not-allowed;">
+                    <select id="recurringFrequency">
                         <option value="weekly">每週相同時段</option>
                     </select>
                 </div>
@@ -1139,12 +1139,22 @@
         }
     }
 
-    /* 周期性預約功能控制邏輯 */
+    /* 步驟 2：更新 JavaScript 切換邏輯 (允許點選與彈性設置) */
     function toggleRecurringMode(isRecurring) {
         const panel = document.getElementById('recurringPanel');
+        const freqSelect = document.getElementById('recurringFrequency');
+        
         if (panel) panel.style.display = isRecurring ? 'block' : 'none';
         
         if (isRecurring) {
+            // 允許下拉選單點選選取
+            if (freqSelect) {
+                freqSelect.removeAttribute('disabled');
+                freqSelect.style.backgroundColor = '#ffffff';
+                freqSelect.style.cursor = 'pointer';
+            }
+
+            // 帶入預設起始/結束日期
             document.getElementById('startDate').value = todayStr;
             document.getElementById('startDate').min = todayStr;
             document.getElementById('endDate').min = todayStr;
