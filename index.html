@@ -481,96 +481,43 @@
         }
 
         @media (max-width: 768px) {
-    html, body { max-width: 100vw; overflow-x: hidden; }
-    header { padding: 20px 10px 24px 10px !important; border-bottom: 4px solid var(--palette-yellow) !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
-    .desktop-title { display: none !important; }
-    .mobile-title { display: inline !important; }
-    .auth-banner { margin-bottom: 16px !important; width: 100% !important; }
-    .auth-container { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 8px !important; flex-wrap: nowrap !important; }
-    .user-name { display: none !important; }
-    .user-account { display: inline-block !important; font-size: 12px !important; word-break: break-all; }
-    .header-logo-group { margin-bottom: 12px !important; width: 100% !important; }
-    header h1 { font-size: 26px !important; line-height: 1.6 !important; white-space: nowrap !important; margin: 0 !important; }
-    header p { font-size: 13px !important; letter-spacing: 1px !important; margin: 6px 0 0 0 !important; line-height: 1.5 !important; white-space: nowrap !important; }
-    .br-mobile { display: none !important; }
-    .container { padding: 0 10px !important; margin: 15px auto !important; max-width: 100vw; overflow-x: hidden; }
-    .card { padding: 16px 12px !important; border-radius: 14px !important; }
-
-    /* 1. 修正選擇日期與系統時間方框超出黃色底色的問題 */
-    .map-controls { 
-        flex-direction: column !important; 
-        gap: 12px !important; 
-        padding: 12px 15px !important; 
-        box-sizing: border-box !important;
-        width: 100% !important;
-    }
-    .control-item { 
-        min-width: 0 !important; 
-        width: 100% !important;
-    }
-    .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
-    .control-item input { 
-        padding: 10px 12px !important; 
-        font-size: 14px !important; 
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    .floor-grid-wrapper { padding: 8px !important; }
-    .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
-    .floor-grid > div:not(.room-card) { display: none !important; }
-    .room-card, .room-card.span-vertical { grid-row: auto !important; grid-column: auto !important; height: 100% !important; min-height: 0 !important; padding: 12px 6px !important; border-radius: 10px !important; }
-    .room-name { font-size: 18px !important; margin-bottom: 4px !important; }
-    .room-info { font-size: 12px !important; }
-    .status-badge { font-size: 11px !important; padding: 2px 10px !important; margin-bottom: 4px !important; }
-    #map-前個諮 { grid-row: 1 !important; grid-column: 1 !important; }
-    #map-後個諮 { grid-row: 1 !important; grid-column: 2 !important; }
-    #map-團輔室 { grid-row: 2 !important; grid-column: 1 !important; }
-    #map-向圓 { grid-row: 2 !important; grid-column: 2 !important; }
-    #map-前小向 { grid-row: 3 !important; grid-column: 1 !important; }
-    #map-後小向 { grid-row: 3 !important; grid-column: 2 !important; }
-    #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
-    #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
-    #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
-
-    /* 2. 新增借用登記標頭排版調整 (讓借用日期與週期性預約分開兩行) */
-    #bookingForm .form-group:nth-child(3) > div:first-child {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 8px !important;
-    }
-
-    /* 3. 週期性預約字樣強制斷行為：週期性 (換行) 預約 */
-    .switch + span {
-        display: inline-block;
-        white-space: pre-line;
-        text-align: left;
-        line-height: 1.2;
-    }
-    .switch + span::before {
-        content: "週期性\A預約";
-    }
-    .switch + span {
-        font-size: 0 !important; /* 隱藏原本文字 */
-    }
-    .switch + span::before {
-        font-size: 15px !important; /* 重新指定顯示文字與大小 */
-    }
-
-    /* 4. 借用節次國字在一行，括號時間換到第二行 */
-    .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
-    .checkbox-item { 
-        font-size: 13px; 
-        flex-wrap: wrap !important;
-        align-items: flex-start !important;
-    }
-    .checkbox-item span[id^="text-"] {
-        display: block !important;
-        width: 100% !important;
-        padding-left: 20px !important; /* 縮排對齊國字下方 */
-        margin-top: 2px;
-    }
-}
+            html, body { max-width: 100vw; overflow-x: hidden; }
+            header { padding: 20px 10px 24px 10px !important; border-bottom: 4px solid var(--palette-yellow) !important; display: flex !important; flex-direction: column !important; align-items: center !important; }
+            .desktop-title { display: none !important; }
+            .mobile-title { display: inline !important; }
+            .auth-banner { margin-bottom: 16px !important; width: 100% !important; }
+            .auth-container { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 8px !important; flex-wrap: nowrap !important; }
+            .user-name { display: none !important; }
+            .user-account { display: inline-block !important; font-size: 12px !important; word-break: break-all; }
+            .header-logo-group { margin-bottom: 12px !important; width: 100% !important; }
+            header h1 { font-size: 26px !important; line-height: 1.6 !important; white-space: nowrap !important; margin: 0 !important; }
+            header p { font-size: 13px !important; letter-spacing: 1px !important; margin: 6px 0 0 0 !important; line-height: 1.5 !important; white-space: nowrap !important; }
+            .br-mobile { display: none !important; }
+            .container { padding: 0 10px !important; margin: 15px auto !important; max-width: 100vw; overflow-x: hidden; }
+            .card { padding: 16px 12px !important; border-radius: 14px !important; }
+            .map-controls { flex-direction: column !important; gap: 12px !important; padding: 12px 15px !important; }
+            .control-item { min-width: 100% !important; }
+            .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
+            .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
+            .floor-grid-wrapper { padding: 8px !important; }
+            .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
+            .floor-grid > div:not(.room-card) { display: none !important; }
+            .room-card, .room-card.span-vertical { grid-row: auto !important; grid-column: auto !important; height: 100% !important; min-height: 0 !important; padding: 12px 6px !important; border-radius: 10px !important; }
+            .room-name { font-size: 18px !important; margin-bottom: 4px !important; }
+            .room-info { font-size: 12px !important; }
+            .status-badge { font-size: 11px !important; padding: 2px 10px !important; margin-bottom: 4px !important; }
+            #map-前個諮 { grid-row: 1 !important; grid-column: 1 !important; }
+            #map-後個諮 { grid-row: 1 !important; grid-column: 2 !important; }
+            #map-團輔室 { grid-row: 2 !important; grid-column: 1 !important; }
+            #map-向圓 { grid-row: 2 !important; grid-column: 2 !important; }
+            #map-前小向 { grid-row: 3 !important; grid-column: 1 !important; }
+            #map-後小向 { grid-row: 3 !important; grid-column: 2 !important; }
+            #map-6F\ Z空間 { grid-row: 5 !important; grid-column: 2 !important; }
+            #map-6F潛能教室 { grid-row: 6 !important; grid-column: 1 !important; }
+            #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
+            .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
+            .checkbox-item { font-size: 13px; }
+        }
 
         .btn-sync {
             background: linear-gradient(135deg, #f5ac53, #e89a3f); 
