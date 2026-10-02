@@ -393,8 +393,10 @@
             border: 2px solid #f1ece4;
         }
 
-        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .checkbox-item { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .checkbox-title { display: flex; align-items: center; gap: 8px; font-weight: bold; }
         .checkbox-item input { width: auto; margin: 0; transform: scale(1.1); }
+        .period-time { font-size: 13px; color: #64748b; margin-left: 23px; }
         
         .checkbox-item.disabled-period {
             color: #94a3b8 !important;
@@ -403,6 +405,9 @@
             padding: 4px 8px;
             border-radius: 6px;
             text-decoration: line-through;
+        }
+        .checkbox-item.disabled-period .period-time {
+            color: #94a3b8 !important;
         }
 
         button[type="submit"] {
@@ -735,15 +740,20 @@
             </div>
 
             <div class="form-group">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label style="margin-bottom: 0;">借用日期 (可點選新增多個日期)</label>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <label style="margin-bottom: 0;">
+                        借用日期<br>
+                        <span style="font-size: 13px; color: var(--text-muted); font-weight: normal;">(可點選新增多個日期)</span>
+                    </label>
                     <!-- 週期性預約開關移至標籤右側 -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
                             <input type="checkbox" id="recurringToggle" onchange="toggleRecurringMode(this.checked)" style="opacity: 0; width: 0; height: 0;">
                             <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
                         </label>
-                        <span style="font-weight: bold; font-size: 15px; color: var(--palette-blue-2);">週期性預約</span>
+                        <span style="font-weight: bold; font-size: 15px; color: var(--palette-blue-2); text-align: right; line-height: 1.2;">
+                            週期性<br>預約
+                        </span>
                     </div>
                 </div>
 
@@ -782,16 +792,46 @@
             <div class="form-group">
                 <label>借用節次</label>
                 <div class="checkbox-grid">
-                    <label class="checkbox-item" id="lbl-第一節"><input type="checkbox" name="period" value="第一節"> 第一節 <span id="text-第一節">(08:10-09:00)</span></label>
-                    <label class="checkbox-item" id="lbl-第二節"><input type="checkbox" name="period" value="第二節"> 第二節 <span id="text-第二節">(09:10-10:00)</span></label>
-                    <label class="checkbox-item" id="lbl-第三節"><input type="checkbox" name="period" value="第三節"> 第三節 <span id="text-第三節">(10:10-11:00)</span></label>
-                    <label class="checkbox-item" id="lbl-第四節"><input type="checkbox" name="period" value="第四節"> 第四節 <span id="text-第四節">(11:10-12:00)</span></label>
-                    <label class="checkbox-item" id="lbl-用餐"><input type="checkbox" name="period" value="用餐"> 用餐 <span id="text-用餐">(12:10-12:35)</span></label>
-                    <label class="checkbox-item" id="lbl-午休"><input type="checkbox" name="period" value="午休"> 午休 <span id="text-午休">(12:35-13:10)</span></label>
-                    <label class="checkbox-item" id="lbl-第五節"><input type="checkbox" name="period" value="第五節"> 第五節 <span id="text-第五節">(13:15-14:05)</span></label>
-                    <label class="checkbox-item" id="lbl-第六節"><input type="checkbox" name="period" value="第六節"> 第六節 <span id="text-第六節">(14:15-15:05)</span></label>
-                    <label class="checkbox-item" id="lbl-第七節"><input type="checkbox" name="period" value="第七節"> 第七節 <span id="text-第七節">(15:25-16:15)</span></label>
-                    <label class="checkbox-item" id="lbl-第八節"><input type="checkbox" name="period" value="第八節"> 第八節 <span id="text-第八節">(16:25-17:15)</span></label>
+                    <label class="checkbox-item" id="lbl-第一節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第一節"> 第一節</div>
+                        <div class="period-time" id="text-第一節">(08:10-09:00)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第二節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第二節"> 第二節</div>
+                        <div class="period-time" id="text-第二節">(09:10-10:00)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第三節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第三節"> 第三節</div>
+                        <div class="period-time" id="text-第三節">(10:10-11:00)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第四節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第四節"> 第四節</div>
+                        <div class="period-time" id="text-第四節">(11:10-12:00)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-用餐">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="用餐"> 用餐</div>
+                        <div class="period-time" id="text-用餐">(12:10-12:35)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-午休">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="午休"> 午休</div>
+                        <div class="period-time" id="text-午休">(12:35-13:10)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第五節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第五節"> 第五節</div>
+                        <div class="period-time" id="text-第五節">(13:15-14:05)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第六節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第六節"> 第六節</div>
+                        <div class="period-time" id="text-第六節">(14:15-15:05)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第七節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第七節"> 第七節</div>
+                        <div class="period-time" id="text-第七節">(15:25-16:15)</div>
+                    </label>
+                    <label class="checkbox-item" id="lbl-第八節">
+                        <div class="checkbox-title"><input type="checkbox" name="period" value="第八節"> 第八節</div>
+                        <div class="period-time" id="text-第八節">(16:25-17:15)</div>
+                    </label>
                 </div>
             </div>
 
@@ -2113,7 +2153,7 @@
         }
 
         if (!classroom) {
-            alert('⚠️ 請選擇「借用教室」！');
+            alert('⚠️️ 請選擇「借用教室」！');
             showClassroomDropdown();
             return;
         }
@@ -2133,162 +2173,109 @@
         }
 
         const selectedPeriods = Array.from(document.querySelectorAll('input[name="period"]:checked')).map(cb => cb.value);
-        if(selectedPeriods.length === 0) { alert('⚠️ 請至少選擇一個借用時段節次！'); return; }
-
-        let conflictDetails = [];
-        selectedDatesList.forEach(d => {
-            const safeD = formatSafeDate(d);
-            selectedPeriods.forEach(p => {
-                const isConflicted = bookings.some(b => b.classroom === classroom && b.date === safeD && b.periods.includes(p));
-                if (isConflicted) {
-                    conflictDetails.push(`${safeD} (${p})`);
-                }
-            });
-        });
-
-        if (conflictDetails.length > 0) { 
-            alert(`❌ 預約衝突！以下時段已被其他老師先一步借走：\n${conflictDetails.join('\n')}`); 
-            return; 
+        if (selectedPeriods.length === 0) {
+            alert('⚠️ 請至少勾選一個借用節次！');
+            return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = '批次登記中...';
+        submitBtn.innerText = '提交登記中...';
 
-        const operatorName = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
+        const operatorInfo = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
 
-        const items = selectedDatesList.map((targetDate, index) => {
-            return {
-                id: Date.now() + index + Math.floor(Math.floor(Math.random() * 1000)),
-                borrower,
-                classroom,
-                date: formatSafeDate(targetDate),
-                periods: selectedPeriods,
-                operator: operatorName
-            };
+        const newBookings = [];
+        selectedDatesList.forEach(dateStr => {
+            const newId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            newBookings.push({
+                id: newId,
+                date: dateStr,
+                classroom: classroom,
+                borrower: borrower,
+                periods: [...selectedPeriods],
+                operator: operatorInfo
+            });
         });
 
-        try {
-            const payload = { action: 'batchCreate', items: items };
-            const res = await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            });
-            const resData = await res.json();
+        bookings.push(...newBookings);
+        
+        localStorage.setItem('cached_booking_data', JSON.stringify({ 
+            bookings: bookings, 
+            teachers: teacherListData 
+        }));
 
-            if (resData.status === 'success') {
-                alert(`🎉 恭喜您，已成功完成 ${items.length} 個日期的教室登記！`);
-                document.getElementById('bookingForm').reset();
+        renderTable();
+        updateDashboard();
+
+        try {
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'batchAdd',
+                    dates: selectedDatesList,
+                    classroom: classroom,
+                    borrower: borrower,
+                    periods: selectedPeriods,
+                    operator: operatorInfo
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                alert('🎉 借用登記成功！');
                 selectedDatesList = [];
                 renderSelectedDates();
-                await loadBookingsFromServer(true);
+                document.getElementById('date').value = '';
+                document.querySelectorAll('input[name="period"]').forEach(cb => cb.checked = false);
+                handleClassroomOrDateChange();
+                loadBookingsFromServer(true);
             } else {
-                alert(`⚠️ 登記失敗：${resData.message || '系統錯誤'}`);
-                await loadBookingsFromServer(true);
+                alert('❌ 登記失敗：' + result.message);
+                loadBookingsFromServer(true);
             }
-        } catch(error) {
-            console.error("批次新增失敗:", error);
-            alert(`⚠️ 登記失敗，連線異常，請檢查網路狀態。`);
-            await loadBookingsFromServer(true);
+        } catch (error) {
+            console.error("提交失敗:", error);
+            alert('❌ 網路連線異常，請重新嘗試！');
+            loadBookingsFromServer(true);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = '確認提交借用登記';
+            submitBtn.innerText = '確認提交借用登記';
         }
     };
-
-    document.getElementById('mapDate').onchange = updateDashboard;
-    document.getElementById('mapTime').onchange = updateDashboard;
-
-    const originalFormReset = document.getElementById('bookingForm').reset;
-    document.getElementById('bookingForm').reset = function() {
-        if (originalFormReset) originalFormReset.call(this);
-        const filterInput = document.getElementById('tableFilterDate');
-        if (filterInput) filterInput.value = '';
-        if (borrowerInput && (!currentUser || currentUser.isGuest)) borrowerInput.removeAttribute('readonly');
-        
-        // 重置週期性預約面板
-        const recurringToggle = document.getElementById('recurringToggle');
-        if (recurringToggle) {
-            recurringToggle.checked = false;
-            toggleRecurringMode(false);
-        }
-
-        selectedDatesList = [];
-        renderSelectedDates();
-        handleClassroomOrDateChange();
-    };
-    
-    function startSmartPolling() {
-        if (pollingTimer) clearInterval(pollingTimer);
-        const interval = document.getElementById ? 60000 : 15000;
-        pollingTimer = setInterval(() => loadBookingsFromServer(false), interval);
-    }
-
-    function forceRefreshSystem() {
-        const now = new Date();
-        const curDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        const curTimeStr = get24HourTimeString(now);
-        
-        const mapDateEl = document.getElementById('mapDate');
-        const mapTimeEl = document.getElementById('mapTime');
-        if (mapDateEl) mapDateEl.value = curDateStr;
-        if (mapTimeEl) mapTimeEl.value = curTimeStr;
-
-        loadBookingsFromServer(true);
-    }
-
-    window.addEventListener('focus', () => {
-        forceRefreshSystem();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            forceRefreshSystem();
-        }
-        startSmartPolling();
-    });
-
-    let lastCheckTimestamp = Date.now();
-    setInterval(() => {
-        const nowTs = Date.now();
-        if (nowTs - lastCheckTimestamp > 20000) {
-            forceRefreshSystem();
-        }
-        lastCheckTimestamp = nowTs;
-    }, 10000);
-
-    loadBookingsFromServer(false);
-    renderTable();
-    updateDashboard();
-    handleClassroomOrDateChange();
 
     async function manualSync() {
         const btn = document.getElementById('manualSyncBtn');
-        if (!btn || btn.disabled) return;
-
-        const svgIcon = `
-            <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
-                <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M2.5 16l1.2 0.8A10 10 0 0 0 22 12.5"/>
-            </svg>`;
-
-        btn.disabled = true;
-        btn.classList.add('loading');
-        btn.innerHTML = `${svgIcon} <span>同步中...</span>`;
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.querySelector('span').textContent = '同步中...';
+        }
 
         try {
             await loadBookingsFromServer(true);
-            btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✓</span> <span>已更新</span>`;
+            if (btn) {
+                btn.querySelector('span').textContent = '同步完成！';
+                setTimeout(() => {
+                    btn.querySelector('span').textContent = '同步資料';
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                }, 1200);
+            }
         } catch (error) {
-            console.error("手動同步失敗:", error);
-            btn.innerHTML = `<span style="color: #ffffff; font-weight: bold;">✕</span> <span>失敗</span>`;
-        } finally {
-            setTimeout(() => {
-                btn.classList.remove('loading');
-                btn.innerHTML = `${svgIcon} <span>同步資料</span>`;
-                btn.disabled = false;
-            }, 1200);
+            if (btn) {
+                btn.querySelector('span').textContent = '同步失敗';
+                setTimeout(() => {
+                    btn.querySelector('span').textContent = '同步資料';
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                }, 1500);
+            }
         }
     }
+
+    loadBookingsFromServer();
+    pollingTimer = setInterval(() => loadBookingsFromServer(false), 30000);
 </script>
+
 </body>
 </html>
