@@ -495,10 +495,30 @@
             .br-mobile { display: none !important; }
             .container { padding: 0 10px !important; margin: 15px auto !important; max-width: 100vw; overflow-x: hidden; }
             .card { padding: 16px 12px !important; border-radius: 14px !important; }
-            .map-controls { flex-direction: column !important; gap: 12px !important; padding: 12px 15px !important; }
-            .control-item { min-width: 100% !important; }
-            .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
-            .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
+            .map-controls { 
+        flex-direction: column !important; 
+        gap: 12px !important; 
+        padding: 12px 15px !important; 
+        width: 100% !important; /* 確保底色黃色方框限制在容器內 */
+        box-sizing: border-box !important;
+    }
+            .control-item { 
+        width: 100% !important; 
+        min-width: 0 !important; /* 修正原本 min-width: 100% 導致內外邊距擠壓溢出的問題 */
+        box-sizing: border-box !important;
+    }
+            .control-item label { 
+        font-size: 14px !important; 
+        margin-bottom: 4px !important; 
+    }
+            .control-item input,
+    #singleDateArea input[type="date"] { 
+        width: 100% !important; 
+        max-width: 100% !important; /* 確保灰色輸入框不超出底色框 */
+        box-sizing: border-box !important; 
+        padding: 10px 12px !important; 
+        font-size: 14px !important; 
+    }
             .floor-grid-wrapper { padding: 8px !important; }
             .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
             .floor-grid > div:not(.room-card) { display: none !important; }
