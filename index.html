@@ -530,6 +530,27 @@
             #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
+            /* 週期性預約手機版修正 */
+535            #recurringPanel > div[style*="display: flex"] {
+536                display: flex !important;
+537                flex-direction: row !important;
+538                gap: 10px !important;
+539                width: 100% !important;
+540                box-sizing: border-box !important;
+541            }
+542
+543            #recurringPanel > div[style*="display: flex"] > div {
+544                flex: 1 1 0% !important;
+545                min-width: 0 !important;
+546            }
+547
+548            #startDate, #endDate {
+549                width: 100% !important;
+550                max-width: 100% !important;
+551                box-sizing: border-box !important;
+552                padding: 8px 6px !important;
+553                font-size: 14px !important;
+554            }
         }
 
         .btn-sync {
