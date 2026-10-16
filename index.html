@@ -530,27 +530,39 @@
             #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
-            /* 週期性預約手機版修正 */
-535            #recurringPanel > div[style*="display: flex"] {
-536                display: flex !important;
-537                flex-direction: row !important;
-538                gap: 10px !important;
-539                width: 100% !important;
-540                box-sizing: border-box !important;
-541            }
-542
-543            #recurringPanel > div[style*="display: flex"] > div {
-544                flex: 1 1 0% !important;
-545                min-width: 0 !important;
-546            }
-547
-548            #startDate, #endDate {
-549                width: 100% !important;
-550                max-width: 100% !important;
-551                box-sizing: border-box !important;
-552                padding: 8px 6px !important;
-553                font-size: 14px !important;
-554            }
+            /* 週期性預約手機版修正（強化版） */
+            #recurringPanel > div[style*="display: flex"] {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 8px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            #recurringPanel > div[style*="display: flex"] > div {
+                flex: 1 1 0% !important;
+                min-width: 0 !important;
+                width: 0 !important; /* 強制重置預設寬度，避免內部元素撐開 */
+            }
+
+            #startDate, #endDate {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+                padding: 8px 4px !important;
+                font-size: 13px !important; /* 稍微調小字級以適應窄寬度 */
+                text-align: center !important;
+            }
+
+            /* 隱藏手機原生 Date Picker 佔空間的右側小圖示 */
+            #startDate::-webkit-calendar-picker-indicator,
+            #endDate::-webkit-calendar-picker-indicator {
+                display: none !important;
+                -webkit-appearance: none !important;
+            }
         }
 
         .btn-sync {
