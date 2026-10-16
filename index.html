@@ -494,42 +494,11 @@
             header p { font-size: 13px !important; letter-spacing: 1px !important; margin: 6px 0 0 0 !important; line-height: 1.5 !important; white-space: nowrap !important; }
             .br-mobile { display: none !important; }
             .container { padding: 0 10px !important; margin: 15px auto !important; max-width: 100vw; overflow-x: hidden; }
-            /* 修正手機版容器與輸入框超出的關鍵設定 */
-.card, .map-controls, .form-group {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-}
-.map-controls { 
-    flex-direction: column !important; 
-    gap: 12px !important; 
-    padding: 12px 15px !important; 
-}
-.control-item { 
-    width: 100% !important; 
-    min-width: 0 !important; /* 關鍵：解開預設最小寬度限制 */
-    box-sizing: border-box !important; 
-}
-.control-item label { 
-    font-size: 14px !important; 
-    margin-bottom: 4px !important; 
-}
-
-/* 強制所有日期/時間輸入框絕不超出父容器 */
-.control-item input,
-.multi-date-picker-wrapper input,
-#singleDateArea input[type="date"],
-#recurringPanel input[type="date"],
-input[type="date"], 
-input[type="time"] { 
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important; /* 關鍵：覆寫 iOS/Android 原生日曆寬度 */
-    box-sizing: border-box !important;
-    padding: 10px 8px !important; 
-    font-size: 14px !important;
-    margin: 0 !important;
-}
+            .card { padding: 16px 12px !important; border-radius: 14px !important; }
+            .map-controls { flex-direction: column !important; gap: 12px !important; padding: 12px 15px !important; }
+            .control-item { min-width: 100% !important; }
+            .control-item label { font-size: 14px !important; margin-bottom: 4px !important; }
+            .control-item input { padding: 10px 12px !important; font-size: 14px !important; }
             .floor-grid-wrapper { padding: 8px !important; }
             .floor-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 135px 135px 135px 18px 135px 135px !important; grid-auto-rows: 135px !important; grid-template-areas: none !important; gap: 8px !important; }
             .floor-grid > div:not(.room-card) { display: none !important; }
