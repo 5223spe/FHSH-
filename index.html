@@ -530,11 +530,11 @@
             #map-6F資藝教室 { grid-row: 6 !important; grid-column: 2 !important; }
             .checkbox-grid { grid-template-columns: repeat(2, 1fr); padding: 10px; gap: 8px; }
             .checkbox-item { font-size: 13px; }
-            /* 週期性預約手機版修正（強化版） */
+            /* 週期性預約手機版修正（完全修正版） */
             #recurringPanel > div[style*="display: flex"] {
                 display: flex !important;
                 flex-direction: row !important;
-                gap: 8px !important;
+                gap: 10px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
@@ -542,7 +542,6 @@
             #recurringPanel > div[style*="display: flex"] > div {
                 flex: 1 1 0% !important;
                 min-width: 0 !important;
-                width: 0 !important; /* 強制重置預設寬度，避免內部元素撐開 */
             }
 
             #startDate, #endDate {
@@ -550,14 +549,26 @@
                 appearance: none !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                min-width: 0 !important;
                 box-sizing: border-box !important;
-                padding: 8px 4px !important;
-                font-size: 13px !important; /* 稍微調小字級以適應窄寬度 */
+                height: 48px !important; /* 強制固定高度，不論有無值框高都一致 */
+                min-height: 48px !important;
+                line-height: 28px !important;
+                padding: 8px 6px !important;
+                font-size: 15px !important; /* 字體調大 */
+                font-weight: 600 !important;
+                color: #1e293b !important; /* 日期文字強制黑色 */
+                background-color: #e2e8f0 !important; /* 確保背景灰色一致 */
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 10px !important;
                 text-align: center !important;
             }
 
-            /* 隱藏手機原生 Date Picker 佔空間的右側小圖示 */
+            /* 修正 Safari/iOS 未填寫數值時的文字與預設高度問題 */
+            #startDate:invalid, #endDate:invalid {
+                color: #1e293b !important;
+            }
+
+            /* 隱藏佔據空間的預設月曆小圖示，避免擠壓文字 */
             #startDate::-webkit-calendar-picker-indicator,
             #endDate::-webkit-calendar-picker-indicator {
                 display: none !important;
