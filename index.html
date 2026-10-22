@@ -792,6 +792,22 @@
                 margin-right: 0 !important;
             }
         }
+        /* 強制編輯彈窗（包含手機版）內的所有輸入框統一形狀與寬度 */
+#editRecordModal .edit-modal-group input[type="text"],
+#editRecordModal .edit-modal-group input[type="date"],
+#editRecordModal .edit-modal-group select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    height: 48px !important;            /* 強制統一框高 */
+    min-height: 48px !important;
+    font-size: 15px !important;
+    border: 2px solid #e2e8f0 !important;/* 統一邊框粗細與顏色 */
+    border-radius: 12px !important;     /* 統一圓角 */
+    margin: 0 !important;
+    -webkit-appearance: none !important;/* 清除手機原生陰影與不等寬差異 */
+    appearance: none !important;
+}
     </style>
 </head>
 <body>
