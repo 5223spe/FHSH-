@@ -669,15 +669,15 @@
 
         /* 編輯彈窗對齊樣式 */
         .edit-modal-card {
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            max-width: 480px;
-            width: 92%;
-            animation: modalPop 0.25s ease-out;
-            text-align: left;
-        }
+    background: #ffffff;
+    padding: 28px 32px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    max-width: 600px; /* ← 原本為 480px，改為 600px 加寬 */
+    width: 92%;
+    animation: modalPop 0.25s ease-out;
+    text-align: left;
+}
         .edit-modal-card h3 {
             margin: 0 0 16px 0;
             color: var(--palette-blue-2);
@@ -703,16 +703,16 @@
             font-size: 14px;
         }
         .edit-periods-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            max-height: 180px;
-            overflow-y: auto;
-        }
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* ← 改為 3 欄排列，空間利用更好 */
+    gap: 10px;
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    max-height: 220px;
+    overflow-y: auto;
+}
         .edit-period-item {
             display: flex;
             align-items: center;
@@ -752,6 +752,9 @@
             font-size: 15px;
             cursor: pointer;
         }
+        th:last-child {
+    text-align: center;
+}
     </style>
 </head>
 <body>
