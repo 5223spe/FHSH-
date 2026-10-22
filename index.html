@@ -652,6 +652,18 @@
         }
 
         @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .btn-edit { 
+    background-color: var(--palette-teal); 
+    color: white; 
+    border: none; 
+    padding: 6px 14px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 13px; 
+    font-weight: bold; 
+    margin-right: 6px; 
+}
+.btn-edit:hover { filter: brightness(1.1); }
     </style>
 </head>
 <body>
@@ -904,7 +916,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxraRDv23mcc7h-BMTurmPxBVp0L79MLzUSF_j1izPkTqwkvd3BFkzEYo3ef5sV5MOycQ/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwFS1jKF0fp5lZrG98i11OoU0aggz5VI-GmZ4CsmTyrgBD-ea0SROevqbo77QEkBCHYSQ/exec";
     const GOOGLE_CLIENT_ID = "939818076377-s22dabcvo0c8t5q3f9b15f8182apb7i2.apps.googleusercontent.com";
 
     const TRUSTED_GROUP_EMAILS = [
@@ -2083,9 +2095,10 @@
             const idsString = JSON.stringify(b.ids);
 
             const hasPermission = canUserDeleteRecord(b);
-            const actionBtnHtml = hasPermission 
-                ? `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
-                : ``;
+const actionBtnHtml = hasPermission 
+    ? `<button class="btn-edit" onclick='openEditModal(${idsString})'>編輯</button>` +
+      `<button class="btn-delete" onclick='deleteMergedGroup(${idsString})'>刪除</button>` 
+    : ``;
 
             tr.innerHTML = `
                 <td><b>${b.date}</b></td>
@@ -2346,6 +2359,68 @@
             }, 1200);
         }
     }
+    function openEditModal(idsArray) {
+    if (!idsArray || idsArray.length === 0) return;
+
+    // 尋找目標預約
+    const targetBooking = bookings.find(b => idsArray.includes(b.id));
+    if (!targetBooking) return;
+
+    if (!canUserDeleteRecord(targetBooking)) {
+        alert('⚠️ 您無權限編輯此筆借用紀錄！');
+        return;
+    }
+
+    const newBorrower = prompt("請輸入修改後的借用人姓名：", targetBooking.borrower);
+    if (!newBorrower || newBorrower.trim() === "") return;
+
+    const updatedBorrower = newBorrower.trim();
+
+    // 1. 先更新前端本地資料，讓畫面秒更新
+    bookings.forEach(b => {
+        if (idsArray.includes(b.id)) {
+            b.borrower = updatedBorrower;
+        }
+    });
+
+    renderTable();
+    updateDashboard();
+
+    const updatedItem = {
+        borrower: updatedBorrower,
+        classroom: targetBooking.classroom,
+        date: targetBooking.date,
+        periods: targetBooking.periods
+    };
+
+    const operatorName = currentUser ? (currentUser.isGuest ? "訪客" : `${currentUser.name} (${currentUser.email})`) : "未登入使用者";
+
+    // 2. 發送至後端同步
+    fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ 
+            action: 'batchUpdate', 
+            ids: idsArray,
+            newItem: updatedItem,
+            updatedBy: operatorName
+        })
+    })
+    .then(res => res.json())
+    .then(resData => {
+        if (resData.status === 'success') {
+            alert('🎉 紀錄已成功修改！');
+            loadBookingsFromServer(true); // 重新校正雲端最新快取
+        } else {
+            alert('⚠️ 雲端修改失敗：' + resData.message);
+            loadBookingsFromServer(true); // 失敗時刷回原資料
+        }
+    })
+    .catch(error => {
+        console.error("修改連線錯誤:", error);
+        alert('⚠️ 連線異常，將重新載入資料。');
+        loadBookingsFromServer(true);
+    });
+}
 </script>
 </body>
 </html>
