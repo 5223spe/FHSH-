@@ -695,13 +695,18 @@
             color: var(--palette-blue-2);
             margin-bottom: 6px;
         }
-        .edit-modal-group input, .edit-modal-group select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
-        }
+        .edit-modal-group input[type="text"],
+.edit-modal-group input[type="date"],
+.edit-modal-group select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    display: block !important;
+}
         .edit-periods-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* ← 改為 3 欄排列，空間利用更好 */
@@ -752,15 +757,41 @@
             font-size: 15px;
             cursor: pointer;
         }
+        /* 1. 表格最後一欄（資料操作）標題與內容強制置中 */
         th:last-child,
-td:last-child {
-    text-align: center !important;
-}
+        td:last-child {
+            text-align: center !important;
+        }
 
-td:last-child {
-    display: table-cell;
-    vertical-align: middle;
-}
+        /* 2. 內容格水平垂直置中 */
+        td:last-child {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        /* 3. 手機版：強制資料維持在同一排不換行 */
+        @media (max-width: 768px) {
+            table th, 
+            table td {
+                white-space: nowrap !important;
+                padding: 10px 8px !important;
+                font-size: 13px !important;
+            }
+
+            td:last-child {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 4px !important;
+                white-space: nowrap !important;
+            }
+
+            .btn-edit, .btn-delete {
+                padding: 4px 8px !important;
+                font-size: 12px !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
