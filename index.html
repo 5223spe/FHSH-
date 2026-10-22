@@ -752,8 +752,14 @@
             font-size: 15px;
             cursor: pointer;
         }
-        th:last-child {
-    text-align: center;
+        th:last-child,
+td:last-child {
+    text-align: center !important;
+}
+
+td:last-child {
+    display: table-cell;
+    vertical-align: middle;
 }
     </style>
 </head>
